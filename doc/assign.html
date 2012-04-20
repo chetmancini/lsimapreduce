@@ -1,0 +1,397 @@
+<html>
+
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+	<meta name="author" content="Alan Demers">
+	<meta name="publisher" content="Alan Demers">
+	<meta name="description" content="CS 5300: Project 2">
+	<title>CS 5300: Project 2: Graph Components in Hadoop</title>
+</head>
+
+<body>
+
+<table BORDER=0 CELLSPACING=0 CELLPADDING=0 WIDTH="750" >
+<tr>
+<td align=left><h4>CS5300 S12</h4></td>
+<td align=center><h4>TR 11:40-12:55</h4></td>
+<td align=right><h4>Uris G01</h4></td>
+</tr>
+</table>
+
+<table BORDER=0 CELLSPACING=0 CELLPADDING=0 WIDTH="750" >
+<tr>
+<td align=left>
+<a href="http://www.cs.cornell.edu/Courses/cs5300/2010sp"><img align="center" src="cornell-logo.gif"></a>
+</td>
+<td>
+<h2>
+Project 2: Graph Components in Hadoop
+</h2>
+</td>
+</tr>
+</table>
+
+<table BORDER=0 CELLSPACING=0 CELLPADDING=0 WIDTH="750" >
+<tr><td>&nbsp;<br>&nbsp;</td></tr>
+</table>
+
+<table BORDER=0 CELLSPACING=0 CELLPADDING=0 WIDTH="700" >
+<tr>
+<td>&nbsp;&nbsp;&nbsp;&nbsp;</td>
+<td>
+
+<!-- BEGIN PAGE CONTENT -->
+
+
+<h3>1. Introduction</h3>
+<p>
+This is the final group programming project in CS5300.  It will use
+<a href="http://aws.amazon.com/elasticmapreduce/">AWS Elastic MapReduce</a>
+to perform a much larger-scale distributed computation than anything we have done
+up to now.
+<p>
+For this project you will compute some statistics on the connected components
+of a relatively large undirected graph.
+The &ldquo;story&rdquo;
+is that you are given a file containing a satellite image of a forest,
+and you are asked to compute the expected number of trees that will burn
+if a match is dropped in the forest at a location chosen uniformly at random.
+<p>
+You compute this by constructing an undirected graph
+<blockquote>G = (V, E),</blockquote>
+in which each vertex <i>v</i> in V is the location of a tree in the satellite image,
+and there is an undirected edge {<i>u, v</i>} in E if vertices <i>u</i> and <i>v</i>
+are sufficiently close to one another that flames can jump between them.
+Clearly if a tree (vertex) <i>u</i> catches fire,
+and another tree (vertex) <i>v</i> can be reached from <i>u</i> along a <i>path</i> of edges in G,
+then eventually <i>v</i> will catch fire too.
+The set of all vertices reachable by following paths from vertex <i>u</i>
+in an undirected graph G
+is called the <i>connected component</i> of G containing <i>u</i>.
+Thus, the answer to the question
+&ldquo;How many trees can be expected to burn?&rdquo;
+amounts to computing statistics on the sizes of the connected components of G.
+This is discussed in greater detail below.
+<p>
+The graph will be presented in a slightly counterintuitive file format,
+which facilitates customizing the input by netid,
+so each group will compute the answer on a slightly different graph
+(only we know the right answers).
+<p>
+The input format also enables processing an image that is smaller than the entire file,
+by reading a prefix of the file,
+rather than reading the entire file and filtering out locations
+you&rsquo;re not interested in.
+This will be useful for debugging,
+and possibly for partial credit if you can&rsquo;t get your solution to run fast enough
+to run the entire file at reasonable cost.
+<p>
+To compute the connected components of the graph,
+you will use an algorithm like the one discussed in Lecture,
+and described in our
+<a href="components.pdf">Connected Component notes</a>.
+<p>
+AWS Elastic MapReduce will be used to manage the several MapReduce passes
+needed to identify the graph edges and compute the connected components.
+<p>
+For this Project you should form <b>groups of 3 persons</b>.
+The default will be to use the same groups as for the previous Project,
+but you are free to change groups if you wish.
+If you prefer a 4 person group that is okay,
+but like Project 1b, the optional part (Section 6)
+becomes <b>mandatory</b> for 4-person groups.
+
+<h3>2. Preliminaries</h3>
+<p>
+This project should be done using AWS Elastic MapReduce.
+Amazon's &ldquo;getting started guide&rdquo;
+for Elastic MapReduce is
+<a href="http://docs.amazonwebservices.com/ElasticMapReduce/latest/GettingStartedGuide/">here</a>.
+This GSG is based on streaming job flows and/or Hive.
+Given that we will be using custom Jar files,
+that&rsquo;s unfortunate.
+However, you should at least read it carefully.
+Then the section
+<a href="http://docs.amazonwebservices.com/ElasticMapReduce/latest/GettingStartedGuide/WhereGoFromHere.html">
+Where do I Go from Here?</a> is full of useful stuff, including a tutorial on
+<a href="http://aws.amazon.com/articles/3938">creating a job flow using a custom JAR</a>
+and the generic
+<a href="http://hadoop.apache.org/core/">Learn More About Hadoop</a> link.
+And, since it&rsquo;s slightly non-obvious,
+the tarball for the (extensive) &ldquo;Cloudburst&rdquo; example is available for download
+<a href="http://elasticmapreduce.s3.amazonaws.com/samples/cloudburst/code/cloudburst-bio.tar.gz">here</a>.
+
+<p>
+In addition to the above,
+tutorials for Hadoop MapReduce are available
+<a href="http://developer.yahoo.com/hadoop/tutorial/">here</a> (Yahoo!)
+and
+<a href="http://hadoop.apache.org/common/docs/r0.20.2/mapred_tutorial.html">here</a> (Apache).
+<p>
+Your solution will consist of four (or possibly more)
+Elastic MapReduce &ldquo;Job Flow Steps,&rdquo;
+controlled using the CLI (Command Line Interface).
+All input and output will use AWS S3 files.
+Each MapReduce step will use a different &ldquo;custom Jar file&rdquo;
+with Java code.
+<p>
+After you get your first Job Flow Step to run,
+adding the remaining steps should not be too difficult.
+But there is a fairly high entry barrier to this project,
+so you should get started soon.
+<p>
+<b>Note:</b> By default, AWS Elastic MapReduce uses EC2 Small Instances,
+which are 1.7 GB 32-bit machines.
+<b>You should not change this default!</b>
+The point is to solve the problem using MapReduce and horizontal scaling.
+Computing the answer by vertical scaling -- e.g. using a single
+EC2 High-Memory Quadruple Extra-Large Instance with 68GB of memory --
+might work, but that would be cheating.
+<h3>3. Input Data</h3>
+<p>
+The input data format for this project is a text file, consisting of a sequence of lines.
+Each line is exactly 12 bytes long
+(including the terminating newline)
+and contains a single floating point number
+between 0.0 and 1.0.
+The file starts out
+<blockquote>
+0.511715114
+<br>
+0.187992254
+<br>
+0.009772277
+<br>
+0.857811962
+<br>
+...
+</blockquote>
+<p>
+The numbers in the file have been chosen uniformly at random.
+So you can read the file and select a random subset of the points
+using a function like the following:
+<blockquote>
+<pre>
+<code>
+float wMin = ...
+float wLimit = ...
+// assume 0.0 <= wMin <= wLimit <= 1.0
+boolean getNextFilteredInput() {
+	float w = ... (read and parse next input line) ...
+	return ( ((w >= wMin) && (w < wLimit)) ? true : false );
+}
+</code>
+</pre>
+</blockquote>
+This will return <code>true</code> if and only if the next input value
+falls between <code>wMin</code> and <code>wLimit</code>,
+which should happen with probability <code>(wMin-wLimit)</code>.
+<blockquote>
+<b>We want every group to compute the answers on a different random set of points!</b>
+</blockquote>
+So you are required to construct <code>wMin</code> and <code>wLimit</code> values
+using the netid of one of the members of your group.
+Specifically, take the digits of the netid and <i>write them in reverse</i>
+preceded by a decimal point.
+This gives you a number that is more-or-less uniformly distributed between 0.0 and 1.0.
+(If you don&rsquo;t reverse the digits the distribution is pretty badly skewed towards
+smaller numbers.)
+Use your netid in place of mine in the following computation:
+<blockquote>
+<pre>
+<code>
+// compute filter parameters for netid ajd28
+float fromNetID = 0.82;
+float desiredDensity = 0.59;
+float wMin = 0.4 * fromNetID;
+float wLimit = wMin + desiredDensity; 
+</code>
+</pre>
+</blockquote>
+The <code>desiredDensity</code> constant is an experimentally-determined magic number
+that you should not change,
+except for the extra credit part described in Section 6.
+<p>
+Another subtle aspect of the input data file is the order in which the points appear.
+We wanted to make it possible to read and process a subset of the image file
+(e.g., for debugging)
+by reading a prefix of the file, rather than having to scan the entire file and eliminate
+points whose positions are out of range.
+To make this possible, the points are ordered so that for any N, the N<sup>2</sup>
+points nearest the &ldquo;southwest&rdquo; corner appear first in the file,
+as shown in the following figure:
+<br>
+<img src="data-encoding-fig-png.png" height=400></img>
+<br>
+This is a bit hard to describe intuitively; but the following code snippet
+will properly load an N by N boolean array a[*,*] from the initial N<sup>2</sup> elements
+of the file:
+<blockquote>
+<pre>
+<code>
+for( int j = 0; j < N; j++ ) {
+    for( int i = 0; i < j; i++ ) {
+        a[i, j] = getNextFilteredInput();
+        a[j, i] = getNextFilteredInput();
+    }
+    a[j, j] = getNextFilteredInput();
+}
+</code>
+</pre>
+</blockquote>
+<p>
+The S3 bucket
+<blockquote><pre>
+edu-cornell-cs-cs5300s12-assign5-data
+</pre></blockquote>
+contains a few small test data files
+<blockquote><pre>
+test1.txt, test2.txt, ...
+</pre></blockquote>
+These can be accessed at the usual URLs for S3 files:
+<blockquote><pre>
+<a href="http://edu-cornell-cs-cs5300s12-assign5-data.s3.amazonaws.com/test1.txt">http://edu-cornell-cs-cs5300s12-assign5-data.s3.amazonaws.com/test1.txt</a>
+</pre></blockquote>
+and so forth.
+You can open these files in your Web browser to look at them.
+<p>
+In the same bucket there is also the fairly large file
+<blockquote><pre>
+production.txt
+</pre></blockquote>
+This file contains millions of lines, so don't try to open it in in your browser.
+You should run your final solution on <i>production.txt</i>,
+using the filter derived from your netids by the procedure described above.
+(If your program can't handle the entire file in a reasonable time,
+then run it on the longest prefix of <i>production.txt</i> that you can manage).
+
+<h3>4. Computing the Connected Components</h3>
+<p>
+The basic algorithm you should use for computing connected components
+was discussed in Lecture,
+and is described in our
+<a href="components.pdf">Connected Component notes</a>.
+
+<h3>5. Output</h3>
+<p>
+The output we want from your program is a few statistics about
+the input graph:
+<ol>
+<li>the number of vertices;
+<li>the number of edges;
+<li>the number of distinct connected components;
+<li>
+the (weighted) average size of the connected components --
+that is, if you choose a vertex uniformly at random from the graph,
+what is the expected size of its connected component?
+<li>
+the average <i>burn count</i> -- that is, if you choose a position
+uniformly at random and drop a match there,
+how many trees will burn?
+(Note that some positions do not contain trees, so dropping a match there
+causes 0 trees to burn).
+</ol>
+There is a &ldquo;right&rdquo; value for each of these statistics,
+and it is a function of the netid used to define your filter values.
+We can compute the right answers in real time to check your results.
+Getting the wrong answer will not affect your grade too much; but getting the right answer
+is <i>prima facie</i> evidence that your program is correct.
+<p>
+Computing the required statistics will probably require an additional MapReduce pass
+after you have computed the connected components.
+The final pass can be very similar to the &ldquo;word count&rdquo;
+example discussed in the
+<a href="http://research.google.com/archive/mapreduce.html">original MapReduce paper</a>.
+
+<h3>6. Extra Credit (mandatory for 4-person groups)</h3>
+<p>
+You may do the extra computation described in this section
+for up to 25% extra credit.
+For 4-person groups, you <b>must</b> do it.
+<p>
+First, modify your program so edges can run diagonally as well as horizontally
+and vertically;
+in this case the maximum number of edges a vertex can have grows from 4
+to 8.
+This should be a fairly straightforward change to your program.
+The number of edges inferred from the test data will increase significantly,
+so your program will run somewhat more slowly and the results will change.
+In particular, the connected components will get dramatically larger.
+<p>
+A result from <a href="http://en.wikipedia.org/wiki/Percolation_theory">percolation theory</a>
+(no, we don't expect you to learn any percolation theory for this project)
+implies there is a <i>critical density</i> for this problem.
+If the density of trees in the satellite image is
+below the critical density, the connected components are &ldquo;small&rdquo; with high probability,
+even in the limit of an infinite graph.
+Above the critical density, the connected components are &ldquo;large&rdquo;,
+and in the limit of an infinite graph there are infinite components
+with high probability.
+<p>
+The magic constant
+<code>desiredDensity = 0.59</code>
+from Section 4 was chosen to be near the critical density for this system
+<i>when edges are only horizontal and vertical</i>.
+Of course, when diagonal edges are added, there are more possible ways for paths
+to form, so you should expect the critical density to be smaller.
+<p>
+For full extra credit you should estimate the critical density for the system
+in which diagonal edges are allowed.
+Choose a modest file size -- say 1000 by 1000 -- and make a plot of average component size
+or burn count against density.
+The critical density should be pretty obvious from such a plot.
+<h3>7. Submit Your Work</h3>
+<p><b>CMS: </b>Create a file, in <code>zip</code> archive format,
+named <code>solution.zip</code>
+This archive should contain
+<ol>
+<li>a <code>README</code> file.
+<br>
+This may be in <code>.pdf</code> or <code>.txt</code> or <code>.doc</code>
+format.
+This file should include anything we need to know to grade your assignment.
+In particular, it should briefly describe the overall structure of your solution,
+and specify what functionality is implemented in each MapReduce pass.
+<p>
+Of course it should contain the output -- the statistics discussed in Section 5
+-- resulting from running your program on the <code>production.txt</code> file.
+It should also contain the parameters you used for your run:
+<ul>
+<li>
+the netid and computed filter parameters (<code>wMin</code> and <code>wLimit</code>)
+used for your filter definition to select vertices;
+</li>
+<li>
+if you found it necessary to run on a prefix of <code>production.txt</code>,
+the number of grid points you processed;
+</li>
+if you did the extra credit part,
+the parameters used for that part and your best estimate of the critical density.
+</ul>
+<li>the Java source code for each MapReduce pass.
+<br>
+Include understandable high-level comments.
+</ol>
+<p>
+As always, you may include additional files in the archive if you wish.
+Submit your <code>solution.zip</code> file using CMS by the specified deadline.
+<p>
+<b>Presentation: </b>
+For this Project,
+we will ask you to sign up for a brief (15 minute) presentation of your solution.
+This is not a demo -- we won't ask you to run anything at Amazon in real time --
+it's more like a short oral exam, in lieu of a Final,
+where we get to ask you questions about your solution.
+You should prepare a few PowerPoint (or .pdf or ...) slides for this presentation --
+a projector will be available.
+Script your presentation so everybody in the group gets to say something.
+<p>
+<b>Note:</b> the deadline for submitting your project to CMS is the same for
+everybody; it is <i>not</i> the the time your presentation is scheduled.
+
+<!-- END PAGE CONTENT -->
+</td>
+</tr>
+</table>
+</body>
+</html>
