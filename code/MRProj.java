@@ -7,7 +7,7 @@ public class MRProj{
 	DataInputStream in = new DataInputStream(fs);
 	BufferedReader br = new BufferedReader(new InputStreamReader(in));
 
-	// compute filter parameters for netid ajd28
+	// compute filter parameters for netid cam479 (Chet)
 	float fromNetID = 0.974;
 	float desiredDensity = 0.59;
 	float wMin = 0.4 * fromNetID;
