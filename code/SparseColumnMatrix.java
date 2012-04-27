@@ -33,10 +33,17 @@ public class SparseColumnMatrix {
 
     /**
      * Break into column sets.
-     * TODO: finish
+     * @param startCol the beginning col, inclusive.
+     * @param endCol the end column, exclusive.
+     * Note: endcol may lie outside the bound, in which case it will
+     * take the largest possible subarray. 
      */
     public SparseColumnMatrix slice(int startCol, int endCol){
-    	return null;
+      if (startCol >= endCol){
+        raise new Exception("bad indicies");
+      }
+      SparseBooleanVector[] toReturn = Array.copyOfRange(this.cols, startCol, endCol);
+      return new SparseColumnMatrix(this.N, toReturn);
     }
 
     /**
@@ -45,9 +52,8 @@ public class SparseColumnMatrix {
     public List<SparseColumnMatrix> split(int parts){
         ArrayList<SparseColumnMatrix> toReturn = new ArrayList<SparseColumnMatrix>();
         int subwidth = this.width / parts;
-        int remainder = this.width % parts;
         for(int i=0;i<parts;i++){
-
+          toReturn.append(this.slice(subwidth*i, subwidth*(i+1)));
         }
         return toReturn;
     }
@@ -90,15 +96,11 @@ public class SparseColumnMatrix {
         return sum;
     }
 
-
-    // return a string representation
+    /**
+     * Return a string representation.
+     */
     public String toString() {
         return "Not implemented";
-        // String s = "N = " + N + ", nonzeros = " + nnz() + "\n";
-        // for (int i = 0; i < N; i++) {
-        //     s += i + ": " + rows[i] + "\n";
-        // }
-        // return s;
     }
     
 }
