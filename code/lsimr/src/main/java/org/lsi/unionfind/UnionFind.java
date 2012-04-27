@@ -10,32 +10,32 @@ package org.lsi.unionfind;
 
 public class UnionFind {
 
-	/**
-	 * id is an array of roots for each
-	 * point.  As the union find algorithm
-	 * runs, it updates the id vector until
-	 * each set of connected components has 
-	 * the same root.
-	 */
-	private int[] m_id;
+    /**
+     * id is an array of roots for each
+     * point.  As the union find algorithm
+     * runs, it updates the id vector until
+     * each set of connected components has 
+     * the same root.
+     */
+    private int[] m_id;
     private int m = 0;
     private int n = 0;
     private int m_edges = 0;
-	
-	/**
-	 * Data structure to efficiently keep track of
-	 * connected components.
+
+    /**
+     * Data structure to efficiently keep track of
+     * connected components.
      * @param id a vector with 0 if there is no tree,
      *           and the id of the current root if there
      *           is a tree.  Current root is the index
      *           of the tree initially.
-	 * @param n  the number of columns in the original
+     * @param n  the number of columns in the original
      *           matrix.
      * @param m  the number of rows in the original matrix.
-	 */
-	public UnionFind(int[] id, int m, int n)
-	{
-		this.m_id = id;
+     */
+    public UnionFind(int[] id, int m, int n)
+    {
+        this.m_id = id;
         this.m = m;
         this.n = n;
         this.m_edges = 0;
@@ -44,21 +44,21 @@ public class UnionFind {
         //if left is clearly lower, just so that we can also
         //count the vertices as we go.
         for(int j=0; j<2; ++j)
-        for(int i=0; i<m_id.length; ++i)
-        {
-            if(m_id[i] > 0)
+            for(int i=0; i<m_id.length; ++i)
             {
-                lookUp(i);
-                lookRight(i);
-            }
-        };
+                if(m_id[i] > 0)
+                {
+                    lookUp(i);
+                    lookRight(i);
+                }
+            };
 
         //TODO: This is correct but sloppy.  We double count
         //every vertex, so have to devide by two here.
-        
+
         m_edges = m_edges/2;
-	}
-	
+    }
+
     public int[] getRoots(){
         return m_id;
     }
