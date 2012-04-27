@@ -22,9 +22,14 @@ public class SparseVector {
 
     // put st[i] = value
     public void put(int i, double value) {
-        if (i < 0 || i >= N) throw new RuntimeException("Illegal index");
-        if (value == 0.0) st.remove(i);
-        else              st.put(i, value);
+        if (i < 0 || i >= N){
+        	throw new RuntimeException("Illegal index");
+        }
+        if (value == 0.0){
+        	st.delete(i);
+        }else{
+        	st.put(i, value);
+        }
     }
 
     // return st[i]

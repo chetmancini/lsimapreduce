@@ -8,18 +8,18 @@ public class MRProj{
 	BufferedReader br = new BufferedReader(new InputStreamReader(in));
 
 	// compute filter parameters for netid cam479 (Chet)
-	float fromNetID = 0.974;
-	float desiredDensity = 0.59;
+	float fromNetID = 0.974f;
+	float desiredDensity = 0.59f;
 	float wMin = 0.4 * fromNetID;
 	float wLimit = wMin + desiredDensity;
 
 	public float parseLine(String line){
-		return Float.parseFloat(line.replace("\n", ""))
+		return Float.parseFloat(line.replace("\n", ""));
 	}
 
 	// assume 0.0 <= wMin <= wLimit <= 1.0
 	public boolean getNextFilteredInput() {
-		float w = 0.0 //... (read and parse next input line) ...
+		float w = 0.0f; //... (read and parse next input line) ...
 		return ( ((w >= wMin) && (w < wLimit)) ? true : false );
 	}
 

@@ -11,26 +11,66 @@
  * Copyright © 2000–2011, Robert Sedgewick and Kevin Wayne. 
  *
  *************************************************************************/
+import java.util.ArrayList;
+import java.util.List;
 
 public class SparseColumnMatrix {
     private final int N;           // N-by-N matrix
+    private int width;
     private SparseVector[] cols;   // the rows, each row is a sparse vector
 
     // initialize an N-by-N matrix of all 0s
     public SparseColumnMatrix(int N) {
         this.N  = N;
+        this.width = N;
         cols = new SparseVector[N];
         for (int i = 0; i < N; i++) cols[i] = new SparseVector(N);
     }
 
-    // put A[i][j] = value
+    /**
+     * Create a scm with existing columns
+     */
+    public SparseColumnMatrix(int N, SparseVector[] cols){
+        this.N = N;
+        this.width = cols.length;
+        this.cols = cols;
+    }
+
+    /**
+     * Break into column sets.
+     * TODO: finish
+     */
+    public SparseColumnMatrix slice(int startCol, int endCol){
+    	return null;
+    }
+
+    /**
+     * Split a matrix into columns
+     */
+    public List<SparseColumnMatrix> split(int parts){
+        ArrayList<SparseColumnMatrix> toReturn = new ArrayList<SparseColumnMatrix>();
+        int subwidth = this.width / parts;
+        int remainder = this.width % parts;
+        for(int i=0;i<parts;i++){
+
+        }
+        return toReturn;
+    }
+
+    /**
+     * i=row
+     * j=column
+     */
     public void put(int i, int j, double value) {
         if (i < 0 || i >= N) throw new RuntimeException("Illegal index");
         if (j < 0 || j >= N) throw new RuntimeException("Illegal index");
         cols[j].put(i, value);
     }
 
-    // return A[i][j]
+    /**
+     *i=row
+     * j=col
+     */
     public double get(int i, int j) {
         if (i < 0 || i >= N) throw new RuntimeException("Illegal index");
         if (j < 0 || j >= N) throw new RuntimeException("Illegal index");
@@ -72,7 +112,7 @@ public class SparseColumnMatrix {
 
     // return a string representation
     public String toString() {
-        return "Not implemented"
+        return "Not implemented";
         // String s = "N = " + N + ", nonzeros = " + nnz() + "\n";
         // for (int i = 0; i < N; i++) {
         //     s += i + ": " + rows[i] + "\n";

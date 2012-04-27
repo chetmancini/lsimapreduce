@@ -47,7 +47,7 @@ public class SparseRowMatrix {
 
     // return the matrix-vector product b = Ax
     public SparseVector times(SparseVector x) {
-        SparseMatrix A = this;
+        SparseRowMatrix A = this;
         if (N != x.size()) throw new RuntimeException("Dimensions disagree");
         SparseVector b = new SparseVector(N);
         for (int i = 0; i < N; i++)
@@ -56,10 +56,10 @@ public class SparseRowMatrix {
     }
 
     // return C = A + B
-    public SparseMatrix plus(SparseMatrix B) {
-        SparseMatrix A = this;
+    public SparseRowMatrix plus(SparseRowMatrix B) {
+    	SparseRowMatrix A = this;
         if (A.N != B.N) throw new RuntimeException("Dimensions disagree");
-        SparseMatrix C = new SparseMatrix(N);
+        SparseRowMatrix C = new SparseRowMatrix(N);
         for (int i = 0; i < N; i++)
             C.rows[i] = A.rows[i].plus(B.rows[i]);
         return C;
