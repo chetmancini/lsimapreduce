@@ -366,7 +366,7 @@ public class ConnectedComponentsCounter extends Configured implements Tool {
 				&& firstPass.getState() != Job.SUCCESS) {
 			String states = "wordCountJob:  " + firstPass.getState() + "\n";
 			throw new Exception(
-					"The state of wordCountJob is not in a complete state\n"
+					"The state of job1Job is not in a complete state\n"
 							+ states);
 		}
 		// now the second job
