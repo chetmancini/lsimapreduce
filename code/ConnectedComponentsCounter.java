@@ -61,20 +61,29 @@ public class ConnectedComponentsCounter extends Configured implements Tool {
                         OutputCollector<LongWritable, LongBooleanWritableTuple> output,
                         Reporter reporter) throws IOException {
             
-			String line = value.toString();
-			// TODO Plug the code of Chet correctly
-			MyMatrix m = MRProj.getMyMatrix(sizeInput);
-            
-			for (long i = 0; i < sizeInput * sizeInput; i++) {
-				idCase.set(i, m.get(i));
-				idColumn.set(m.getColumnNbrFromId(i, columnWidth)[0]);
-				output.collect(idColumn, idCase);
-				// Case of the boundary column belonging to 2 columns
-				if (m.getColumnNbrFromId(i, columnWidth).length > 1) {
-					idColumn.set(m.getColumnNbrFromId(i, columnWidth)[1]);
-					output.collect(idColumn, idCase);
-				}
-			}
+			if(key.get()%12!=0) 
+				reporter.setStatus("Error modulo 12 in 1st pass map input is "+key.get()%12);
+			
+			Long id = (long) Math.floor(key.get()/12);
+			Float f = new Float(value.toString());
+			
+			idColumn.set(MRProj.getColumnNbrFromId(id, columnWidth)[0]);
+			idCase.set(id, MRProj.getBoolean(f));
+			output.collect(idColumn, idCase);
+			
+            //			// TODO Plug the code of Chet correctly
+            //			MyMatrix m = MRProj.getMyMatrix(sizeInput);
+            //            
+            //			for (long i = 0; i < sizeInput * sizeInput; i++) {
+            //				idCase.set(i, m.get(i));
+            //				idColumn.set(m.getColumnNbrFromId(i, columnWidth)[0]);
+            //				output.collect(idColumn, idCase);
+            //				// Case of the boundary column belonging to 2 columns
+            //				if (m.getColumnNbrFromId(i, columnWidth).length > 1) {
+            //					idColumn.set(m.getColumnNbrFromId(i, columnWidth)[1]);
+            //					output.collect(idColumn, idCase);
+            //				}
+            //			}
 		}
 	}
     
