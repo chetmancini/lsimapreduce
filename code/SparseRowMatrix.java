@@ -1,7 +1,4 @@
 /*************************************************************************
- *  Compilation:  javac SparseMatrix.java
- *  Execution:    java SparseMatrix
- *  
  *  A sparse, square matrix, implementing using two arrays of sparse
  *  vectors, one representation for the rows and one for the columns.
  *
@@ -11,7 +8,10 @@
  * Copyright © 2000–2011, Robert Sedgewick and Kevin Wayne. 
  *
  *************************************************************************/
-
+/**
+ * Adapted from Robert Sedgewick and Kevin Wayne
+ * @author chet
+ */
 public class SparseRowMatrix {
     private final int N;           // N-by-N matrix
     private SparseVector[] rows;   // the rows, each row is a sparse vector
