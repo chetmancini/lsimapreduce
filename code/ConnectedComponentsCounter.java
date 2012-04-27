@@ -36,35 +36,35 @@ import org.apache.hadoop.util.Tool;
 import org.apache.hadoop.util.ToolRunner;
 
 public class ConnectedComponentsCounter extends Configured implements Tool {
-
+    
 	public static class MapFirstPass extends MapReduceBase implements
-			Mapper<LongWritable, Text, LongWritable, LongBooleanWritableTuple> {
-
+    Mapper<LongWritable, Text, LongWritable, LongBooleanWritableTuple> {
+        
 		private LongBooleanWritableTuple idCase = new LongBooleanWritableTuple();
 		private LongWritable idColumn = new LongWritable();
-
+        
 		private final int defaultSizeInput = 1000;
 		private int sizeInput;
 		private int columnWidth;
-
+        
 		public void configure(JobConf job) {
 			sizeInput = job.getInt("connectedcomponentscounter.matrix.size",
-					defaultSizeInput);
+                                   defaultSizeInput);
 			columnWidth = job.getInt(
-					"connectedcomponentscounter.matrix.columnWidth",
-					(int) Math.sqrt(sizeInput));
+                                     "connectedcomponentscounter.matrix.columnWidth",
+                                     (int) Math.sqrt(sizeInput));
 		}
-
+        
 		// Value is the whole txt file ?
 		// Return <idcolumn;<idcase,booleancase>>
 		public void map(LongWritable key, Text value,
-				OutputCollector<LongWritable, LongBooleanWritableTuple> output,
-				Reporter reporter) throws IOException {
-
+                        OutputCollector<LongWritable, LongBooleanWritableTuple> output,
+                        Reporter reporter) throws IOException {
+            
 			String line = value.toString();
 			// TODO Plug the code of Chet correctly
 			MyMatrix m = MRProj.getMyMatrix(sizeInput);
-
+            
 			for (long i = 0; i < sizeInput * sizeInput; i++) {
 				idCase.set(i, m.get(i));
 				idColumn.set(m.getColumnNbrFromId(i, columnWidth)[0]);
@@ -77,52 +77,52 @@ public class ConnectedComponentsCounter extends Configured implements Tool {
 			}
 		}
 	}
-
+    
 	public static class ReduceFirstPass extends MapReduceBase
-			implements
-			Reducer<LongWritable, LongBooleanWritableTuple, LongBooleanWritableTuple, LongWritable> {
+    implements
+    Reducer<LongWritable, LongBooleanWritableTuple, LongBooleanWritableTuple, LongWritable> {
 		// Get all the <id,boolean> of cases for one column
 		// Return <<idcase,boolean>;id parent in this column>
 		public void reduce(LongWritable idcolumn,
-				Iterator<LongBooleanWritableTuple> idsCases,
-				OutputCollector<LongBooleanWritableTuple, LongWritable> output,
-				Reporter reporter) throws IOException {
+                           Iterator<LongBooleanWritableTuple> idsCases,
+                           OutputCollector<LongBooleanWritableTuple, LongWritable> output,
+                           Reporter reporter) throws IOException {
 			// TODO Plug the code of Sean Correctly
 			UnionFind uf = new UnionFind(idsCases);
-
+            
 			while (idsCases.hasNext()) {
 				LongBooleanWritableTuple tuple = idsCases.next();
 				output.collect(tuple,
-						new LongWritable(uf.getMyMostSouthWestParent(tuple.l)));
+                               new LongWritable(uf.getMyMostSouthWestParent(tuple.l)));
 			}
 		}
 	}
-
+    
 	public static class MapSecondPass extends MapReduceBase
-			implements
-			Mapper<LongBooleanWritableTuple, LongWritable, Text, LongBooleanLongWritableTuple> {
-
+    implements
+    Mapper<LongBooleanWritableTuple, LongWritable, Text, LongBooleanLongWritableTuple> {
+        
 		private LongBooleanLongWritableTuple idAndValueAndParentCase = new LongBooleanLongWritableTuple();
-
+        
 		private final int defaultSizeInput = 1000;
 		private int sizeInput;
 		private int columnWidth;
-
+        
 		public void configure(JobConf job) {
 			sizeInput = job.getInt("connectedcomponentscounter.matrix.size",
-					defaultSizeInput);
+                                   defaultSizeInput);
 			columnWidth = job.getInt(
-					"connectedcomponentscounter.matrix.columnWidth",
-					(int) Math.sqrt(sizeInput));
+                                     "connectedcomponentscounter.matrix.columnWidth",
+                                     (int) Math.sqrt(sizeInput));
 		}
-
+        
 		// Input key is <id,boolean> and value is parentid
 		// Return <someCommonKeyForAll;<idcase,booleancase,idparent>>
 		public void map(LongBooleanWritableTuple key, LongWritable parent,
-				OutputCollector<Text, LongBooleanLongWritableTuple> output,
-				Reporter reporter) throws IOException {
+                        OutputCollector<Text, LongBooleanLongWritableTuple> output,
+                        Reporter reporter) throws IOException {
 			Text t = new Text("UniqueReducer");
-
+            
 			// TODO Plug correct function of Chet
 			if (MrProj.isInBoundaryColumn(key.l, sizeInput, columnWidth)) {
 				idAndValueAndParentCase.set(key.l, key.b, parent.get());
@@ -130,228 +130,239 @@ public class ConnectedComponentsCounter extends Configured implements Tool {
 			}
 		}
 	}
-
+    
 	public static class ReduceSecondPass extends MapReduceBase
-			implements
-			Reducer<Text, LongBooleanLongWritableTuple, LongBooleanWritableTuple, LongWritable> {
+    implements
+    Reducer<Text, LongBooleanLongWritableTuple, LongBooleanWritableTuple, LongWritable> {
 		LongBooleanWritableTuple outputKey = new LongBooleanWritableTuple();
-
+        
 		// Get all the <id,boolean,parent> of cases in boundary columns
 		// Return <<idcase,boolean>;parentUpdated>
 		public void reduce(
-				Text uselessKey,
-				Iterator<LongBooleanLongWritableTuple> idAndBooleanAndParentCases,
-				OutputCollector<LongBooleanWritableTuple, LongWritable> output,
-				Reporter reporter) throws IOException {
+                           Text uselessKey,
+                           Iterator<LongBooleanLongWritableTuple> idAndBooleanAndParentCases,
+                           OutputCollector<LongBooleanWritableTuple, LongWritable> output,
+                           Reporter reporter) throws IOException {
 			// TODO Plug the code of Sean Correctly
 			UnionFind uf = new UnionFind(idAndBooleanAndParentCases);
-
+            
 			while (idAndBooleanAndParentCases.hasNext()) {
 				LongBooleanLongWritableTuple tuple = idAndBooleanAndParentCases
-						.next();
+                .next();
 				outputKey.set(tuple.l, tuple.b);
 				output.collect(outputKey,
-						new LongWritable(uf.getMyMostSouthWestParent(tuple.l)));
+                               new LongWritable(uf.getMyMostSouthWestParent(tuple.l)));
 			}
 		}
 	}
-
+    
 	public static class MapThirdPass extends MapReduceBase
-			implements
-			Mapper<LongBooleanWritableTuple, LongWritable, Text, LongBooleanLongWritableTuple> {
-
-		//TODO
-//		private LongBooleanLongWritableTuple idAndValueAndParentCase = new LongBooleanLongWritableTuple();
-//
-//		private final int defaultSizeInput = 1000;
-//		private int sizeInput;
-//		private int columnWidth;
-//
-//		public void configure(JobConf job) {
-//			sizeInput = job.getInt("connectedcomponentscounter.matrix.size",
-//					defaultSizeInput);
-//			columnWidth = job.getInt(
-//					"connectedcomponentscounter.matrix.columnWidth",
-//					(int) Math.sqrt(sizeInput));
-//		}
-
+    implements
+    Mapper<LongBooleanWritableTuple, LongWritable, LongWritable, LongBooleanLongWritableTuple> {
+        
+		private LongWritable idColumn = new LongWritable();
+		private LongBooleanLongWritableTuple idAndValueAndParentCase = new LongBooleanLongWritableTuple();
+        
+		private final int defaultSizeInput = 1000;
+		private int sizeInput;
+		private int columnWidth;
+        
+		public void configure(JobConf job) {
+			sizeInput = job.getInt("connectedcomponentscounter.matrix.size",
+                                   defaultSizeInput);
+			columnWidth = job.getInt(
+                                     "connectedcomponentscounter.matrix.columnWidth",
+                                     (int) Math.sqrt(sizeInput));
+		}
+        
 		// Input key is <id,boolean> and value is parentid
-		// Return <someCommonKeyForAll;<idcase,booleancase,idparent>>
-		public void map(LongBooleanWritableTuple key, LongWritable parent,
-				OutputCollector<Text, LongBooleanLongWritableTuple> output,
-				Reporter reporter) throws IOException {
-//			Text t = new Text("UniqueReducer");
-//
-//			// TODO Plug correct function of Chet
-//			if (MrProj.isInBoundaryColumn(key.l, sizeInput, columnWidth)) {
-//				idAndValueAndParentCase.set(key.l, key.b, parent.get());
-//				output.collect(t, idAndValueAndParentCase);
-//			}
+		// Return <idcolumn;<idcase,booleancase,idparent>>
+		public void map(
+                        LongBooleanWritableTuple key,
+                        LongWritable parent,
+                        OutputCollector<LongWritable, LongBooleanLongWritableTuple> output,
+                        Reporter reporter) throws IOException {
+			// TODO Plug the code of Chet correctly
+			MyMatrix m = MRProj.getMyMatrix(sizeInput);
+            
+			for (long i = 0; i < sizeInput * sizeInput; i++) {
+				idAndValueAndParentCase.set(key.l, key.b, parent.get());
+				// Only add the left boundary column (avoid double counting)
+				idColumn.set(m.getColumnNbrFromId(i, columnWidth)[0]);
+				output.collect(idColumn, idAndValueAndParentCase);
+			}
 		}
 	}
-
+    
 	public static class ReduceThirdPass extends MapReduceBase
-			implements
-			Reducer<Text, LongBooleanLongWritableTuple, LongBooleanWritableTuple, LongWritable> {
-		
-		//TODO 
-		
-//		LongBooleanWritableTuple outputKey = new LongBooleanWritableTuple();
-
-		// Get all the <id,boolean,parent> of cases in boundary columns
-		// Return <<idcase,boolean>;parentUpdated>
+    implements
+    Reducer<LongWritable, LongBooleanLongWritableTuple, LongWritable, IntWritable> {
+        
+		LongWritable outputKey = new LongWritable();
+		IntWritable outputValue = new IntWritable();
+        
+		// Get all the <id,boolean,parent> of cases in one column group
+		// Return <parent,sizeSingleConnected>
 		public void reduce(
-				Text uselessKey,
-				Iterator<LongBooleanLongWritableTuple> idAndBooleanAndParentCases,
-				OutputCollector<LongBooleanWritableTuple, LongWritable> output,
-				Reporter reporter) throws IOException {
-//			// TODO Plug the code of Sean Correctly
-//			UnionFind uf = new UnionFind(idAndBooleanAndParentCases);
-//
-//			while (idAndBooleanAndParentCases.hasNext()) {
-//				LongBooleanLongWritableTuple tuple = idAndBooleanAndParentCases
-//						.next();
-//				outputKey.set(tuple.l, tuple.b);
-//				output.collect(outputKey,
-//						new LongWritable(uf.getMyMostSouthWestParent(tuple.l)));
-//			}
+                           LongWritable columnId,
+                           Iterator<LongBooleanLongWritableTuple> idAndBooleanAndParentCases,
+                           OutputCollector<LongWritable, IntWritable> output,
+                           Reporter reporter) throws IOException {
+			// TODO Plug the code of Sean Correctly
+			UnionFind uf = new UnionFind(idAndBooleanAndParentCases);
+            
+			while (idAndBooleanAndParentCases.hasNext()) {
+				LongBooleanLongWritableTuple tuple = idAndBooleanAndParentCases
+                .next();
+				outputKey.set(tuple.parent);
+				outputValue.set(uf.getNbrSizeInThisColumn(tuple.parent));
+				output.collect(outputKey, outputValue);
+			}
 		}
 	}
-
-	public JobConf createFirstPassConf(String[] args) {
+    
+	public JobConf createFirstPassConf(int matrixSize, int columnGroupWidth,
+                                       String inputPath, String firstPassOutputPath) {
 		JobConf conf = new JobConf(getConf(), ConnectedComponentsCounter.class);
 		conf.setJobName("connectedComponentCounter_firstPass");
-
+        
 		conf.setOutputKeyClass(LongWritable.class);
 		conf.setOutputValueClass(LongWritable.class);
-
+        
 		conf.setMapperClass(MapFirstPass.class);
 		conf.setCombinerClass(ReduceFirstPass.class);
 		conf.setReducerClass(ReduceFirstPass.class);
-
+        
 		conf.setInputFormat(TextInputFormat.class);
 		conf.setOutputFormat(TextOutputFormat.class);
-
-		List<String> other_args = new ArrayList<String>();
-		for (int i = 0; i < args.length; ++i) {
-			if ("-size".equals(args[i])) {
-				conf.setInt("connectedcomponentscounter.matrix.size",
-						new Integer(args[++i]));
-			}
-			if ("-columnWidth".equals(args[i])) {
-				conf.setInt("connectedcomponentscounter.matrix.columnWidth",
-						new Integer(args[++i]));
-			} else {
-				other_args.add(args[i]);
-			}
-		}
-
+        
+		if (matrixSize > 0)
+			conf.setInt("connectedcomponentscounter.matrix.size", matrixSize);
+        
+		if (columnGroupWidth > 0)
+			conf.setInt("connectedcomponentscounter.matrix.columnWidth",
+                        columnGroupWidth);
+        
 		// TODO Change them
-		FileInputFormat.setInputPaths(conf, new Path(other_args.get(0)));
-		FileOutputFormat.setOutputPath(conf, new Path(other_args.get(1)));
-
+		FileInputFormat.setInputPaths(conf, inputPath);
+		FileOutputFormat.setOutputPath(conf, new Path(firstPassOutputPath));
+        
 		return conf;
 	}
-
-	public JobConf createSecondPassConf(String[] args) {
+    
+	public JobConf createSecondPassConf(int matrixSize, int columnGroupWidth,
+                                        String firstPassOutputPath, String secondPassOutputPath) {
 		JobConf conf = new JobConf(getConf(), ConnectedComponentsCounter.class);
 		conf.setJobName("connectedComponentCounter_secondPass");
-
+        
 		conf.setOutputKeyClass(LongWritable.class);
 		conf.setOutputValueClass(LongWritable.class);
-
+        
 		conf.setMapperClass(MapSecondPass.class);
 		conf.setCombinerClass(ReduceSecondPass.class);
 		conf.setReducerClass(ReduceSecondPass.class);
-
+        
 		conf.setInputFormat(TextInputFormat.class);
 		conf.setOutputFormat(TextOutputFormat.class);
-
-		List<String> other_args = new ArrayList<String>();
-		for (int i = 0; i < args.length; ++i) {
-			if ("-size".equals(args[i])) {
-				conf.setInt("connectedcomponentscounter.matrix.size",
-						new Integer(args[++i]));
-			}
-			if ("-columnWidth".equals(args[i])) {
-				conf.setInt("connectedcomponentscounter.matrix.columnWidth",
-						new Integer(args[++i]));
-			} else {
-				other_args.add(args[i]);
-			}
-		}
-
+        
+		if (matrixSize > 0)
+			conf.setInt("connectedcomponentscounter.matrix.size", matrixSize);
+        
+		if (columnGroupWidth > 0)
+			conf.setInt("connectedcomponentscounter.matrix.columnWidth",
+                        columnGroupWidth);
+        
 		// TODO Change them
-		FileInputFormat.setInputPaths(conf, new Path(other_args.get(0)));
-		FileOutputFormat.setOutputPath(conf, new Path(other_args.get(1)));
-
+		FileInputFormat.setInputPaths(conf, firstPassOutputPath);
+		FileOutputFormat.setOutputPath(conf, new Path(secondPassOutputPath));
+        
 		return conf;
 	}
-
-	public JobConf createThirdPassConf(String[] args) {
+    
+	public JobConf createThirdPassConf(int matrixSize, int columnGroupWidth,
+                                       String firstPassOutputPath, String secondPassOutputPath,
+                                       String outputPath) {
 		JobConf conf = new JobConf(getConf(), ConnectedComponentsCounter.class);
 		conf.setJobName("connectedComponentCounter_secondPass");
-
+        
 		conf.setOutputKeyClass(LongWritable.class);
 		conf.setOutputValueClass(LongWritable.class);
-
+        
 		conf.setMapperClass(MapThirdPass.class);
 		conf.setCombinerClass(ReduceThirdPass.class);
 		conf.setReducerClass(ReduceThirdPass.class);
-
+        
 		conf.setInputFormat(TextInputFormat.class);
 		conf.setOutputFormat(TextOutputFormat.class);
-
+        
+		if (matrixSize > 0)
+			conf.setInt("connectedcomponentscounter.matrix.size", matrixSize);
+        
+		if (columnGroupWidth > 0)
+			conf.setInt("connectedcomponentscounter.matrix.columnWidth",
+                        columnGroupWidth);
+        
+		// TODO Change them
+		FileInputFormat.setInputPaths(conf, firstPassOutputPath + ","
+                                      + secondPassOutputPath);
+		FileOutputFormat.setOutputPath(conf, new Path(outputPath));
+        
+		return conf;
+	}
+    
+	public int run(String[] args) throws Exception {
+        
+		int matrixSize = -1, columnGroupWidth = -1;
+        
 		List<String> other_args = new ArrayList<String>();
 		for (int i = 0; i < args.length; ++i) {
 			if ("-size".equals(args[i])) {
-				conf.setInt("connectedcomponentscounter.matrix.size",
-						new Integer(args[++i]));
+				matrixSize = new Integer(args[++i]);
 			}
 			if ("-columnWidth".equals(args[i])) {
-				conf.setInt("connectedcomponentscounter.matrix.columnWidth",
-						new Integer(args[++i]));
+				columnGroupWidth = new Integer(args[++i]);
 			} else {
 				other_args.add(args[i]);
 			}
 		}
-
+        
 		// TODO Change them
-		FileInputFormat.setInputPaths(conf, new Path(other_args.get(0)));
-		FileOutputFormat.setOutputPath(conf, new Path(other_args.get(1)));
-
-		return conf;
-	}
-
-	public int run(String[] args) throws Exception {
-
-		Job firstPass = new Job(createFirstPassConf(args));
-		Job secondPass = new Job(createSecondPassConf(args));
-		Job thirdPass = new Job(createThirdPassConf(args));
-
+		String inputPath = other_args.get(0);
+		String firstPassOutputPath = inputPath + "/firstPass";
+		String secondPassOutputPath = inputPath + "/secondPass";
+		String outputPath = other_args.get(1);
+        
+		Job firstPass = new Job(createFirstPassConf(matrixSize,
+                                                    columnGroupWidth, inputPath, firstPassOutputPath));
+		Job secondPass = new Job(createSecondPassConf(matrixSize,
+                                                      columnGroupWidth, firstPassOutputPath, secondPassOutputPath));
+		Job thirdPass = new Job(createThirdPassConf(matrixSize,
+                                                    columnGroupWidth, firstPassOutputPath, secondPassOutputPath,
+                                                    outputPath));
+        
 		JobControl jc = new JobControl("Connected components counter");
 		jc.addJob(firstPass);
 		jc.addJob(secondPass);
 		jc.addJob(thirdPass);
-
+        
 		// start the controller in a different thread, no worries as it does
 		// that anyway
 		Thread theController = new Thread(jc);
 		theController.start();
-
+        
 		// poll until everything is done,
 		// in the meantime justs output some status message
 		while (!jc.allFinished()) {
 			System.out.println("Jobs in waiting state: "
-					+ jc.getWaitingJobs().size());
+                               + jc.getWaitingJobs().size());
 			System.out.println("Jobs in ready state: "
-					+ jc.getReadyJobs().size());
+                               + jc.getReadyJobs().size());
 			System.out.println("Jobs in running state: "
-					+ jc.getRunningJobs().size());
+                               + jc.getRunningJobs().size());
 			System.out.println("Jobs in success state: "
-					+ jc.getSuccessfulJobs().size());
+                               + jc.getSuccessfulJobs().size());
 			System.out.println("Jobs in failed state: "
-					+ jc.getFailedJobs().size());
+                               + jc.getFailedJobs().size());
 			System.out.println("\n");
 			// sleep 5 seconds
 			try {
@@ -359,42 +370,42 @@ public class ConnectedComponentsCounter extends Configured implements Tool {
 			} catch (Exception e) {
 			}
 		}
-
+        
 		// you have to check the status of each job submitted
 		if (firstPass.getState() != Job.FAILED
-				&& firstPass.getState() != Job.DEPENDENT_FAILED
-				&& firstPass.getState() != Job.SUCCESS) {
+            && firstPass.getState() != Job.DEPENDENT_FAILED
+            && firstPass.getState() != Job.SUCCESS) {
 			String states = "wordCountJob:  " + firstPass.getState() + "\n";
 			throw new Exception(
-					"The state of job1Job is not in a complete state\n"
-							+ states);
+                                "The state of wordCountJob is not in a complete state\n"
+                                + states);
 		}
 		// now the second job
 		if (secondPass.getState() != Job.FAILED
-				&& secondPass.getState() != Job.DEPENDENT_FAILED
-				&& secondPass.getState() != Job.SUCCESS) {
+            && secondPass.getState() != Job.DEPENDENT_FAILED
+            && secondPass.getState() != Job.SUCCESS) {
 			String states = "job2Job:  " + secondPass.getState() + "\n";
 			throw new Exception(
-					"The state of job2Job is not in a complete state\n"
-							+ states);
+                                "The state of job2Job is not in a complete state\n"
+                                + states);
 		}
 		// now the second job
 		if (thirdPass.getState() != Job.FAILED
-				&& thirdPass.getState() != Job.DEPENDENT_FAILED
-				&& thirdPass.getState() != Job.SUCCESS) {
+            && thirdPass.getState() != Job.DEPENDENT_FAILED
+            && thirdPass.getState() != Job.SUCCESS) {
 			String states = "job2Job:  " + thirdPass.getState() + "\n";
 			throw new Exception(
-					"The state of job2Job is not in a complete state\n"
-							+ states);
+                                "The state of job2Job is not in a complete state\n"
+                                + states);
 		}
-
+        
 		return 0;
 	}
-
+    
 	public static void main(String[] args) throws Exception {
 		int res = ToolRunner.run(new Configuration(),
-				new ConnectedComponentsCounter(), args);
+                                 new ConnectedComponentsCounter(), args);
 		System.exit(res);
 	}
-
+    
 }
