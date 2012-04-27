@@ -84,6 +84,16 @@ public class UnionFind {
         return m_edges;
     }
 
+    public int[] getUniqueRoots(){
+        //XXX:Implement. Probably change to set.
+        return null;
+    }
+    
+    public int getComponentCount(){
+        //XXX:Implement.
+        return 0;
+    }
+
     /**
      * Return the id of the element below, if there
      * is a tree there, otherwise return own id.
