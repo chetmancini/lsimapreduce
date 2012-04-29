@@ -4,6 +4,9 @@ import junit.framework.Test;
 import junit.framework.TestCase;
 import junit.framework.TestSuite;
 import org.lsi.unionfind.UnionFind;
+import org.lsi.containers.TwoTuple;
+import org.lsi.containers.FullGraph;
+import org.lsi.containers.BoundaryGraph;
 import static org.junit.Assert.*;
 import java.util.HashMap;
 /**
@@ -36,7 +39,8 @@ public class UnionFindTest
     public void testUnionFindOne()
     {
         
-        HashMap<Integer,Integer> vec = new HashMap<Integer,Integer>();
+        FullGraph fg = new FullGraph();
+        HashMap<Integer,Integer> vec = fg.vertices;
         //using 1 based index so that 0 means no trees.
         for(Integer i = 0; i < 16; ++i)
             vec.put(i,i);
@@ -47,8 +51,9 @@ public class UnionFindTest
         vec.remove(10);
         vec.remove(9);
         vec.remove(8);
-        
-        UnionFind uf = new UnionFind(vec, 4, 4, 4);
+
+        fg.m=4; fg.n=4; fg.g=4;
+        UnionFind uf = new UnionFind(fg);
 
         /**
          * Matrix that looks like:
@@ -67,7 +72,8 @@ public class UnionFindTest
     public void testUnionFindTwo()
     {
         
-        HashMap<Integer,Integer> vec = new HashMap<Integer,Integer>();
+        FullGraph fg = new FullGraph();
+        HashMap<Integer,Integer> vec = fg.vertices;
         //using 1 based index so that 0 means no trees.
         for(Integer i = 0; i < 16; ++i)
             vec.put(i,i);
@@ -80,7 +86,8 @@ public class UnionFindTest
         vec.remove(10);
         vec.remove(9);
         
-        UnionFind uf = new UnionFind(vec, 4, 4, 4);
+        fg.m=4; fg.n=4; fg.g=4;
+        UnionFind uf = new UnionFind(fg);
 
         /**
          * Matrix that looks like:
@@ -98,7 +105,8 @@ public class UnionFindTest
     public void testUnionFindThree()
     {
         
-        HashMap<Integer,Integer> vec = new HashMap<Integer,Integer>();
+        FullGraph fg = new FullGraph();
+        HashMap<Integer,Integer> vec = fg.vertices;
         //using 1 based index so that 0 means no trees.
         for(Integer i = 0; i < 16; ++i)
             vec.put(i,i);
@@ -112,7 +120,8 @@ public class UnionFindTest
         vec.remove(8);
         vec.remove(10);
         
-        UnionFind uf = new UnionFind(vec, 4, 4, 4);
+        fg.m=4; fg.n=4; fg.g=4;
+        UnionFind uf = new UnionFind(fg);
 
         /**
          * Matrix that looks like:
@@ -137,7 +146,8 @@ public class UnionFindTest
     public void testUnionFindSnake()
     {
         
-        HashMap<Integer,Integer> vec = new HashMap<Integer,Integer>();
+        FullGraph fg = new FullGraph();
+        HashMap<Integer,Integer> vec = fg.vertices;
         for(Integer i = 0; i < 100; ++i)
             vec.put(i,i);
         
@@ -160,7 +170,8 @@ public class UnionFindTest
                 expected[i]=-1;
         }
 
-        UnionFind uf = new UnionFind(vec, 10, 10, 10);
+        fg.m=10; fg.n=10; fg.g=10;
+        UnionFind uf = new UnionFind(fg);
 
         /**
          * Matrix that looks like:
@@ -181,7 +192,8 @@ public class UnionFindTest
 
     public void testEdgesOne()
     {
-        HashMap<Integer,Integer> vec = new HashMap<Integer,Integer>();
+        FullGraph fg = new FullGraph();
+        HashMap<Integer,Integer> vec = fg.vertices;
         //using 1 based index so that 0 means no trees.
         for(Integer i = 0; i < 16; ++i)
             vec.put(i,i);
@@ -193,7 +205,8 @@ public class UnionFindTest
         vec.remove(9);
         vec.remove(8);
         
-        UnionFind uf = new UnionFind(vec, 4, 4, 4);
+        fg.m=4; fg.n=4; fg.g=4;
+        UnionFind uf = new UnionFind(fg);
 
         /**
          * Matrix that looks like:
@@ -208,8 +221,8 @@ public class UnionFindTest
 
     public void testEdgesTwo()
     {
-        
-        HashMap<Integer,Integer> vec = new HashMap<Integer,Integer>();
+        FullGraph fg = new FullGraph();
+        HashMap<Integer,Integer> vec = fg.vertices;
         //using 1 based index so that 0 means no trees.
         for(Integer i = 0; i < 16; ++i)
             vec.put(i,i);
@@ -222,7 +235,8 @@ public class UnionFindTest
         vec.remove(10);
         vec.remove(9);
         
-        UnionFind uf = new UnionFind(vec, 4, 4, 4);
+        fg.m=4; fg.n=4; fg.g=4;
+        UnionFind uf = new UnionFind(fg);
 
         /**
          * Matrix that looks like:
@@ -237,7 +251,8 @@ public class UnionFindTest
     }
     
     public void testEdgesThree(){
-        HashMap<Integer,Integer> vec = new HashMap<Integer,Integer>();
+        FullGraph fg = new FullGraph();
+        HashMap<Integer,Integer> vec = fg.vertices;
         //using 1 based index so that 0 means no trees.
         for(Integer i = 0; i < 16; ++i)
             vec.put(i,i);
@@ -251,7 +266,8 @@ public class UnionFindTest
         vec.remove(8);
         vec.remove(10);
         
-        UnionFind uf = new UnionFind(vec, 4, 4, 4);
+        fg.m=4; fg.n=4; fg.g=4;
+        UnionFind uf = new UnionFind(fg);
 
         /**
          * Matrix that looks like:

@@ -1,5 +1,8 @@
 package org.lsi.unionfind;
 import java.util.HashMap;
+import org.lsi.containers.TwoTuple;
+import org.lsi.containers.FullGraph;
+import org.lsi.containers.BoundaryGraph;
 /**
  * Disclaimer: this is an untested work in
  * progress.  Pushed only for backup and transfer
@@ -35,12 +38,12 @@ public class UnionFind {
      *           matrix.
      * @param m  the number of rows in the original matrix.
      */
-    public UnionFind(HashMap<Integer, Integer> id, Integer m, Integer n, Integer g)
+    public UnionFind(FullGraph id)
     {
-        this.m_id = id;
-        this.m = m;
-        this.n = n;
-        this.m_g = g;
+        this.m_id = id.vertices;
+        this.m = id.m;
+        this.n = id.n;
+        this.m_g = id.g;
         this.m_edges = 0;
 
 
@@ -85,7 +88,7 @@ public class UnionFind {
      * ids on the boundary columns.  For the left and right-most columns, the Tuple values
      * will be the same.
      */
-    UnionFind(HashMap<Integer, TwoTuple<Integer> > id, Integer m, Integer n, Integer g)
+    UnionFind(BoundaryGraph id, Integer m, Integer n, Integer g)
     {
         //XXX: implement.
     }
