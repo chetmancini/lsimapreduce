@@ -33,4 +33,15 @@ public class BitMatrix{
 		matrix.get(j).set(i, value);
 	}
 
+	/**
+	 * Count number of vertices.
+	 */
+	public int numVertices(){
+		int total = 0;
+		for(BitSet set : matrix){
+			total += set.cardinality()
+		}
+		return total;
+	}
+
 }
