@@ -44,4 +44,19 @@ public class BitMatrix{
 		return total;
 	}
 
+	/**
+	 * Get the size of a side.
+	 */
+	public int getN(){
+		return matrix.size();
+	}
+
+	/**
+	 * Get the total size (N x N)
+	 */
+	public int getGridSize(){
+		int side = this.getN();
+		return side * side;
+	}
+
 }
