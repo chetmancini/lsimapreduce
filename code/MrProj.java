@@ -5,12 +5,13 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.net.URL;
 
 /**
  * MrProjStatic
  * static version of other class.
  */
-public class MrProjStatic{
+public class MrProj{
 
     public static String productionFile = "../data/production.txt";
     public static String[] testFiles = 
@@ -50,7 +51,7 @@ public class MrProjStatic{
             int count = 0;
             int readChars = 0;
             while((readChars = is.read(c)) != -1){
-                for(int i=0;i<readChars; ++i){
+                for(int i = 0; i < readChars; ++i){
                     if(c[i] == '\n'){
                         ++count;
                     }
@@ -77,6 +78,34 @@ public class MrProjStatic{
      */
     public static float parseLine(String line){
         return Float.parseFloat(line.replace("\n", ""));
+    }
+
+    /**
+     * Get a buffered reader based on a specific file.
+     * @param filename
+     * @return
+     */
+    private BufferedReader openFileTest(String filename){
+        try{
+            FileInputStream fs = new FileInputStream(filename);
+            DataInputStream in = new DataInputStream(fs);
+            return new BufferedReader(new InputStreamReader(in));
+        }catch(IOException ioe){
+            return null;
+        }
+    }
+
+
+        /**
+     * Open a web resource
+     */
+    private BufferedReader openUrl(String url){
+        try{
+            URL toOpen = new URL(url);
+            return new BufferedReader(new InputStreamReader(toOpen.openStream()));
+        }catch(Exception e){
+            return null;
+        }
     }
 
 }

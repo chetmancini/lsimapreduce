@@ -2,10 +2,16 @@ import java.util.BitSet;
 
 public class BitMatrix{
 
+	/**
+	 * The actual matrix
+	 */
 	private BitSet[] matrix;
 
+	/**
+	 * Constructor
+	 */
 	public BitMatrix(int N){
-		this.matrix = new BitSet[N]
+		this.matrix = new BitSet[N];
 	}
 
 	/**
@@ -18,8 +24,8 @@ public class BitMatrix{
 	/**
 	 * Set
 	 */
-	public void set(int i, int j){
-		matrix[j].set(i)
+	public void put(int i, int j, boolean value){
+		matrix[j].set(i, value);
 	}
 
 }
