@@ -1,4 +1,5 @@
 package org.lsi.unionfind;
+import java.util.HashMap;
 /**
  * Disclaimer: this is an untested work in
  * progress.  Pushed only for backup and transfer
@@ -17,10 +18,11 @@ public class UnionFind {
      * each set of connected components has 
      * the same root.
      */
-    private int[] m_id;
-    private int m = 0;
-    private int n = 0;
-    private int m_edges = 0;
+    private HashMap<Integer, Integer> m_id;
+    private Integer m = 0;
+    private Integer n = 0;
+    private Integer m_g = 0;
+    private Integer m_edges = 0;
 
     /**
      * Data structure to efficiently keep track of
@@ -33,12 +35,14 @@ public class UnionFind {
      *           matrix.
      * @param m  the number of rows in the original matrix.
      */
-    public UnionFind(int[] id, int m, int n)
+    public UnionFind(HashMap<Integer, Integer> id, Integer m, Integer n, Integer g)
     {
         this.m_id = id;
         this.m = m;
         this.n = n;
+        this.m_g = g;
         this.m_edges = 0;
+
 
         //This looks redundant, but we look both ways even
         //if left is clearly lower, just so that we can also
@@ -59,10 +63,10 @@ public class UnionFind {
         //the roots (which are scanned first since we go from smallest
         //to highest), will all be of the minimum index, so we use the
         //second pass to make sure all children are filled in consistently.
-        for(int j=0; j<2; ++j){
-            for(int i=0; i<m_id.length; ++i)
+        for(Integer j=0; j<2; ++j){
+            for(Integer i=0; i<m*m_g; ++i)
             {
-                if(m_id[i] > 0)
+                if(m_id.containsKey(i))
                 {
                     lookLeft(i);
                     lookDown(i);
@@ -76,20 +80,59 @@ public class UnionFind {
         m_edges = m_edges/2;
     }
 
-    public int[] getRoots(){
-        return m_id;
+    /**
+     * For the second pass, we have mapping from root to a tuple of potentially conflicting
+     * ids on the boundary columns.  For the left and right-most columns, the Tuple values
+     * will be the same.
+     */
+    UnionFind(HashMap<Integer, TwoTuple<Integer> > id, Integer m, Integer n, Integer g)
+    {
+        //XXX: implement.
     }
 
-    public int getEdges(){
+    /**
+     * Determines if a point is in a boundary column.
+     * @param the one based index of the point of interest.
+     */
+    boolean isBoundary(Integer i){
+        return ( (i/m)%(m_g-1) == 0 );
+    }
+
+    public HashMap<Integer, Integer> getBoundaryCols()
+    {
+        HashMap<Integer,Integer> b = new HashMap<Integer, Integer>();
+        for(Integer i = 0; i < m*m_g; ++i)
+            if(isBoundary(i))
+                b.put(i, m_id.get(i));
+        return b;
+    }
+
+    public HashMap<Integer, Integer> getRoots(){
+        return m_id;
+    }
+    
+    public Integer[] getTestOutput(){
+        Integer[] out = new Integer[m*m_g];
+        for(Integer i = 0; i < m*m_g; ++i){
+            if (m_id.containsKey(i))
+                out[i]=m_id.get(i);
+            else
+                out[i]=-1;
+        }
+        return out;
+    }        
+
+
+    public Integer getEdges(){
         return m_edges;
     }
 
-    public int[] getUniqueRoots(){
+    public HashMap<Integer, Integer> getUniqueRoots(){
         //XXX:Implement. Probably change to set.
         return null;
     }
     
-    public int getComponentCount(){
+    public Integer getComponentCount(){
         //XXX:Implement.
         return 0;
     }
@@ -99,13 +142,13 @@ public class UnionFind {
      * is a tree there, otherwise return own id.
      * @param i The zero based index of the point of interest.
      */
-    private void lookLeft(int i)
+    private void lookLeft(Integer i)
     {
         //if spot above me is a tree, and i'm not in the
         //top row.
-        if(isTree(i-m)){
+        if(m_id.containsKey(i) && m_id.containsKey(i-m)){
             ++m_edges; //there is an edge.
-            unite(i+1, i+1-m);  //converted to one based.
+            unite(i, i-m);  //converted to one based.
         }
     }
 
@@ -115,86 +158,52 @@ public class UnionFind {
      * is a tree there, otherwise return own id.
      * @param i The zero based index of the point of interest.
      */
-    private void lookDown(int i)
+    private void lookDown(Integer i)
     {
         //if spot above me is a tree, and i'm not in the
         //top row.
-        if(isTree(i-1) && row(i) != 0){
+        if(m_id.containsKey(i) && m_id.containsKey(i-1) && row(i) != 0){
             ++m_edges; //there is an edge.
-            unite(i+1, i);  //converted to one based.
+            unite(i, i-1);
         }
     }
 
 
     /**
      * Unite p and q
-     * @param p the one based index of a point
-     * @param q the one based index of a point
+     * @param p the zero based index of a point
+     * @param q the zero based index of a point
      */
-    private void unite(int p, int q)
+    private void unite(Integer p, Integer q)
     {
         System.out.println("Uniting " + p + ", " + q);
-        int i = root(p);
-        int j = root(q);
+        Integer i = root(p);
+        Integer j = root(q);
         System.out.println("With roots " + i + ", " + j);
         if(i < j)
-            m_id[j-1] = i;
+            m_id.put(j,i);
         else
-            m_id[i-1] = j;
+            m_id.put(i,j);
     }
 
     /**
      * Return the root of i.
-     * @param i the one based index of the point.
-     * @return the one based id of of the root of the tree
+     * @param i the zero based index of the point.
+     * @return the zero based id of of the root of the tree
      *         containing point i.
      */ 
-    private int root(int i)
+    private Integer root(Integer i)
     {
-        while(i != m_id[i-1]){
-            while(m_id[i-1] != m_id[m_id[i-1]-1])
-                m_id[i-1] = m_id[m_id[i-1]-1];
-            i = m_id[i-1];
+        while(m_id.containsKey(i) && i != m_id.get(i)){
+            while(m_id.containsKey(i) && m_id.get(i) != m_id.get(m_id.get(i)))
+                m_id.put(i,m_id.get(m_id.get(i)));
+            i = m_id.get(i);
         }
         return i;   
     }
 
-    /**
-     * Conveniently detect if there is a vertex at i, and if so
-     * return true.  If i is out of bounds, or there is no vertex,
-     * return false.
-     * @param i The index of the point in question.
-     * @return true if there is a vertex, false otherwise.
-     */
-    private boolean isTree(int i)
-    {
-        if(i >= 0 && i < m_id.length && m_id[i] > 0)
-            return true;
-        return false;
-    }
-    
-    private int row(int i)
+    private Integer row(Integer i)
     {
         return i % m;
-    }
-
-    /**
-     * Return the id of the element below, if there
-     * is a tree there, otherwise return own id.
-     * @param i The index of the point of interest.
-     */
-    private void lookUp(int i)
-    {
-        //if spot above me is a tree, and i'm not in the
-        //top row.
-        if(i % m != m-1 && i+1<m_id.length && m_id[i+1] > 0 ){
-            ++m_edges; //there is an edge.
-            if(m_id[i+1] > m_id[i])
-                m_id[i+1] = m_id[i];
-            else{
-                m_id[m_id[i] - 1] = m_id[i+1];
-                m_id[i] = m_id[i+1];
-            }
-        }
     }
 }

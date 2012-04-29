@@ -5,6 +5,7 @@ import junit.framework.TestCase;
 import junit.framework.TestSuite;
 import org.lsi.unionfind.UnionFind;
 import static org.junit.Assert.*;
+import java.util.HashMap;
 /**
  * Unit test for simple App.
  */
@@ -35,19 +36,19 @@ public class UnionFindTest
     public void testUnionFindOne()
     {
         
-        int[] vec = new int[16];
+        HashMap<Integer,Integer> vec = new HashMap<Integer,Integer>();
         //using 1 based index so that 0 means no trees.
-        for(int i = 0; i < 16; ++i)
-            vec[i]=i+1;
+        for(Integer i = 0; i < 16; ++i)
+            vec.put(i,i);
         
         //clear a path to disconnect a space.
-        vec[2] = 0;
-        vec[6] = 0;
-        vec[10] = 0;
-        vec[9] = 0;
-        vec[8] = 0;
+        vec.remove(2);
+        vec.remove(6);
+        vec.remove(10);
+        vec.remove(9);
+        vec.remove(8);
         
-        UnionFind uf = new UnionFind(vec, 4, 4);
+        UnionFind uf = new UnionFind(vec, 4, 4, 4);
 
         /**
          * Matrix that looks like:
@@ -56,28 +57,30 @@ public class UnionFindTest
          * 2 6 0  14
          * 1 5 0  13
          */
-        int[] expected = {1,1,0,4,1,1,0,4,0,0,0,4,4,4,4,4};
+       
+        Integer[] expected = {0,0,-1,3,0,0,-1,3,-1,-1,-1,3,3,3,3,3};
+        
 
-        assertArrayEquals(expected,uf.getRoots());
+        assertArrayEquals(expected,uf.getTestOutput());
     }
     
     public void testUnionFindTwo()
     {
         
-        int[] vec = new int[16];
+        HashMap<Integer,Integer> vec = new HashMap<Integer,Integer>();
         //using 1 based index so that 0 means no trees.
-        for(int i = 0; i < 16; ++i)
-            vec[i]=i+1;
+        for(Integer i = 0; i < 16; ++i)
+            vec.put(i,i);
         
         //clear a path to disconnect a space.
-        vec[0] = 0;
-        vec[2] = 0;
-        vec[4] = 0;
-        vec[6] = 0;
-        vec[10] = 0;
-        vec[9] = 0;
+        vec.remove(0);
+        vec.remove(2);
+        vec.remove(4);
+        vec.remove(6);
+        vec.remove(10);
+        vec.remove(9);
         
-        UnionFind uf = new UnionFind(vec, 4, 4);
+        UnionFind uf = new UnionFind(vec, 4, 4, 4);
 
         /**
          * Matrix that looks like:
@@ -87,29 +90,29 @@ public class UnionFindTest
          * 0 0 9  13
          *
          */
-        int[] expected = {0,2,0,4,0,2,0,4,4,0,0,4,4,4,4,4};
+         Integer[] expected = {-1,1,-1,3,-1,1,-1,3,3,-1,-1,3,3,3,3,3};
 
-        assertArrayEquals(expected,uf.getRoots());
+        assertArrayEquals(expected,uf.getTestOutput());
     }
     
     public void testUnionFindThree()
     {
         
-        int[] vec = new int[16];
+        HashMap<Integer,Integer> vec = new HashMap<Integer,Integer>();
         //using 1 based index so that 0 means no trees.
-        for(int i = 0; i < 16; ++i)
-            vec[i]=i+1;
+        for(Integer i = 0; i < 16; ++i)
+            vec.put(i,i);
         
         //clear a path to disconnect a space.
-        vec[0] = 0;
-        vec[1] = 0;
-        vec[2] = 0;
-        vec[4] = 0;
-        vec[6] = 0;
-        vec[8] = 0;
-        vec[10] = 0;
+        vec.remove(0);
+        vec.remove(1);
+        vec.remove(2);
+        vec.remove(4);
+        vec.remove(6);
+        vec.remove(8);
+        vec.remove(10);
         
-        UnionFind uf = new UnionFind(vec, 4, 4);
+        UnionFind uf = new UnionFind(vec, 4, 4, 4);
 
         /**
          * Matrix that looks like:
@@ -119,48 +122,45 @@ public class UnionFindTest
          * 0 0 0  13
          *
          */
-        int[] expected = {0,0,0,4,0,4,0,4,0,4,0,4,4,4,4,4};
+        Integer[] expected = {-1,-1,-1,3,-1,3,-1,3,-1,3,-1,3,3,3,3,3};
 
-        assertArrayEquals(expected,uf.getRoots());
+        assertArrayEquals(expected,uf.getTestOutput());
     }
     
-    private void deleteFromToBy(int from, int to, int by, int[] vec){
+    private void deleteFromToBy(Integer from, Integer to, Integer by, HashMap<Integer,Integer> vec){
         //adjust for zero based index.
-        from=from-1;
-        to=to;
-        for(int i=from; i<to; i+=by){
-            vec[i]=0;
+        for(Integer i=from; i<=to; i+=by){
+            vec.remove(i);
         }
     }
     
     public void testUnionFindSnake()
     {
         
-        int[] vec = new int[100];
-        //using 1 based index so that 0 means no trees.
-        for(int i = 0; i < 100; ++i)
-            vec[i]=i+1;
+        HashMap<Integer,Integer> vec = new HashMap<Integer,Integer>();
+        for(Integer i = 0; i < 100; ++i)
+            vec.put(i,i);
         
         //clear a path to disconnect a space.
-        deleteFromToBy(12,92,10, vec);
-        deleteFromToBy(4,84,10,vec);
-        vec[84]=0;
-        vec[65]=0;
-        vec[44]=0;
-        vec[25]=0;
-        vec[4]=0;
-        deleteFromToBy(17,97,10,vec);
-        deleteFromToBy(9,89,10,vec);
+        deleteFromToBy(11,91,10, vec);
+        deleteFromToBy(3,83,10,vec);
+        vec.remove(84);
+        vec.remove(65);
+        vec.remove(44);
+        vec.remove(25);
+        vec.remove(4);
+        deleteFromToBy(16,96,10,vec);
+        deleteFromToBy(8,88,10,vec);
         
-        int[] expected = new int[100];
-        for(int i=0; i<100; ++i){
-            if(vec[i]==0)
+        Integer[] expected = new Integer[100];
+        for(Integer i=0; i<100; ++i){
+            if(vec.containsKey(i))
                 expected[i]=0;
             else
-                expected[i]=1;
+                expected[i]=-1;
         }
 
-        UnionFind uf = new UnionFind(vec, 10, 10);
+        UnionFind uf = new UnionFind(vec, 10, 10, 10);
 
         /**
          * Matrix that looks like:
@@ -176,24 +176,24 @@ public class UnionFindTest
          * 1  11 21 31 41 51 61 71 81  91 
          *
          */
-        assertArrayEquals(expected,uf.getRoots());
+        assertArrayEquals(expected,uf.getTestOutput());
     }
 
     public void testEdgesOne()
     {
-        int[] vec = new int[16];
+        HashMap<Integer,Integer> vec = new HashMap<Integer,Integer>();
         //using 1 based index so that 0 means no trees.
-        for(int i = 0; i < 16; ++i)
-            vec[i]=i+1;
+        for(Integer i = 0; i < 16; ++i)
+            vec.put(i,i);
         
         //clear a path to disconnect a space.
-        vec[2] = 0;
-        vec[6] = 0;
-        vec[10] = 0;
-        vec[9] = 0;
-        vec[8] = 0;
+        vec.remove(2);
+        vec.remove(6);
+        vec.remove(10);
+        vec.remove(9);
+        vec.remove(8);
         
-        UnionFind uf = new UnionFind(vec, 4, 4);
+        UnionFind uf = new UnionFind(vec, 4, 4, 4);
 
         /**
          * Matrix that looks like:
@@ -203,26 +203,26 @@ public class UnionFindTest
          * 1 5 0  13
          */
 
-        assertEquals(10,uf.getEdges());
+        assertEquals(10,(int)uf.getEdges());
     }
 
     public void testEdgesTwo()
     {
         
-        int[] vec = new int[16];
+        HashMap<Integer,Integer> vec = new HashMap<Integer,Integer>();
         //using 1 based index so that 0 means no trees.
-        for(int i = 0; i < 16; ++i)
-            vec[i]=i+1;
+        for(Integer i = 0; i < 16; ++i)
+            vec.put(i,i);
         
         //clear a path to disconnect a space.
-        vec[0] = 0;
-        vec[2] = 0;
-        vec[4] = 0;
-        vec[6] = 0;
-        vec[10] = 0;
-        vec[9] = 0;
+        vec.remove(0);
+        vec.remove(2);
+        vec.remove(4);
+        vec.remove(6);
+        vec.remove(10);
+        vec.remove(9);
         
-        UnionFind uf = new UnionFind(vec, 4, 4);
+        UnionFind uf = new UnionFind(vec, 4, 4, 4);
 
         /**
          * Matrix that looks like:
@@ -233,25 +233,25 @@ public class UnionFindTest
          *
          */
 
-        assertEquals(8,uf.getEdges());
+        assertEquals(8,(int)uf.getEdges());
     }
     
     public void testEdgesThree(){
-        int[] vec = new int[16];
+        HashMap<Integer,Integer> vec = new HashMap<Integer,Integer>();
         //using 1 based index so that 0 means no trees.
-        for(int i = 0; i < 16; ++i)
-            vec[i]=i+1;
+        for(Integer i = 0; i < 16; ++i)
+            vec.put(i,i);
         
         //clear a path to disconnect a space.
-        vec[0] = 0;
-        vec[1] = 0;
-        vec[2] = 0;
-        vec[4] = 0;
-        vec[6] = 0;
-        vec[8] = 0;
-        vec[10] = 0;
+        vec.remove(0);
+        vec.remove(1);
+        vec.remove(2);
+        vec.remove(4);
+        vec.remove(6);
+        vec.remove(8);
+        vec.remove(10);
         
-        UnionFind uf = new UnionFind(vec, 4, 4);
+        UnionFind uf = new UnionFind(vec, 4, 4, 4);
 
         /**
          * Matrix that looks like:
@@ -261,7 +261,7 @@ public class UnionFindTest
          * 0 0 0  13
          *
          */
-        assertEquals(8, uf.getEdges());
+        assertEquals(8, (int)uf.getEdges());
     }
  
 }
