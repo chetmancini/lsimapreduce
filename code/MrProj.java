@@ -38,6 +38,19 @@ public class MrProj{
         return (N % g) == 0;
     }
 
+    /**
+     * Calculate the weighted average.
+     * @param componentSizes list of the components sizes in number of trees.
+     * @param gridSize the size of the grid
+     */
+    public static double weightedAverage(List<Integer> componentSizes, int gridSize){
+        double ret = 0.0;
+        for(int ci : componentSizes){
+            ret += (ci * ci / (double) gridSize);
+        }
+        return ret;
+    }
+
 
     /**
      * Really fast way to count lines in a file.
