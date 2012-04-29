@@ -26,6 +26,7 @@ public class UnionFind {
     private Integer n = 0;
     private Integer m_g = 0;
     private Integer m_edges = 0;
+    private HashMap<Integer, Integer> m_sizes;
 
     /**
      * Data structure to efficiently keep track of
