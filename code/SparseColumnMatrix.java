@@ -66,11 +66,8 @@ public class SparseColumnMatrix {
      * j=column
      */
     public void put(int i, int j, boolean value) {
-        if (i < 0 || i >= N){
-        	throw new RuntimeException("Illegal index");
-        }
-        if (j < 0 || j >= N){
-        	throw new RuntimeException("Illegal index");
+        if ((i < 0 || i >= N) || (j < 0 || j >= N)){
+            throw new RuntimeException("Illegal index");
         }
         cols[j].put(i, value);
     }
@@ -80,11 +77,8 @@ public class SparseColumnMatrix {
      * j=col
      */
     public boolean get(int i, int j) {
-        if (i < 0 || i >= N){
-        	throw new RuntimeException("Illegal index");
-        }
-        if (j < 0 || j >= N){
-        	throw new RuntimeException("Illegal index");
+        if ((i < 0 || i >= N) || (j < 0 || j >= N)){
+            throw new RuntimeException("Illegal index");
         }
         return cols[j].get(i);
     }
