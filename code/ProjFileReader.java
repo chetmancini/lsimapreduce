@@ -42,7 +42,6 @@ public class ProjFileReader{
     public ProjFileReader(){
         this.N = this.matrixSizeN();
         this.bitmatrix = new BitMatrix(N);
-        //this.matrix = new SparseColumnMatrix(N);
     }
 
     /**
