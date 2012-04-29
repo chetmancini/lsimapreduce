@@ -16,6 +16,11 @@ public class BitMatrix{
 		this.matrix.ensureCapacity(10000);
 	}
 
+	public BitMatrix(int N){
+		this.matrix = new ArrayList<BitSet>();
+		this.matrix.ensureCapacity(N);
+	}
+
 	/**
 	 * Get
 	 */
@@ -34,12 +39,12 @@ public class BitMatrix{
 	}
 
 	/**
-	 * Count number of vertices.
+	 * Count number of vertices set to true.
 	 */
 	public int numVertices(){
 		int total = 0;
 		for(BitSet set : matrix){
-			total += set.cardinality()
+			total += set.cardinality();
 		}
 		return total;
 	}
