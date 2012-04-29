@@ -70,6 +70,20 @@ public class MrProj{
         return i + (j * N);
     }
 
+    /**
+     * Get the i component of an index.
+     */
+    public static int getI(int index){
+        return index % N;
+    }
+
+    /**
+     * Get j component of an index
+     */
+    public static int getJ(int index){
+        return (int) index / N;
+    }
+
 
     /**
      * Parse a line from a file.
