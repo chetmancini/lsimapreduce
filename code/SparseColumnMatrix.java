@@ -1,4 +1,5 @@
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -19,7 +20,9 @@ public class SparseColumnMatrix {
         this.N  = N;
         this.width = N;
         cols = new SparseBooleanVector[N];
-        for (int i = 0; i < N; i++) cols[i] = new SparseBooleanVector(N);
+        for (int i = 0; i < N; i++){
+            cols[i] = new SparseBooleanVector(N);
+        }
     }
 
     /**
@@ -38,22 +41,22 @@ public class SparseColumnMatrix {
      * Note: endcol may lie outside the bound, in which case it will
      * take the largest possible subarray. 
      */
-    public SparseColumnMatrix slice(int startCol, int endCol){
+    public SparseColumnMatrix slice(int startCol, int endCol) throws Exception{
       if (startCol >= endCol){
-        raise new Exception("bad indicies");
+        throw new Exception("bad indicies");
       }
-      SparseBooleanVector[] toReturn = Array.copyOfRange(this.cols, startCol, endCol);
+      SparseBooleanVector[] toReturn = Arrays.copyOfRange(this.cols, startCol, endCol);
       return new SparseColumnMatrix(this.N, toReturn);
     }
 
     /**
      * Split a matrix into columns
      */
-    public List<SparseColumnMatrix> split(int parts){
+    public List<SparseColumnMatrix> split(int parts) throws Exception{
         ArrayList<SparseColumnMatrix> toReturn = new ArrayList<SparseColumnMatrix>();
         int subwidth = this.width / parts;
         for(int i=0;i<parts;i++){
-          toReturn.append(this.slice(subwidth*i, subwidth*(i+1)));
+          toReturn.add(this.slice(subwidth*i, subwidth*(i+1)));
         }
         return toReturn;
     }
@@ -63,11 +66,8 @@ public class SparseColumnMatrix {
      * j=column
      */
     public void put(int i, int j, boolean value) {
-        if (i < 0 || i >= N){
-        	throw new RuntimeException("Illegal index");
-        }
-        if (j < 0 || j >= N){
-        	throw new RuntimeException("Illegal index");
+        if ((i < 0 || i >= N) || (j < 0 || j >= N)){
+            throw new RuntimeException("Illegal index");
         }
         cols[j].put(i, value);
     }
@@ -77,11 +77,8 @@ public class SparseColumnMatrix {
      * j=col
      */
     public boolean get(int i, int j) {
-        if (i < 0 || i >= N){
-        	throw new RuntimeException("Illegal index");
-        }
-        if (j < 0 || j >= N){
-        	throw new RuntimeException("Illegal index");
+        if ((i < 0 || i >= N) || (j < 0 || j >= N)){
+            throw new RuntimeException("Illegal index");
         }
         return cols[j].get(i);
     }

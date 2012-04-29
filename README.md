@@ -6,3 +6,11 @@ LSI MapReduce
 * Assignment 5
 
 This project is to run MapReduce on Amazon Web Services.
+
+Members
+===============================
+* Hugo Hache			hrh64
+* Chester Mancini		cam479
+* Sean Ogden
+
+

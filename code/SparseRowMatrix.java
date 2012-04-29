@@ -25,15 +25,17 @@ public class SparseRowMatrix {
 
     // put A[i][j] = value
     public void put(int i, int j, double value) {
-        if (i < 0 || i >= N) throw new RuntimeException("Illegal index");
-        if (j < 0 || j >= N) throw new RuntimeException("Illegal index");
+        if ((i < 0 || i >= N) || (j < 0 || j >= N)){
+            throw new RuntimeException("Illegal index");
+        }
         rows[i].put(j, value);
     }
 
     // return A[i][j]
     public double get(int i, int j) {
-        if (i < 0 || i >= N) throw new RuntimeException("Illegal index");
-        if (j < 0 || j >= N) throw new RuntimeException("Illegal index");
+        if ((i < 0 || i >= N) || (j < 0 || j >= N)){
+            throw new RuntimeException("Illegal index");
+        }
         return rows[i].get(j);
     }
 
@@ -73,24 +75,5 @@ public class SparseRowMatrix {
             s += i + ": " + rows[i] + "\n";
         }
         return s;
-    }
-
-
-    // test client
-    public static void main(String[] args) {
-        SparseRowMatrix A = new SparseRowMatrix(5);
-        SparseVector x = new SparseVector(5);
-        A.put(0, 0, 1.0);
-        A.put(1, 1, 1.0);
-        A.put(2, 2, 1.0);
-        A.put(3, 3, 1.0);
-        A.put(4, 4, 1.0);
-        A.put(2, 4, 0.3);
-        x.put(0, 0.75);
-        x.put(2, 0.11);
-        System.out.println("x     : " + x);
-        System.out.println("A     : " + A);
-        System.out.println("Ax    : " + A.times(x));
-        System.out.println("A + A : " + A.plus(A));
     }
 }
