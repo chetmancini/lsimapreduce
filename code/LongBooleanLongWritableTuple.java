@@ -4,7 +4,9 @@ import java.io.IOException;
 
 import org.apache.hadoop.io.Writable;
 
-
+/**
+ * @author Chet & Hugo
+ */
 public class LongBooleanLongWritableTuple implements Writable {
 	Long l;
 	Boolean b;
