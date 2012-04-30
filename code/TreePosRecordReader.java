@@ -37,6 +37,7 @@ public class TreePosRecordReader implements RecordReader<Text, IntegerPair> {
 	
 	/**
 	 * Get next
+	 * format: "key,first,second"
 	 * @param key
 	 * @param value
 	 * @return
@@ -57,6 +58,7 @@ public class TreePosRecordReader implements RecordReader<Text, IntegerPair> {
 			throw new IOException("Eror parsing integers in record.");
 		}
 		
+		//not used. might try to make key an integer.
 		int keyresult = Integer.parseInt(pieces[0].trim());
 		
 		key.set(pieces[0].trim());

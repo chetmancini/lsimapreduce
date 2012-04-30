@@ -16,10 +16,18 @@ public class TwoTuple<T>{
 		this.second = second;
 	}
 
+	/**
+	 * Get first
+	 * @return
+	 */
 	public T first(){
 		return this.first;
 	}
 
+	/**
+	 * Get second
+	 * @return
+	 */
 	public T second(){
 		return this.second;
 	}
