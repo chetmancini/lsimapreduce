@@ -15,6 +15,13 @@ public class IntegerPair implements Writable{
 	
 	/**
 	 * Constructor
+	 */
+	public IntegerPair(){
+		
+	}
+	
+	/**
+	 * Constructor
 	 * @param first
 	 * @param second
 	 */

@@ -122,7 +122,7 @@ public class MrProj{
     }
 
 
-        /**
+    /**
      * Open a web resource
      */
     private BufferedReader openUrl(String url){

@@ -2,6 +2,7 @@ import java.io.IOException;
 
 import lsimr.src.main.java.org.lsi.containers.IntegerPair;
 
+import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapred.LineRecordReader;
@@ -18,7 +19,7 @@ import org.apache.hadoop.mapred.FileSplit;
  * @param Key
  * @param Value
  */
-public class TreePosRecordReader implements RecordReader<Text, IntegerPair> {
+public class TreePosRecordReader implements RecordReader<IntWritable, IntegerPair> {
 	private LineRecordReader lineReader;
 	private LongWritable lineKey;
 	private Text lineValue;
@@ -42,7 +43,7 @@ public class TreePosRecordReader implements RecordReader<Text, IntegerPair> {
 	 * @param value
 	 * @return
 	 */
-	public boolean next(Text key, IntegerPair value) throws IOException{
+	public boolean next(IntWritable key, IntegerPair value) throws IOException{
 		if(!lineReader.next(lineKey, lineValue)){
 			return false;
 		}
@@ -58,10 +59,7 @@ public class TreePosRecordReader implements RecordReader<Text, IntegerPair> {
 			throw new IOException("Eror parsing integers in record.");
 		}
 		
-		//not used. might try to make key an integer.
-		int keyresult = Integer.parseInt(pieces[0].trim());
-		
-		key.set(pieces[0].trim());
+		key.set(Integer.parseInt(pieces[0].trim()));
 		
 		value.first = first;
 		value.second = second;
@@ -72,15 +70,15 @@ public class TreePosRecordReader implements RecordReader<Text, IntegerPair> {
 	/**
 	 * Create a new key.
 	 */
-	public Text createKey(){
-		return new Text("");
+	public IntWritable createKey(){
+		return new IntWritable();
 	}
 	
 	/**
 	 * Create a new value.
 	 */
 	public IntegerPair createValue(){
-		return new IntegerPair(0,0);
+		return new IntegerPair();
 	}
 	
 	/**
