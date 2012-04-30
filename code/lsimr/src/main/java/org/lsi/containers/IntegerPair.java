@@ -57,4 +57,8 @@ public class IntegerPair implements Writable{
 	public int getSecond(){
 		return this.second;
 	}
+	
+	public String toString(){
+		return first + "," + second;
+	}
 }
