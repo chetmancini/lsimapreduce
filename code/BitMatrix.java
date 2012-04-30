@@ -16,6 +16,10 @@ public class BitMatrix{
 		this.matrix.ensureCapacity(10000);
 	}
 
+	/**
+	 * Constructor
+	 * @param N the size of the matrix on one side.
+	 */
 	public BitMatrix(int N){
 		this.matrix = new ArrayList<BitSet>();
 		this.matrix.ensureCapacity(N);

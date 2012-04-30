@@ -1,4 +1,8 @@
 
+/**
+ * @author chet
+ * @param <T>
+ */
 public class TwoTuple<T>{
 	
 	private T first;

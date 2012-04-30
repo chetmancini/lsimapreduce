@@ -5,7 +5,7 @@ public class BoundaryGraph{
 	/**
 	 * 
 	 */
-    public HashMap<Integer, TwoTuple<Integer>> vertices = new HashMap<Integer, TwoTuple<Integer>>();
+    public HashMap<Integer, IntegerPair> vertices = new HashMap<Integer, IntegerPair>();
     /**
      * 
      */
