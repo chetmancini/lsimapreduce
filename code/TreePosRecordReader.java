@@ -1,7 +1,11 @@
+import java.io.IOException;
+
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapred.LineRecordReader;
 import org.apache.hadoop.mapred.RecordReader;
+import org.apache.hadoop.mapred.JobConf;
+import org.apache.hadoop.mapred.FileSplit;
 
 /**
  * 
@@ -9,9 +13,8 @@ import org.apache.hadoop.mapred.RecordReader;
 
 /**
  * @author chet
- *
  */
-public class TreePosRecordReader extends RecordReader<KEYIN, VALUEIN> {
+public class TreePosRecordReader extends RecordReader<K, V> {
 	private LineRecordReader lineReader;
 	private LongWritable lineKey;
 	private Text lineValue;
@@ -43,8 +46,18 @@ public class TreePosRecordReader extends RecordReader<KEYIN, VALUEIN> {
 		return true;
 	}
 	
+	/**
+	 * Create a new key.
+	 */
 	public Text createKey(){
-		
+		return new Text("");
+	}
+	
+	/**
+	 * Create a new value.
+	 */
+	public Object createValue(){
+		return new Object();
 	}
 	
 	/**
