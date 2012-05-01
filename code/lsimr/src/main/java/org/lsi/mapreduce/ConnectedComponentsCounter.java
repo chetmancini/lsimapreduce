@@ -73,8 +73,8 @@ public class ConnectedComponentsCounter extends Configured implements Tool {
 			idAndValueCell.set(id, MRProj.getBoolean(f));
 			output.collect(idColumn, idAndValueCell);
 			
-			if (MRProj.getColumnNbrFromId(i, columnWidth).length > 1) {
-				idColumn.set(MRProj.getColumnNbrFromId(i, columnWidth)[1]);
+			if (MRProj.getColumnNbrFromId(id, columnWidth).length > 1) {
+				idColumn.set(MRProj.getColumnNbrFromId(id, columnWidth)[1]);
 				output.collect(idColumn, idAndValueCell);
 			}
 			
