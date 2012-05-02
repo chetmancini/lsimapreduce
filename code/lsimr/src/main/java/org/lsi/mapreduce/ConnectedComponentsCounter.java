@@ -22,6 +22,7 @@ import org.apache.hadoop.filecache.DistributedCache;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.io.IntWritable;
+import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.io.Writable;
 import org.apache.hadoop.mapred.FileInputFormat;
@@ -43,7 +44,7 @@ import org.apache.hadoop.util.ToolRunner;
 public class ConnectedComponentsCounter extends Configured implements Tool {
     
 	public static class MapFirstPass extends MapReduceBase implements
-    Mapper<IntWritable, Text, IntWritable, IntIntWritableTuple> {
+    Mapper<LongWritable, Text, IntWritable, IntIntWritableTuple> {
         
 		private IntIntWritableTuple idAndValueCell = new IntIntWritableTuple();
 		private IntWritable idColumn = new IntWritable();
@@ -64,14 +65,14 @@ public class ConnectedComponentsCounter extends Configured implements Tool {
         
 		// <get byte offset in input line, text of a line>
 		// Return <idcolumn;<idcell,booleancell>>
-		public void map(IntWritable key, Text value,
+		public void map(LongWritable key, Text value,
                         OutputCollector<IntWritable, IntIntWritableTuple> output,
                         Reporter reporter) throws IOException {
             
 			if(key.get()%12!=0) 
 				reporter.setStatus("Error modulo 12 in 1st pass map input is " + key.get()%12);
 			
-			Integer id = (Integer) Math.floor(key.get()/12);
+			Integer id = (int) Math.floor(key.get()/12);
 			Float f = new Float(value.toString());
 			
             /**
