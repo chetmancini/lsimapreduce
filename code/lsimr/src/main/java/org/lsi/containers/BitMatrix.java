@@ -104,4 +104,14 @@ public class BitMatrix{
 		return MrProj.getColumnGroupNbrsFromId(id, columnWidth, getN());
 	}
 
+	/**
+	 * 
+	 * @param id
+	 * @param columnWidth
+	 * @return
+	 */
+	public int[] getColumnGroupNbrsFromId(long id, int columnWidth){
+		return MrProj.getColumnGroupNbrsFromId(id, columnWidth, getN());
+	}
+	
 }

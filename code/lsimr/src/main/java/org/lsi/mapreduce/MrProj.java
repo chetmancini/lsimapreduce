@@ -119,11 +119,8 @@ public class MrProj{
      * @return
      */
     public static boolean getNextFilteredInput(BufferedReader reader) {
-        String line;
         try {
-            line = reader.readLine();
-            float w = parseLine(line);
-            return ( ((w >= MrProj.wMin) && (w < MrProj.wLimit)) ? true : false );
+            return getBoolean(parseLine(reader.readLine()));
         } catch (IOException e) {
             e.printStackTrace();
             return false;
@@ -157,6 +154,15 @@ public class MrProj{
         return Float.parseFloat(line.replace("\n", ""));
     }
 
+    /**
+     * Convert a float to a boolean
+     * @param in
+     * @return
+     */
+    public static boolean getBoolean(float in){
+    	return (((in >= MrProj.wMin) && (in < MrProj.wLimit)) ? true : false );
+    }
+    
     /**
      * Get a buffered reader based on a specific file.
      * @param filename

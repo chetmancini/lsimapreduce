@@ -87,11 +87,13 @@ public class ConnectedComponentsCounter extends Configured implements Tool {
             BitMatrix m = MrProj.getMatrix(sizeInput, url);
             for(long i=0; i < sizeInput * sizeInput; i++){
             	
+            	LongBooleanWritableTuple idcell = new LongBooleanWritableTuple();
+            	
             	idcell.set(i, m.get_index(i, sizeInput));
             	idColumn.set(m.getColumnGroupNbrsFromId(i, columnWidth)[0]);
             	output.collect(idColumn, idcell);
             	
-				if (m.getColumnGroupNbrsFromColumnId(i, columnWidth).length > 1) {
+				if (m.getColumnGroupNbrsFromId(i, columnWidth).length > 1) {
 					idColumn.set(m.getColumnGroupNbrsFromId(i, columnWidth)[1]);
 					output.collect(idColumn, idcell);
 				}
