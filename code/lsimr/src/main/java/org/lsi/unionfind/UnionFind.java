@@ -47,6 +47,8 @@ public class UnionFind {
         this.n = id.n;
         this.m_g = id.g;
         this.m_edges = 0;
+
+        run();
     }
 
     private void run(){
@@ -91,6 +93,7 @@ public class UnionFind {
             IntIntWritableTuple c = idsCells.next();
             m_id.put(c.i,c.parent);
         }            
+        run();
 
     }
 
