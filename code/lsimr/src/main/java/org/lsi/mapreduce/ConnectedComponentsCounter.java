@@ -1,4 +1,4 @@
-package org.lsi.mapreduce;
+package lsimr.src.main.java.org.lsi.mapreduce;
 
 import java.io.BufferedReader;
 import java.io.DataInput;
@@ -69,12 +69,12 @@ public class ConnectedComponentsCounter extends Configured implements Tool {
 			Long id = (long) Math.floor(key.get()/12);
 			Float f = new Float(value.toString());
 			
-			idColumn.set(MRProj.getColumnNbrFromId(id, columnWidth)[0]);
-			idAndValueCell.set(id, MRProj.getBoolean(f));
+			idColumn.set(MrProj.getColumnNbrFromId(id, columnWidth)[0]);
+			idAndValueCell.set(id, MrProj.getBoolean(f));
 			output.collect(idColumn, idAndValueCell);
 			
-			if (MRProj.getColumnNbrFromId(id, columnWidth).length > 1) {
-				idColumn.set(MRProj.getColumnNbrFromId(id, columnWidth)[1]);
+			if (MrProj.getColumnNbrFromId(id, columnWidth).length > 1) {
+				idColumn.set(MrProj.getColumnNbrFromId(id, columnWidth)[1]);
 				output.collect(idColumn, idAndValueCell);
 			}
 			
