@@ -1,8 +1,8 @@
 package org.lsi.unionfind;
-import java.util.HashMap;
+import java.util.*;
+import org.lsi.containers.ComplexNumber;
 import org.lsi.containers.FullGraph;
 import org.lsi.mapreduce.*; 
-import java.util.Iterator;
 import org.lsi.mapreduce.IntIntWritableTuple;
 /**
  * Disclaimer: this is an untested work in
@@ -22,12 +22,12 @@ public class UnionFind {
      * each set of connected components has 
      * the same root.
      */
-    private HashMap<Integer, Integer> m_id;
+    private HashMap<ComplexNumber, ComplexNumber> m_id;
     private Integer m = 0;
     private Integer n = 0;
     private Integer m_g = 0;
     private Integer m_edges = 0;
-    private HashMap<Integer, Integer> m_sizes;
+    private HashMap<ComplexNumber, Integer> m_sizes;
 
     /**
      * Data structure to efficiently keep track of
@@ -72,12 +72,15 @@ public class UnionFind {
         //to highest), will all be of the minimum index, so we use the
         //second pass to make sure all children are filled in consistently.
 
-        for(Integer j=0; j<2; ++j){
-            for(Integer i : m_id.keySet())
+        List<ComplexNumber> keys = new ArrayList<ComplexNumber>(m_id.keySet());
+        Collections.sort(keys);
+        for(Integer j=0; j<2; ++j)
+        {
+            for(ComplexNumber i : keys) 
             {
+                System.out.println(i);
                 lookLeft(i);
                 lookDown(i);
-                
             }
         }
 
@@ -89,13 +92,13 @@ public class UnionFind {
 
     public UnionFind(Iterator<IntIntWritableTuple> idsCells, Integer m, Integer n)
     {
-        this.m = m;
-        this.n = n;
-        while(idsCells.hasNext()){
-            IntIntWritableTuple c = idsCells.next();
-            m_id.put(c.i,c.parent);
-        }            
-        run();
+        //this.m = m;
+        //this.n = n;
+        //while(idsCells.hasNext()){
+        //    IntIntWritableTuple c = idsCells.next();
+        //    m_id.put(c.i,c.parent);
+        //}            
+        //run();
 
     }
 
@@ -103,32 +106,34 @@ public class UnionFind {
      * Determines if a point is in a boundary column.
      * @param the one based index of the point of interest.
      */
-    boolean isBoundary(Integer i){
+    boolean isBoundary(Integer i)
+    {
         return ( (i/m)%(m_g-1) == 0 );
     }
 
-    public HashMap<Integer, Integer> getBoundaryCols()
+    public HashMap<ComplexNumber, ComplexNumber> getRoots()
     {
-        HashMap<Integer,Integer> b = new HashMap<Integer, Integer>();
-        for(Integer i = 0; i < m*m_g; ++i)
-            if(isBoundary(i))
-                b.put(i, m_id.get(i));
-        return b;
-    }
-
-    public HashMap<Integer, Integer> getRoots(){
         return m_id;
     }
 
-    public Integer getRoot(Integer i){
-        return m_id.get(i);
+    public Integer getRoot(Integer index) throws Exception
+    {
+        throw new Exception("getRoot takes a ComplexNumber, not Integer");
     }
 
-    public Integer[] getTestOutput(){
-        Integer[] out = new Integer[m*m_g];
-        for(Integer i = 0; i < m*m_g; ++i){
-            if (m_id.containsKey(i))
-                out[i]=m_id.get(i);
+    public ComplexNumber getRoot(Integer groupid, Integer index)
+    {
+        ComplexNumber c = new ComplexNumber(groupid, index);
+        return m_id.get(c);
+    }
+
+    public Integer[] getTestOutput()
+    {
+        Integer[] out = new Integer[m*n];
+        for(Integer i = 0; i < m*n; ++i){
+            ComplexNumber k = new ComplexNumber(0,i);
+            if (m_id.containsKey(k))
+                out[i]=m_id.get(k).index;
             else
                 out[i]=-1;
         }
@@ -155,13 +160,30 @@ public class UnionFind {
      * is a tree there, otherwise return own id.
      * @param i The zero based index of the point of interest.
      */
-    private void lookLeft(Integer i)
+    private void lookLeft(ComplexNumber i)
     {
         //if spot above me is a tree, and i'm not in the
         //top row.
-        if(m_id.containsKey(i) && m_id.containsKey(i-m)){
+        ComplexNumber left;
+        if(i.index < m)
+            //column group to the left, right boundary column
+            left = new ComplexNumber(i.groupid-1, m*n - m + i.index);
+        else
+            //same column group, just look one column left.
+            left = new ComplexNumber(i.groupid, i.index-m);
+
+        System.out.println(left + " is left of " + i);
+
+        if(m_id.containsKey(i))
+            System.out.println("Key " + i + " is in the list.");
+        if(m_id.containsKey(left))
+            System.out.println("Key " + left + " is in the list.");
+        else
+            System.out.println("Key " + left + " is not in the list.");
+        
+        if(m_id.containsKey(i) && m_id.containsKey(left)){
             ++m_edges; //there is an edge.
-            unite(i, i-m);  //converted to one based.
+            unite(i, left);  //converted to one based.
         }
     }
 
@@ -171,13 +193,14 @@ public class UnionFind {
      * is a tree there, otherwise return own id.
      * @param i The zero based index of the point of interest.
      */
-    private void lookDown(Integer i)
+    private void lookDown(ComplexNumber i)
     {
+        ComplexNumber down = new ComplexNumber(i.groupid, i.index-1);
         //if spot above me is a tree, and i'm not in the
         //top row.
-        if(m_id.containsKey(i) && m_id.containsKey(i-1) && row(i) != 0){
+        if(m_id.containsKey(i) && m_id.containsKey(down) && row(i) != 0){
             ++m_edges; //there is an edge.
-            unite(i, i-1);
+            unite(i, down);
         }
     }
 
@@ -187,13 +210,13 @@ public class UnionFind {
      * @param p the zero based index of a point
      * @param q the zero based index of a point
      */
-    private void unite(Integer p, Integer q)
+    private void unite(ComplexNumber p, ComplexNumber q)
     {
         System.out.println("Uniting " + p + ", " + q);
-        Integer i = root(p);
-        Integer j = root(q);
+        ComplexNumber i = root(p);
+        ComplexNumber j = root(q);
         System.out.println("With roots " + i + ", " + j);
-        if(i < j)
+        if(i.lessThan(j))
             m_id.put(j,i);
         else
             m_id.put(i,j);
@@ -205,7 +228,7 @@ public class UnionFind {
      * @return the zero based id of of the root of the tree
      *         containing point i.
      */ 
-    private Integer root(Integer i)
+    private ComplexNumber root(ComplexNumber i)
     {
         while(m_id.containsKey(i) && i != m_id.get(i)){
             while(m_id.containsKey(i) && m_id.get(i) != m_id.get(m_id.get(i)))
@@ -215,9 +238,9 @@ public class UnionFind {
         return i;   
     }
 
-    private Integer row(Integer i)
+    private Integer row(ComplexNumber i)
     {
-        return i % m;
+        return i.index % m;
     }
     
     /**
