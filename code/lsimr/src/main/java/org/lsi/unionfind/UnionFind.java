@@ -1,5 +1,6 @@
 package org.lsi.unionfind;
 import java.util.*;
+import org.apache.hadoop.io.IntWritable;
 import org.lsi.containers.ComplexNumber;
 import org.lsi.containers.FullGraph;
 import org.lsi.mapreduce.*; 
@@ -90,16 +91,30 @@ public class UnionFind {
     }
 
 
-    public UnionFind(Iterator<IntIntWritableTuple> idsCells, Integer m, Integer n)
+    public UnionFind(IntWritable groupid, Iterator<IntIntWritableTuple> idsCells, Integer m, Integer n)
     {
-        //this.m = m;
-        //this.n = n;
-        //while(idsCells.hasNext()){
-        //    IntIntWritableTuple c = idsCells.next();
-        //    m_id.put(c.i,c.parent);
-        //}            
-        //run();
+        this.m = m;
+        this.n = n;
+        while(idsCells.hasNext()){
+            IntIntWritableTuple c = idsCells.next();
+            ComplexNumber k = new ComplexNumber(groupid.get(), c.i);
+            ComplexNumber v = new ComplexNumber(groupid.get(), c.parent);
+            m_id.put(k,v);
+        }            
+        run();
 
+    }
+
+    public UnionFind(Iterator<IntIntIntWritableTuple> idsCells, Integer m, Integer n)
+    {
+        this.m = m;
+        this.n = n;
+        while(idsCells.hasNext()){
+            IntIntIntWritableTuple c = idsCells.next();
+            ComplexNumber k = new ComplexNumber(c.groupid,c.i);
+            ComplexNumber v = new ComplexNumber(c.groupid,c.parent); 
+            m_id.put(k,v);
+        }
     }
 
     /**
