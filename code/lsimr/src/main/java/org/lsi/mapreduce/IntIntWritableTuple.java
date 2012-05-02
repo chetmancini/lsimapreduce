@@ -10,23 +10,23 @@ import org.apache.hadoop.io.Writable;
  * @author Sean
  */
 public class IntIntWritableTuple implements Writable {
-	Integer l;
+	Integer i;
 	Integer parent;
 
-	public void set(Integer l, Integer parent){
-		this.l = l;
+	public void set(Integer i, Integer parent){
+		this.i = i;
 		this.parent = parent;
 	}
 	
 	@Override
 	public void readFields(DataInput in) throws IOException {
-		l = in.readInt();
-		parent = in.readInt();
+		this.i = in.readInt();
+		this.parent = in.readInt();
 	}
 
 	@Override
 	public void write(DataOutput out) throws IOException {
-		out.writeInt(l);
-		out.writeInt(parent);
+		out.writeInt(this.i);
+		out.writeInt(this.parent);
 	}
 }
