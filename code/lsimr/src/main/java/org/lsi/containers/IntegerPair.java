@@ -58,6 +58,9 @@ public class IntegerPair implements Writable{
 		return this.second;
 	}
 	
+	/**
+	 * To string
+	 */
 	public String toString(){
 		return first + "," + second;
 	}

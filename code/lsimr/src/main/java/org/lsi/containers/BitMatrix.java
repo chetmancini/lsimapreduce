@@ -52,6 +52,7 @@ public class BitMatrix{
 	 * @param N
 	 * @return
 	 */
+	@Deprecated
 	public boolean get_index(long index, int N){
 		int i = MrProj.getI((int)index, N);
 		int j = MrProj.getJ((int)index, N);
@@ -110,6 +111,7 @@ public class BitMatrix{
 	 * @param columnWidth
 	 * @return
 	 */
+	@Deprecated
 	public int[] getColumnGroupNbrsFromId(long id, int columnWidth){
 		return MrProj.getColumnGroupNbrsFromId(id, columnWidth, getN());
 	}

@@ -22,7 +22,6 @@ import org.apache.hadoop.filecache.DistributedCache;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.io.BooleanWritable;
 import org.apache.hadoop.io.IntWritable;
-import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.io.Writable;
 import org.apache.hadoop.mapred.FileInputFormat;
@@ -44,10 +43,10 @@ import org.apache.hadoop.util.ToolRunner;
 public class ConnectedComponentsCounter extends Configured implements Tool {
     
 	public static class MapFirstPass extends MapReduceBase implements
-    Mapper<LongWritable, Text, LongWritable, LongBooleanWritableTuple> {
+    Mapper<IntWritable, Text, IntWritable, IntBooleanWritableTuple> {
         
-		private LongBooleanWritableTuple idAndValueCell = new LongBooleanWritableTuple();
-		private LongWritable idColumn = new LongWritable();
+		private IntBooleanWritableTuple idAndValueCell = new IntBooleanWritableTuple();
+		private IntWritable idColumn = new IntWritable();
         
 		private final int defaultSizeInput = 1000;
 		private int sizeInput;
@@ -65,14 +64,14 @@ public class ConnectedComponentsCounter extends Configured implements Tool {
         
 		// <get byte offset in input line, text of a line>
 		// Return <idcolumn;<idcell,booleancell>>
-		public void map(LongWritable key, Text value,
-                        OutputCollector<LongWritable, LongBooleanWritableTuple> output,
+		public void map(IntWritable key, Text value,
+                        OutputCollector<IntWritable, IntBooleanWritableTuple> output,
                         Reporter reporter) throws IOException {
             
 			if(key.get()%12!=0) 
 				reporter.setStatus("Error modulo 12 in 1st pass map input is " + key.get()%12);
 			
-			Long id = (long) Math.floor(key.get()/12);
+			int id = (int) Math.floor(key.get()/12);
 			Float f = new Float(value.toString());
 			
 			idColumn.set(MrProj.getColumnGroupNbrsFromId(id, columnWidth, sizeInput)[0]);
@@ -86,9 +85,9 @@ public class ConnectedComponentsCounter extends Configured implements Tool {
 			
 			
             BitMatrix m = MrProj.getMatrix(sizeInput, url);
-            for(long i=0; i < sizeInput * sizeInput; i++){
+            for(int i=0; i < sizeInput * sizeInput; i++){
             	
-            	LongBooleanWritableTuple idcell = new LongBooleanWritableTuple();
+            	IntBooleanWritableTuple idcell = new IntBooleanWritableTuple();
             	
             	idcell.set(i, m.get_index(i, sizeInput));
             	idColumn.set(m.getColumnGroupNbrsFromId(i, columnWidth)[0]);
@@ -105,29 +104,29 @@ public class ConnectedComponentsCounter extends Configured implements Tool {
     
 	public static class ReduceFirstPass extends MapReduceBase
     implements
-    Reducer<LongWritable, LongBooleanWritableTuple, LongBooleanWritableTuple, LongWritable> {
+    Reducer<IntWritable, IntBooleanWritableTuple, IntBooleanWritableTuple, IntWritable> {
 		// Get all the <id,boolean> of cells for one column
 		// Return <<idcell,boolean>;id parent in this column>
-		public void reduce(LongWritable idcolumn,
-                           Iterator<LongBooleanWritableTuple> idsCells,
-                           OutputCollector<LongBooleanWritableTuple, LongWritable> output,
+		public void reduce(IntWritable idcolumn,
+                           Iterator<IntBooleanWritableTuple> idsCells,
+                           OutputCollector<IntBooleanWritableTuple, IntWritable> output,
                            Reporter reporter) throws IOException {
 			// TODO Plug the code of Sean Correctly
 			UnionFind uf = new UnionFind(idsCells);
             
 			while (idsCells.hasNext()) {
-				LongBooleanWritableTuple tuple = idsCells.next();
+				IntBooleanWritableTuple tuple = idsCells.next();
 				output.collect(tuple,
-                               new LongWritable(uf.getRoot(tuple.l)));
+                               new IntWritable(uf.getRoot(tuple.i)));
 			}
 		}
 	}
     
 	public static class MapSecondPass extends MapReduceBase
     implements
-    Mapper<LongBooleanWritableTuple, LongWritable, Text, LongBooleanLongWritableTuple> {
+    Mapper<IntBooleanWritableTuple, IntWritable, Text, IntBooleanIntWritableTuple> {
         
-		private LongBooleanLongWritableTuple idAndValueAndParentCell = new LongBooleanLongWritableTuple();
+		private IntBooleanIntWritableTuple idAndValueAndParentCell = new IntBooleanIntWritableTuple();
         
 		private final int defaultSizeInput = 1000;
 		private int sizeInput;
@@ -143,14 +142,14 @@ public class ConnectedComponentsCounter extends Configured implements Tool {
         
 		// Input key is <id,boolean> and value is parentid
 		// Return <someCommonKeyForAll;<idcell,booleancell,idparent>>
-		public void map(LongBooleanWritableTuple key, LongWritable parent,
-                        OutputCollector<Text, LongBooleanLongWritableTuple> output,
+		public void map(IntBooleanWritableTuple key, IntWritable parent,
+                        OutputCollector<Text, IntBooleanIntWritableTuple> output,
                         Reporter reporter) throws IOException {
 			Text t = new Text("UniqueReducer");
             
 			// TODO Plug correct function of Chet
-			if (MrProj.isInBoundaryColumn(key.l, sizeInput, columnWidth)) {
-				idAndValueAndParentCell.set(key.l, key.b, parent.get());
+			if (MrProj.isInBoundaryColumn(key.i, sizeInput, columnWidth)) {
+				idAndValueAndParentCell.set(key.i, key.b, parent.get());
 				output.collect(t, idAndValueAndParentCell);
 			}
 		}
@@ -158,35 +157,35 @@ public class ConnectedComponentsCounter extends Configured implements Tool {
     
 	public static class ReduceSecondPass extends MapReduceBase
     implements
-    Reducer<Text, LongBooleanLongWritableTuple, LongBooleanWritableTuple, LongWritable> {
-		LongBooleanWritableTuple outputKey = new LongBooleanWritableTuple();
+    Reducer<Text, IntBooleanIntWritableTuple, IntBooleanWritableTuple, IntWritable> {
+		IntBooleanWritableTuple outputKey = new IntBooleanWritableTuple();
         
 		// Get all the <id,boolean,parent> of cells in boundary columns
 		// Return <<idcell,boolean>;parentUpdated>
 		public void reduce(
                            Text uselessKey,
-                           Iterator<LongBooleanLongWritableTuple> idAndBooleanAndParentCells,
-                           OutputCollector<LongBooleanWritableTuple, LongWritable> output,
+                           Iterator<IntBooleanIntWritableTuple> idAndBooleanAndParentCells,
+                           OutputCollector<IntBooleanWritableTuple, IntWritable> output,
                            Reporter reporter) throws IOException {
 			// TODO Plug the code of Sean Correctly
 			UnionFind uf = new UnionFind(idAndBooleanAndParentCells);
             
 			while (idAndBooleanAndParentCells.hasNext()) {
-				LongBooleanLongWritableTuple tuple = idAndBooleanAndParentCells
+				IntBooleanIntWritableTuple tuple = idAndBooleanAndParentCells
                 .next();
 				outputKey.set(tuple.l, tuple.b);
 				output.collect(outputKey,
-                               new LongWritable(uf.getMyMostSouthWestParent(tuple.l)));
+                               new IntWritable(uf.getMyMostSouthWestParent(tuple.l)));
 			}
 		}
 	}
     
 	public static class MapThirdPass extends MapReduceBase
     implements
-    Mapper<LongBooleanWritableTuple, LongWritable, LongWritable, LongBooleanLongWritableTuple> {
+    Mapper<IntBooleanWritableTuple, IntWritable, IntWritable, IntBooleanIntWritableTuple> {
         
-		private LongWritable idColumn = new LongWritable();
-		private LongBooleanLongWritableTuple idAndValueAndParentCell = new LongBooleanLongWritableTuple();
+		private IntWritable idColumn = new IntWritable();
+		private IntBooleanIntWritableTuple idAndValueAndParentCell = new IntBooleanIntWritableTuple();
         
 		private final int defaultSizeInput = 1000;
 		private int sizeInput;
@@ -203,14 +202,14 @@ public class ConnectedComponentsCounter extends Configured implements Tool {
 		// Input key is <id,boolean> and value is parentid
 		// Return <idcolumn;<idcell,booleancell,idparent>>
 		public void map(
-                        LongBooleanWritableTuple key,
-                        LongWritable parent,
-                        OutputCollector<LongWritable, LongBooleanLongWritableTuple> output,
+                        IntBooleanWritableTuple key,
+                        IntWritable parent,
+                        OutputCollector<IntWritable, IntBooleanIntWritableTuple> output,
                         Reporter reporter) throws IOException {
 			// TODO Plug the code of Chet correctly
-			MyMatrix m = MRProj.getMyMatrix(sizeInput);
+			BitMatrix m = MrProj.getMyMatrix(sizeInput);
             
-			for (long i = 0; i < sizeInput * sizeInput; i++) {
+			for (int i = 0; i < sizeInput * sizeInput; i++) {
 				idAndValueAndParentCell.set(key.l, key.b, parent.get());
 				// Only add the left boundary column (avoid double counting)
 				idColumn.set(m.getColumnNbrFromId(i, columnWidth)[0]);
@@ -221,24 +220,23 @@ public class ConnectedComponentsCounter extends Configured implements Tool {
     
 	public static class ReduceThirdPass extends MapReduceBase
     implements
-    Reducer<LongWritable, LongBooleanLongWritableTuple, LongWritable, IntWritable> {
+    Reducer<IntWritable, IntBooleanIntWritableTuple, IntWritable, IntWritable> {
         
-		LongWritable outputKey = new LongWritable();
+		IntWritable outputKey = new IntWritable();
 		IntWritable outputValue = new IntWritable();
         
 		// Get all the <id,boolean,parent> of cells in one column group
 		// Return <parent,sizeSingleConnected>
 		public void reduce(
-                           LongWritable columnId,
-                           Iterator<LongBooleanLongWritableTuple> idAndBooleanAndParentCells,
-                           OutputCollector<LongWritable, IntWritable> output,
+                           IntWritable columnId,
+                           Iterator<IntBooleanIntWritableTuple> idAndBooleanAndParentCells,
+                           OutputCollector<IntWritable, IntWritable> output,
                            Reporter reporter) throws IOException {
 			// TODO Plug the code of Sean Correctly
 			UnionFind uf = new UnionFind(idAndBooleanAndParentCells);
             
 			while (idAndBooleanAndParentCells.hasNext()) {
-				LongBooleanLongWritableTuple tuple = idAndBooleanAndParentCells
-                .next();
+				IntBooleanIntWritableTuple tuple = idAndBooleanAndParentCells.next();
 				outputKey.set(tuple.parent);
 				outputValue.set(uf.getNbrSizeInThisColumn(tuple.parent));
 				output.collect(outputKey, outputValue);
@@ -251,8 +249,8 @@ public class ConnectedComponentsCounter extends Configured implements Tool {
 		JobConf conf = new JobConf(getConf(), ConnectedComponentsCounter.class);
 		conf.setJobName("connectedComponentCounter_firstPass");
         
-		conf.setOutputKeyClass(LongWritable.class);
-		conf.setOutputValueClass(LongWritable.class);
+		conf.setOutputKeyClass(IntWritable.class);
+		conf.setOutputValueClass(IntWritable.class);
         
 		conf.setMapperClass(MapFirstPass.class);
 		conf.setCombinerClass(ReduceFirstPass.class);
@@ -279,8 +277,8 @@ public class ConnectedComponentsCounter extends Configured implements Tool {
 		JobConf conf = new JobConf(getConf(), ConnectedComponentsCounter.class);
 		conf.setJobName("connectedComponentCounter_secondPass");
         
-		conf.setOutputKeyClass(LongWritable.class);
-		conf.setOutputValueClass(LongWritable.class);
+		conf.setOutputKeyClass(IntWritable.class);
+		conf.setOutputValueClass(IntWritable.class);
         
 		conf.setMapperClass(MapSecondPass.class);
 		conf.setCombinerClass(ReduceSecondPass.class);
@@ -308,8 +306,8 @@ public class ConnectedComponentsCounter extends Configured implements Tool {
 		JobConf conf = new JobConf(getConf(), ConnectedComponentsCounter.class);
 		conf.setJobName("connectedComponentCounter_secondPass");
         
-		conf.setOutputKeyClass(LongWritable.class);
-		conf.setOutputValueClass(LongWritable.class);
+		conf.setOutputKeyClass(IntWritable.class);
+		conf.setOutputValueClass(IntWritable.class);
         
 		conf.setMapperClass(MapThirdPass.class);
 		conf.setCombinerClass(ReduceThirdPass.class);

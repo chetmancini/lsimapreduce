@@ -138,6 +138,7 @@ public class MrProj{
     /**
      * Get the i component of an index.
      */
+    @Deprecated
     public static int getI(long index, int N){
         return (int) index % N;
     }
@@ -152,6 +153,7 @@ public class MrProj{
     /**
      * Get j component of an index
      */
+    @Deprecated
     public static int getJ(long index, int N){
         return (int) index / N;
     }
@@ -269,6 +271,7 @@ public class MrProj{
 	 * @param N
 	 * @return
 	 */
+	@Deprecated
 	public static int[] getColumnGroupNbrsFromId(long id, int columnWidth, int N){
 		return new int[0];
 	}
