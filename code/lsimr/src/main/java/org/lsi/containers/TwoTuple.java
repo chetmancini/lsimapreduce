@@ -1,7 +1,7 @@
-package org.lsi.containers;
+package lsimr.src.main.java.org.lsi.containers;
 
 /**
- * @author chet
+ * @author Chet
  * @param <T>
  */
 public class TwoTuple<T>{

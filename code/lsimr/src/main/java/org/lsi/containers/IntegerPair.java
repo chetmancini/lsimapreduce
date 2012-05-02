@@ -6,7 +6,7 @@ import java.io.IOException;
 import org.apache.hadoop.io.Writable;
 
 /**
- * @author chet
+ * @author Chet
  */
 public class IntegerPair implements Writable{
 

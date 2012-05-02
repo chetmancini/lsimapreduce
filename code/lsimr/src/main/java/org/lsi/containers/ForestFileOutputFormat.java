@@ -17,13 +17,13 @@ import org.apache.hadoop.mapred.Reporter;
 import org.apache.hadoop.util.Progressable;
 
 /**
- * @author chet
+ * @author Chet
  *
  */
 public class ForestFileOutputFormat extends FileOutputFormat<IntWritable, IntegerPair> {
 	
 	/**
-	 * @author chet
+	 * @author Chet
 	 *
 	 * @param <K>
 	 * @param <V>

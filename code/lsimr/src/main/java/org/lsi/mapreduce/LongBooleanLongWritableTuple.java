@@ -1,4 +1,4 @@
-package org.lsi.mapreduce;
+package lsimr.src.main.java.org.lsi.mapreduce;
 
 import java.io.DataInput;
 import java.io.DataOutput;

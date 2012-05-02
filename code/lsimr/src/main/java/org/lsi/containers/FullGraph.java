@@ -1,4 +1,4 @@
-package org.lsi.containers;
+package lsimr.src.main.java.org.lsi.containers;
 import java.util.HashMap;
 
 public class FullGraph{

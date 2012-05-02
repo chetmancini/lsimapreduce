@@ -1,9 +1,9 @@
+package unused;
+
 /*************************************************************************
  *  A sparse, square matrix, implementing using two arrays of sparse
  *  vectors, one representation for the rows and one for the columns.
  *
- *  For matrix-matrix product, we might also want to store the
- *  column representation.
  * 
  * Copyright © 2000–2011, Robert Sedgewick and Kevin Wayne. 
  *
