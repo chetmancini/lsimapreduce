@@ -90,7 +90,7 @@ public class ConnectedComponentsCounter extends Configured implements Tool {
                  * Loop over all possible column groups (could be two of them
                  * for a boundary column.
                  */
-                for(Integer i : MrProj.getColumngroupNbrsFromId(id, columnWidth,
+                for(Integer i : MrProj.getColumnGroupNbrsFromId(id, columnWidth,
                     sizeInput)){
                         idColumn.set(i);
                         output.collect(idColumn, idAndValueCell);
@@ -184,11 +184,10 @@ public class ConnectedComponentsCounter extends Configured implements Tool {
 			UnionFind uf = new UnionFind(idAndParentCells);
             
 			while (idAndParentCells.hasNext()) {
-				IntIntWritableTuple tuple = idAndParentCells
-                .next();
-				outputKey.set(tuple.l, tuple.b);
+				IntIntWritableTuple tuple = idAndParentCells.next();
+				outputKey.set(tuple.i, tuple.b);
 				output.collect(outputKey,
-                               new IntWritable(uf.getRoot(tuple.l)));
+                               new IntWritable(uf.getRoot(tuple.i)));
 			}
 		}
 	}
@@ -225,7 +224,7 @@ public class ConnectedComponentsCounter extends Configured implements Tool {
 			for (int i = 0; i < sizeInput * sizeInput; i++) {
 				idAndValueAndParentCell.set(key.l, key.b, parent.get());
 				// Only add the left boundary column (avoid double counting)
-				idColumn.set(m.getColumnNbrFromId(i, columnWidth)[0]);
+				idColumn.set(m.getColumnGroupNbrsFromId(i, columnWidth)[0]);
 				output.collect(idColumn, idAndValueAndParentCell);
 			}
 		}
