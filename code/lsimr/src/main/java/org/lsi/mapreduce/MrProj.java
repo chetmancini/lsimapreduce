@@ -128,12 +128,33 @@ public class MrProj{
     public static int getIndex(int i, int j, int N){
         return i + (j * N);
     }
+    
+    /**
+     * Get index with repsect to a column group.
+     * @param localI
+     * @param localJ
+     * @param N size of the side of a matirx.
+     * @return the local index.
+     */
+    public static int getIndexLocal(int localI, int localJ, int N){
+    	return localI + (localJ * N);
+    }
 
     /**
      * Get the i component of an index.
      */
     public static int getI(int index, int N){
         return index % N;
+    }
+    
+    /**
+     * TODO: implment
+     * @param index
+     * @param N
+     * @return the i component of the column group.
+     */
+    public static int getILocal(int localIndex, int N){
+    	return localIndex % N;
     }
 
     /**
@@ -144,10 +165,20 @@ public class MrProj{
     }
     
     /**
+     * TODO: implement
+     * @param localIndex the localized index for this column group
+     * @param N the side of a side of the matrix.
+     * @return the local j component of the local index.
+     */
+    public static int getJLocal(int localIndex, int N){
+    	return (int) localIndex / N;
+    }
+    
+    /**
      * Get an integerpair (i,j) from an index
-     * @param index
-     * @param N
-     * @return
+     * @param index the GLOBAL index.
+     * @param N size of side of the matrix
+     * @return a pair of indices i and j.
      */
     public static IntegerPair getIJ(int index, int N){
     	return new IntegerPair(MrProj.getI(index, N), MrProj.getJ(index, N));
@@ -155,7 +186,7 @@ public class MrProj{
     
     /**
      * Get the next filtered input line.
-     * @return
+     * @return the next line from the reader.
      */
     public static boolean getNextFilteredInput(BufferedReader reader) {
         try {
@@ -168,7 +199,7 @@ public class MrProj{
     
     /**
      * Load in from file using algorithm described.
-     * @param N
+     * @param N the size of one side of the matrix.
      */
     public static BitMatrix getMatrix(int N, URL url){
     	BufferedReader reader = MrProj.openURL(url);
@@ -186,17 +217,17 @@ public class MrProj{
 
     /**
      * Parse a line from a file.
-     * @param line
-     * @return
+     * @param line the line from the input.
+     * @return a float representation of the line.
      */
     public static float parseLine(String line){
         return Float.parseFloat(line.replace("\n", ""));
     }
 
     /**
-     * Convert a float to a boolean
-     * @param in
-     * @return
+     * Convert a float to a tree or not (boolean)
+     * @param in input float (from string)
+     * @return whether or not there is a tree.
      */
     public static boolean getBoolean(float in){
     	return (((in >= MrProj.wMin) && (in < MrProj.wLimit)) ? true : false );
@@ -248,6 +279,11 @@ public class MrProj{
 		}
     }
     
+    /**
+     * Get a global integer pair from a line number.
+     * @param line
+     * @return the global integer pair.
+     */
     public static IntegerPair getIndices(int line){
 		int futureRowOrColumn = (int) Math.floor(Math.sqrt(line));
 		int closestLowerPerfectSquare = (int) Math.pow(futureRowOrColumn, 2);
@@ -294,13 +330,42 @@ public class MrProj{
 	}
 
 	/**
-	 * @param id
+	 * Is in boundary column with respect to global index.
+	 * @param globalindex the global index
 	 * @param columnWidth
-	 * @param N
-	 * @return
+	 * @param N size of one size
+	 * @return whether or not the item at the index is in a boundary column
 	 */
-	public static boolean isInBoundaryColumn(int index, int columnWidth, int N){
-		if (((MrProj.getJ(index, N)+1) % columnWidth) == 0){
+	public static boolean isInBoundaryColumnGlobal(int globalIndex, int columnWidth, int N){
+		if (((MrProj.getJ(globalIndex, N)+1) % columnWidth) == 0){
+			return true;
+		}else{
+			return false;
+		}
+	}
+	
+	/**
+	 * Is in boundary column with respect to local index.
+	 * 
+	 *  x | x  x | x  |
+	 *  x | x  x | x  |\
+	 *  ...           | N
+	 *  x | x  x | x  |/
+	 *  x | x  x | x  |
+	 *  0   1  2   3  
+	 * -1   0  1   2
+	 * colwidth=3
+	 * 
+	 * 
+	 * @param localIndex
+	 * @param columnWidth
+	 * @param N size of one side
+	 * @return whether or not the item at the index is in a boundary column
+	 */
+	public static boolean isInBoundaryColumnLocal(int localIndex, int columnWidth, int N){
+		if(localIndex < N){
+			return true; // is on the left edge
+		}else if((localIndex / N)==columnWidth){
 			return true;
 		}else{
 			return false;

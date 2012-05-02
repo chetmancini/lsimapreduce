@@ -47,19 +47,6 @@ public class BitMatrix{
 	}
 	
 	/**
-	 * Long version
-	 * @param index
-	 * @param N
-	 * @return
-	 */
-	@Deprecated
-	public boolean get_index(long index, int N){
-		int i = MrProj.getI((int)index, N);
-		int j = MrProj.getJ((int)index, N);
-		return this.get(i, j);
-	}
-
-	/**
 	 * Set
 	 */
 	public void put(int i, int j, boolean value){

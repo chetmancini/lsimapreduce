@@ -169,7 +169,7 @@ public class ConnectedComponentsCounter extends Configured implements Tool {
 			Text t = new Text("UniqueReducer");
 
 			// TODO Plug correct function of Chet
-			if (MrProj.isInBoundaryColumn(cellId.get(), columnWidth, sizeInput)) {
+			if (MrProj.isInBoundaryColumnGlobal(cellId.get(), columnWidth, sizeInput)) {
 				idAndValueAndParentCell.set(cellId.get(), parentId.get());
 				output.collect(t, idAndValueAndParentCell);
 			}
