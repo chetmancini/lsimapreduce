@@ -89,7 +89,7 @@ public class ConnectedComponentsCounter extends Configured implements Tool {
 				 * Loop over all possible column groups (could be two of them
 				 * for a boundary column.
 				 */
-				for (Integer i : MrProj.getColumnGroupNbrsFromId(id,
+				for (Integer i : MrProj.getColumnGroupNbrsFromLine(id,
 						columnWidth, sizeInput)) {
 					idColumn.set(i);
 					output.collect(idColumn, idAndParentCell);
@@ -101,11 +101,11 @@ public class ConnectedComponentsCounter extends Configured implements Tool {
 				// IntWritable idcell = new IntWritable();
 				//
 				// idcell.set(i, m.get_index(i, sizeInput));
-				// idColumn.set(m.getColumnGroupNbrsFromId(i, columnWidth)[0]);
+				// idColumn.set(m.getColumnGroupNbrsFromLine(i, columnWidth)[0]);
 				// output.collect(idColumn, idcell);
 				//
 				// if (m.getColumnGroupNbrsFromId(i, columnWidth).length > 1) {
-				// idColumn.set(m.getColumnGroupNbrsFromId(i, columnWidth)[1]);
+				// idColumn.set(m.getColumnGroupNbrsFromLine(i, columnWidth)[1]);
 				// output.collect(idColumn, idcell);
 				// }
 				// }
@@ -228,8 +228,7 @@ public class ConnectedComponentsCounter extends Configured implements Tool {
 			/**
 			 * Only send boundary column in one reducer
 			 */
-			idColumn.set(MrProj.getColumngroupNbrsFromId(key, columnWidth,
-					sizeInput)[0]);
+			idColumn.set(MrProj.getColumnGroupNbrsFromLine(key.get(), columnWidth, sizeInput)[0]);
 			output.collect(idColumn, idAndParentCell);
 		}
 	}
