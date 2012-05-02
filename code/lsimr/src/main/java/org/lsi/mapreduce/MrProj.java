@@ -266,13 +266,13 @@ public class MrProj{
     
     /**
      * Get the column groups, numbered from 0
+     * Chet: I'm pretty sure this works, assuming getIndices works!
      * 
      * Example: colwidth=3, N=10
      * |0 1|2|3 4|5|6 7|8|9|
      *  -0---     ---2---
      *      ---1---     -3-
-     *    
-     *    
+     *
      * @param id the index id
      * @param columnWidth width of a column group, in columns.
      * @param N the width of the matrix
@@ -294,21 +294,17 @@ public class MrProj{
 	}
 
 	/**
-	 * 
 	 * @param id
 	 * @param columnWidth
 	 * @param N
 	 * @return
 	 */
 	public static boolean isInBoundaryColumn(int index, int columnWidth, int N){
-		IntegerPair indices = MrProj.getIJ(index, N);
-		
-		if ((indices.getJ() % columnWidth) == 0){
-			
+		if (((MrProj.getJ(index, N)+1) % columnWidth) == 0){
+			return true;
+		}else{
+			return false;
 		}
-		
-		//TODO FIX														
-		return false;
 	}
 
 }
