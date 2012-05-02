@@ -293,11 +293,14 @@ public class ConnectedComponentsCounter extends Configured implements Tool {
 		JobConf conf = new JobConf(getConf(), ConnectedComponentsCounter.class);
 		conf.setJobName("connectedComponentCounter_firstPass");
 
+		conf.setMapOutputKeyClass(IntWritable.class); 
+		conf.setMapOutputValueClass(IntIntWritableTuple.class);
+		
 		conf.setOutputKeyClass(IntWritable.class);
 		conf.setOutputValueClass(IntWritable.class);
 
 		conf.setMapperClass(MapFirstPass.class);
-//		conf.setCombinerClass(ReduceFirstPass.class);
+		conf.setCombinerClass(ReduceFirstPass.class);
 		conf.setReducerClass(ReduceFirstPass.class);
 
 		conf.setInputFormat(TextInputFormat.class);
@@ -321,8 +324,11 @@ public class ConnectedComponentsCounter extends Configured implements Tool {
 		JobConf conf = new JobConf(getConf(), ConnectedComponentsCounter.class);
 		conf.setJobName("connectedComponentCounter_secondPass");
 
-		conf.setOutputKeyClass(IntWritable.class);
-		conf.setOutputValueClass(IntWritable.class);
+		conf.setMapOutputKeyClass(IntWritable.class); 
+		conf.setMapOutputValueClass(IntIntWritableTuple.class);
+		
+		conf.setOutputKeyClass(Text.class);
+		conf.setOutputValueClass(IntIntWritableTuple.class);
 
 		conf.setMapperClass(MapSecondPass.class);
 //		conf.setCombinerClass(ReduceSecondPass.class);
@@ -350,6 +356,9 @@ public class ConnectedComponentsCounter extends Configured implements Tool {
 		JobConf conf = new JobConf(getConf(), ConnectedComponentsCounter.class);
 		conf.setJobName("connectedComponentCounter_secondPass");
 
+		conf.setMapOutputKeyClass(IntWritable.class); 
+		conf.setMapOutputValueClass(IntIntWritableTuple.class);
+		
 		conf.setOutputKeyClass(IntWritable.class);
 		conf.setOutputValueClass(IntWritable.class);
 
