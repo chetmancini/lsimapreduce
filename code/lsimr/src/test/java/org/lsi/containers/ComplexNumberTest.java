@@ -1,4 +1,4 @@
-package org.lsi.unionfind;
+package org.lsi.containers;
 import org.lsi.containers.ComplexNumber;
 import junit.framework.Test;
 import junit.framework.TestCase;

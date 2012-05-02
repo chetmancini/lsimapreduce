@@ -12,6 +12,7 @@ import org.apache.hadoop.conf.Configured;
 import org.apache.hadoop.filecache.DistributedCache;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.io.IntWritable;
+import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.io.Writable;
 import org.apache.hadoop.mapred.FileInputFormat;
@@ -33,7 +34,7 @@ import org.apache.hadoop.util.ToolRunner;
 public class ConnectedComponentsCounter extends Configured implements Tool {
 
 	public static class MapFirstPass extends MapReduceBase implements
-			Mapper<IntWritable, Text, IntWritable, IntIntWritableTuple> {
+			Mapper<LongWritable, Text, IntWritable, IntIntWritableTuple> {
 
 		private IntIntWritableTuple idAndParentCell = new IntIntWritableTuple();
 		private IntWritable idColumn = new IntWritable();
@@ -54,7 +55,7 @@ public class ConnectedComponentsCounter extends Configured implements Tool {
 
 		// <get byte offset in input line, text of a line>
 		// Return <idcolumn;<idcell,booleancell>>
-		public void map(IntWritable key, Text value,
+		public void map(LongWritable key, Text value,
 				OutputCollector<IntWritable, IntIntWritableTuple> output,
 				Reporter reporter) throws IOException {
 
@@ -70,10 +71,10 @@ public class ConnectedComponentsCounter extends Configured implements Tool {
 			 */
 			if (MrProj.getBoolean(f)) {
 				/**
-				 * initialize the root to -1 to indicate we haven't scanned
+				 * initialize the root to id to indicate we haven't scanned
 				 * neighbors yet.
 				 */
-				idAndParentCell.set(id, -1);
+				idAndParentCell.set(id, id);
 
 				/**
 				 * Loop over all possible column groups (could be two of them
@@ -169,7 +170,7 @@ public class ConnectedComponentsCounter extends Configured implements Tool {
 			Text t = new Text("UniqueReducer");
 
 			// TODO Plug correct function of Chet
-			if (MrProj.isInBoundaryColumn(cellId.get(), columnWidth, sizeInput)) {
+			if (MrProj.isInBoundaryColumnGlobal(cellId.get(), columnWidth, sizeInput)) {
 				idAndValueAndParentCell.set(cellId.get(), parentId.get());
 				output.collect(t, idAndValueAndParentCell);
 			}
@@ -292,11 +293,14 @@ public class ConnectedComponentsCounter extends Configured implements Tool {
 		JobConf conf = new JobConf(getConf(), ConnectedComponentsCounter.class);
 		conf.setJobName("connectedComponentCounter_firstPass");
 
+		conf.setMapOutputKeyClass(IntWritable.class); 
+		conf.setMapOutputValueClass(IntIntWritableTuple.class);
+		
 		conf.setOutputKeyClass(IntWritable.class);
 		conf.setOutputValueClass(IntWritable.class);
 
 		conf.setMapperClass(MapFirstPass.class);
-//		conf.setCombinerClass(ReduceFirstPass.class);
+		conf.setCombinerClass(ReduceFirstPass.class);
 		conf.setReducerClass(ReduceFirstPass.class);
 
 		conf.setInputFormat(TextInputFormat.class);
@@ -320,8 +324,11 @@ public class ConnectedComponentsCounter extends Configured implements Tool {
 		JobConf conf = new JobConf(getConf(), ConnectedComponentsCounter.class);
 		conf.setJobName("connectedComponentCounter_secondPass");
 
-		conf.setOutputKeyClass(IntWritable.class);
-		conf.setOutputValueClass(IntWritable.class);
+		conf.setMapOutputKeyClass(IntWritable.class); 
+		conf.setMapOutputValueClass(IntIntWritableTuple.class);
+		
+		conf.setOutputKeyClass(Text.class);
+		conf.setOutputValueClass(IntIntWritableTuple.class);
 
 		conf.setMapperClass(MapSecondPass.class);
 //		conf.setCombinerClass(ReduceSecondPass.class);
@@ -349,6 +356,9 @@ public class ConnectedComponentsCounter extends Configured implements Tool {
 		JobConf conf = new JobConf(getConf(), ConnectedComponentsCounter.class);
 		conf.setJobName("connectedComponentCounter_secondPass");
 
+		conf.setMapOutputKeyClass(IntWritable.class); 
+		conf.setMapOutputValueClass(IntIntWritableTuple.class);
+		
 		conf.setOutputKeyClass(IntWritable.class);
 		conf.setOutputValueClass(IntWritable.class);
 
@@ -399,9 +409,12 @@ public class ConnectedComponentsCounter extends Configured implements Tool {
 				columnGroupWidth, inputPath, firstPassOutputPath));
 		Job secondPass = new Job(createSecondPassConf(matrixSize,
 				columnGroupWidth, firstPassOutputPath, secondPassOutputPath));
+		secondPass.addDependingJob(firstPass);
 		Job thirdPass = new Job(createThirdPassConf(matrixSize,
 				columnGroupWidth, firstPassOutputPath, secondPassOutputPath,
 				outputPath));
+		thirdPass.addDependingJob(firstPass);
+		thirdPass.addDependingJob(secondPass);
 
 		JobControl jc = new JobControl("Connected components counter");
 		jc.addJob(firstPass);
