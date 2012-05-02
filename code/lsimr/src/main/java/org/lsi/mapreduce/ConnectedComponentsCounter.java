@@ -106,11 +106,9 @@ public class ConnectedComponentsCounter extends Configured implements Tool {
 	}
 
 	public static class ReduceFirstPass extends MapReduceBase implements
-			Reducer<IntWritable, IntIntWritableTuple, IntWritable, IntWritable> {
+			Reducer<IntWritable, IntIntWritableTuple, IntWritable, IntIntWritableTuple> {
 
-		IntWritable cellId = new IntWritable();
-		IntWritable parentId = new IntWritable();
-        
+        private IntIntWritableTuple root; 
 		private final int defaultSizeInput = 1000;
 		private int sizeInput;
 		private int columnWidth;
@@ -129,18 +127,17 @@ public class ConnectedComponentsCounter extends Configured implements Tool {
 		// Return <<idcell,boolean>;id parent in this column>
 		public void reduce(IntWritable idcolumn,
 				Iterator<IntIntWritableTuple> idsCells,
-				OutputCollector<IntWritable, IntWritable> output,
+				OutputCollector<IntWritable, IntIntWritableTuple> output,
 				Reporter reporter) throws IOException {
 			// TODO Plug the code of Sean Correctly
-			UnionFind uf = new UnionFind(idsCells, sizeInput, sizeInput);
+			UnionFind uf = new UnionFind(idcolumn, idsCells, sizeInput, sizeInput);
 
 			while (idsCells.hasNext()) {
 				IntIntWritableTuple cellAndParentIds = idsCells.next();
+                root.i = uf.getRoot(idcolumn.get(), cellAndParentIds.i).index;
+                root.parent = cellAndParentIds.parent;
 
-				cellId.set(cellAndParentIds.i);
-				parentId.set(uf.getRoot(cellAndParentIds.i));
-
-				output.collect(cellId, parentId);
+				output.collect(idcolumn, root);
 			}
 		}
 	}
@@ -178,7 +175,7 @@ public class ConnectedComponentsCounter extends Configured implements Tool {
 	}
 
 	public static class ReduceSecondPass extends MapReduceBase implements
-			Reducer<Text, IntIntWritableTuple, IntWritable, IntWritable> {
+			Reducer<Text, IntIntIntWritableTuple, IntWritable, IntWritable> {
 		IntWritable cellId = new IntWritable();
 		IntWritable parentId = new IntWritable();
 		
@@ -199,17 +196,17 @@ public class ConnectedComponentsCounter extends Configured implements Tool {
 		// Get all the <id,boolean,parent> of cells in boundary columns
 		// Return <<idcell,boolean>;parentUpdated>
 		public void reduce(Text uselessKey,
-				Iterator<IntIntWritableTuple> idsCells,
+				Iterator<IntIntIntWritableTuple> idsCells,
 				OutputCollector<IntWritable, IntWritable> output,
 				Reporter reporter) throws IOException {
 			// TODO Plug the code of Sean Correctly
 			UnionFind uf = new UnionFind(idsCells, sizeInput, sizeInput);
 
 			while (idsCells.hasNext()) {
-				IntIntWritableTuple cellAndParentIds = idsCells.next();
+				IntIntIntWritableTuple cellAndParentIds = idsCells.next();
 
 				cellId.set(cellAndParentIds.i);
-				parentId.set(uf.getRoot(cellAndParentIds.i));
+				parentId.set(uf.getRoot(cellAndParentIds.groupid, cellAndParentIds.i).index);
 
 				if (parentId.get() == -1)
 					reporter.setStatus("ERROR: Parent for cell " + cellId.get()
@@ -277,7 +274,7 @@ public class ConnectedComponentsCounter extends Configured implements Tool {
 				OutputCollector<IntWritable, IntWritable> output,
 				Reporter reporter) throws IOException {
 			// TODO Plug the code of Sean Correctly
-			UnionFind uf = new UnionFind(idAndParentCells, sizeInput, sizeInput);
+			UnionFind uf = new UnionFind(columnId, idAndParentCells, sizeInput, sizeInput);
 
 			while (idAndParentCells.hasNext()) {
 				IntIntWritableTuple tuple = idAndParentCells.next();
