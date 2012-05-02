@@ -26,12 +26,54 @@ public class MrProj{
             "../data/test7.txt", "../data/test8.txt",
             "../data/test9.txt", "../data/test10.txt",
             "../data/test11.txt"};
+    
+    public static URL productionUrl = getProductionUrl();
+    public static URL[] dataURLs = getUrls();
 
     public static float fromNetID = 0.974f;
     public static float desiredDensity = 0.59f;
     public static float wMin = (float) (0.4 * fromNetID);
     public static float wLimit = wMin + desiredDensity;
 
+    /**
+     * Get the URL of the production file.
+     * @return
+     */
+    public static URL getProductionUrl(){
+    	try {
+			return new URL("http://edu-cornell-cs-cs5300s12-assign5-data.s3.amazonaws.com/production.txt");
+		} catch (MalformedURLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+			return null;
+		}
+    }
+    
+    /**
+     * Get an array of the url objects for the data files.
+     * @return
+     */
+    public static URL[] getUrls(){
+    	try{
+	    	URL[] urls =
+	    	{	new URL("http://edu-cornell-cs-cs5300s12-assign5-data.s3.amazonaws.com/data1.txt"),
+	        	new URL("http://edu-cornell-cs-cs5300s12-assign5-data.s3.amazonaws.com/data2.txt"),
+	        	new URL("http://edu-cornell-cs-cs5300s12-assign5-data.s3.amazonaws.com/data3.txt"),
+	        	new URL("http://edu-cornell-cs-cs5300s12-assign5-data.s3.amazonaws.com/data4.txt"),
+	        	new URL("http://edu-cornell-cs-cs5300s12-assign5-data.s3.amazonaws.com/data5.txt"),
+	        	new URL("http://edu-cornell-cs-cs5300s12-assign5-data.s3.amazonaws.com/data6.txt"),
+	        	new URL("http://edu-cornell-cs-cs5300s12-assign5-data.s3.amazonaws.com/data7.txt"),
+	        	new URL("http://edu-cornell-cs-cs5300s12-assign5-data.s3.amazonaws.com/data8.txt"),
+	        	new URL("http://edu-cornell-cs-cs5300s12-assign5-data.s3.amazonaws.com/data9.txt"),
+	        	new URL("http://edu-cornell-cs-cs5300s12-assign5-data.s3.amazonaws.com/data10.txt"),
+	        	new URL("http://edu-cornell-cs-cs5300s12-assign5-data.s3.amazonaws.com/data11.txt")
+	        };
+	    	return urls;
+    	}catch (MalformedURLException e){
+    		e.printStackTrace();
+    		return null;
+    	}
+    }
 
     /**
      * Return if a given G divides N as described in the
