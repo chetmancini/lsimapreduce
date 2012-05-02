@@ -21,7 +21,6 @@ import org.apache.hadoop.conf.Configured;
 import org.apache.hadoop.filecache.DistributedCache;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.io.IntWritable;
-import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.io.Writable;
@@ -42,312 +41,320 @@ import org.apache.hadoop.util.Tool;
 import org.apache.hadoop.util.ToolRunner;
 
 public class ConnectedComponentsCounter extends Configured implements Tool {
-    
+
 	public static class MapFirstPass extends MapReduceBase implements
-    Mapper<LongWritable, Text, IntWritable, IntIntWritableTuple> {
-        
-		private IntIntWritableTuple idAndValueCell = new IntIntWritableTuple();
+			Mapper<LongWritable, Text, IntWritable, IntIntWritableTuple> {
+
+		private IntIntWritableTuple idAndParentCell = new IntIntWritableTuple();
 		private IntWritable idColumn = new IntWritable();
-        
+
 		private final int defaultSizeInput = 1000;
 		private int sizeInput;
 		private int columnWidth;
 		private URL url;
-        
+
 		public void configure(JobConf job) {
 			sizeInput = job.getInt("connectedcomponentscounter.matrix.size",
-                                   defaultSizeInput);
+					defaultSizeInput);
 			columnWidth = job.getInt(
-                                     "connectedcomponentscounter.matrix.columnWidth",
-                                     (int) Math.sqrt(sizeInput));
+					"connectedcomponentscounter.matrix.columnWidth",
+					(int) Math.sqrt(sizeInput));
 			url = job.getResource("connectedcomponentscounter.matrix.inputurl");
 		}
-        
+
 		// <get byte offset in input line, text of a line>
 		// Return <idcolumn;<idcell,booleancell>>
 		public void map(LongWritable key, Text value,
-                        OutputCollector<IntWritable, IntIntWritableTuple> output,
-                        Reporter reporter) throws IOException {
-            
-			if(key.get()%12!=0) 
-				reporter.setStatus("Error modulo 12 in 1st pass map input is " + key.get()%12);
-			
-			Integer id = (int) Math.floor(key.get()/12);
-			Float f = new Float(value.toString());
-			
-            /**
-             * Only put in the iterator if there is a vertex.
-             */
-            if (MrProj.getBoolean(f))
-			{
-                /**
-                 * initialize the root to -1 to indicate we haven't scanned
-                 * neighbors yet.
-                 */
-                idAndValueCell.set(id, -1);
+				OutputCollector<IntWritable, IntIntWritableTuple> output,
+				Reporter reporter) throws IOException {
 
-                /**
-                 * Loop over all possible column groups (could be two of them
-                 * for a boundary column.
-                 */
-                for(Integer i : MrProj.getColumngroupNbrsFromId(id, columnWidth,
-                    sizeInput)){
-                        idColumn.set(i);
-                        output.collect(idColumn, idAndValueCell);
-                }
-            }
-			
-            BitMatrix m = MrProj.getMatrix(sizeInput, url);
-            for(int i=0; i < sizeInput * sizeInput; i++){
-            	
-            	IntWritable idcell = new IntWritable();
-            	
-            	idcell.set(i, m.get_index(i, sizeInput));
-            	idColumn.set(m.getColumnGroupNbrsFromId(i, columnWidth)[0]);
-            	output.collect(idColumn, idcell);
-            	
-				if (m.getColumnGroupNbrsFromId(i, columnWidth).length > 1) {
-					idColumn.set(m.getColumnGroupNbrsFromId(i, columnWidth)[1]);
-					output.collect(idColumn, idcell);
+			if (key.get() % 12 != 0)
+				reporter.setStatus("Error modulo 12 in 1st pass map input is "
+						+ key.get() % 12);
+
+			Integer id = (int) Math.floor(key.get() / 12);
+			Float f = new Float(value.toString());
+
+			/**
+			 * Only put in the iterator if there is a vertex.
+			 */
+			if (MrProj.getBoolean(f)) {
+				/**
+				 * initialize the root to -1 to indicate we haven't scanned
+				 * neighbors yet.
+				 */
+				idAndParentCell.set(id, -1);
+
+				/**
+				 * Loop over all possible column groups (could be two of them
+				 * for a boundary column.
+				 */
+				for (Integer i : MrProj.getColumngroupNbrsFromId(id,
+						columnWidth, sizeInput)) {
+					idColumn.set(i);
+					output.collect(idColumn, idAndParentCell);
 				}
-            }
-            
+			}
+
+			// BitMatrix m = MrProj.getMatrix(sizeInput, url);
+			// for(int i=0; i < sizeInput * sizeInput; i++){
+			//
+			// IntWritable idcell = new IntWritable();
+			//
+			// idcell.set(i, m.get_index(i, sizeInput));
+			// idColumn.set(m.getColumnGroupNbrsFromId(i, columnWidth)[0]);
+			// output.collect(idColumn, idcell);
+			//
+			// if (m.getColumnGroupNbrsFromId(i, columnWidth).length > 1) {
+			// idColumn.set(m.getColumnGroupNbrsFromId(i, columnWidth)[1]);
+			// output.collect(idColumn, idcell);
+			// }
+			// }
+
 		}
 	}
-    
-	public static class ReduceFirstPass extends MapReduceBase
-    implements
-    Reducer<IntWritable, WritableTuple, WritableTuple, IntWritable> {
+
+	public static class ReduceFirstPass extends MapReduceBase implements
+			Reducer<IntWritable, IntIntWritableTuple, IntWritable, IntWritable> {
+
+		IntWritable cellId = new IntWritable();
+		IntWritable parentId = new IntWritable();
+
 		// Get all the <id,boolean> of cells for one column
 		// Return <<idcell,boolean>;id parent in this column>
 		public void reduce(IntWritable idcolumn,
-                           Iterator<WritableTuple> idsCells,
-                           OutputCollector<WritableTuple, IntWritable> output,
-                           Reporter reporter) throws IOException {
+				Iterator<IntIntWritableTuple> idsCells,
+				OutputCollector<IntWritable, IntWritable> output,
+				Reporter reporter) throws IOException {
 			// TODO Plug the code of Sean Correctly
 			UnionFind uf = new UnionFind(idsCells);
-            
+
 			while (idsCells.hasNext()) {
-				WritableTuple tuple = idsCells.next();
-				output.collect(tuple,
-                               new IntWritable(uf.getRoot(tuple.l)));
+				IntIntWritableTuple cellAndParentIds = idsCells.next();
+
+				cellId.set(cellAndParentIds.i);
+				parentId.set(uf.getRoot(cellAndParentIds.i));
+
+				if (parentId.get() == -1)
+					reporter.setStatus("ERROR: Parent for cell " + cellId.get()
+							+ " has not been computed");
+
+				output.collect(cellId, parentId);
 			}
 		}
 	}
-    
-	public static class MapSecondPass extends MapReduceBase
-    implements
-    Mapper<WritableTuple, IntWritable, Text, IntIntWritableTuple> {
-        
-		private WritableTuple idAndValueAndParentCell = new IntIntWritableTuple();
-        
+
+	public static class MapSecondPass extends MapReduceBase implements
+			Mapper<IntWritable, IntWritable, Text, IntIntWritableTuple> {
+
+		private IntIntWritableTuple idAndValueAndParentCell = new IntIntWritableTuple();
+
 		private final int defaultSizeInput = 1000;
 		private int sizeInput;
 		private int columnWidth;
-        
+
 		public void configure(JobConf job) {
 			sizeInput = job.getInt("connectedcomponentscounter.matrix.size",
-                                   defaultSizeInput);
+					defaultSizeInput);
 			columnWidth = job.getInt(
-                                     "connectedcomponentscounter.matrix.columnWidth",
-                                     (int) Math.sqrt(sizeInput));
+					"connectedcomponentscounter.matrix.columnWidth",
+					(int) Math.sqrt(sizeInput));
 		}
-        
+
 		// Input key is <id,boolean> and value is parentid
 		// Return <someCommonKeyForAll;<idcell,booleancell,idparent>>
-		public void map(IntWritableTuple key, IntWritable parent,
-                        OutputCollector<Text, IntIntWritableTuple> output,
-                        Reporter reporter) throws IOException {
+		public void map(IntWritable cellId, IntWritable parentId,
+				OutputCollector<Text, IntIntWritableTuple> output,
+				Reporter reporter) throws IOException {
 			Text t = new Text("UniqueReducer");
-            
+
 			// TODO Plug correct function of Chet
-			if (MrProj.isInBoundaryColumn(key.l, sizeInput, columnWidth)) {
-				idAndValueAndParentCell.set(key.l, key.b, parent.get());
+			if (MrProj.isInBoundaryColumn(cellId.get(), sizeInput, columnWidth)) {
+				idAndValueAndParentCell.set(cellId.get(), parentId.get());
 				output.collect(t, idAndValueAndParentCell);
 			}
 		}
 	}
-    
-	public static class ReduceSecondPass extends MapReduceBase
-    implements
-    Reducer<Text, IntIntWritableTuple, WritableTuple, IntWritable> {
-		WritableTuple outputKey = new WritableTuple();
-        
+
+	public static class ReduceSecondPass extends MapReduceBase implements
+			Reducer<Text, IntIntWritableTuple, IntWritable, IntWritable> {
+		IntWritable cellId = new IntWritable();
+		IntWritable parentId = new IntWritable();
+
 		// Get all the <id,boolean,parent> of cells in boundary columns
 		// Return <<idcell,boolean>;parentUpdated>
-		public void reduce(
-                           Text uselessKey,
-                           Iterator<IntIntWritableTuple> idAndAndParentCells,
-                           OutputCollector<WritableTuple, IntWritable> output,
-                           Reporter reporter) throws IOException {
+		public void reduce(Text uselessKey,
+				Iterator<IntIntWritableTuple> idsCells,
+				OutputCollector<IntWritable, IntWritable> output,
+				Reporter reporter) throws IOException {
 			// TODO Plug the code of Sean Correctly
-			UnionFind uf = new UnionFind(idAndParentCells);
-            
-			while (idAndParentCells.hasNext()) {
-				IntIntWritableTuple tuple = idAndParentCells
-                .next();
-				outputKey.set(tuple.l, tuple.b);
-				output.collect(outputKey,
-                               new IntWritable(uf.getRoot(tuple.l)));
+			UnionFind uf = new UnionFind(idsCells);
+
+			while (idsCells.hasNext()) {
+				IntIntWritableTuple cellAndParentIds = idsCells.next();
+
+				cellId.set(cellAndParentIds.i);
+				parentId.set(uf.getRoot(cellAndParentIds.i));
+
+				if (parentId.get() == -1)
+					reporter.setStatus("ERROR: Parent for cell " + cellId.get()
+							+ " has not been computed");
+
+				output.collect(cellId, parentId);
 			}
 		}
 	}
-    
-	public static class MapThirdPass extends MapReduceBase
-    implements
-    Mapper<WritableTuple, IntWritable, IntWritable, IntIntWritableTuple> {
-        
+
+	public static class MapThirdPass extends MapReduceBase implements
+			Mapper<IntWritable, IntWritable, IntWritable, IntIntWritableTuple> {
+
 		private IntWritable idColumn = new IntWritable();
-		private IntIntWritableTuple idAndValueAndParentCell = new IntIntWritableTuple();
-        
+		private IntIntWritableTuple idAndParentCell = new IntIntWritableTuple();
+
 		private final int defaultSizeInput = 1000;
 		private int sizeInput;
 		private int columnWidth;
-        
+
 		public void configure(JobConf job) {
 			sizeInput = job.getInt("connectedcomponentscounter.matrix.size",
-                                   defaultSizeInput);
+					defaultSizeInput);
 			columnWidth = job.getInt(
-                                     "connectedcomponentscounter.matrix.columnWidth",
-                                     (int) Math.sqrt(sizeInput));
+					"connectedcomponentscounter.matrix.columnWidth",
+					(int) Math.sqrt(sizeInput));
 		}
-        
-		// Input key is <id,boolean> and value is parentid
-		// Return <idcolumn;<idcell,booleancell,idparent>>
-		public void map(
-                        WritableTuple key,
-                        IntWritable parent,
-                        OutputCollector<IntWritable, IntIntWritableTuple> output,
-                        Reporter reporter) throws IOException {
-			// TODO Plug the code of Chet correctly
-			BitMatrix m = MrProj.getMyMatrix(sizeInput);
-            
-			for (int i = 0; i < sizeInput * sizeInput; i++) {
-				idAndValueAndParentCell.set(key.l, key.b, parent.get());
-				// Only add the left boundary column (avoid double counting)
-				idColumn.set(m.getColumnNbrFromId(i, columnWidth)[0]);
-				output.collect(idColumn, idAndValueAndParentCell);
-			}
+
+		// Input key is idCell and value is idParent
+		// Return <idcolumn;<idcell,idParent>>
+		public void map(IntWritable key, IntWritable parent,
+				OutputCollector<IntWritable, IntIntWritableTuple> output,
+				Reporter reporter) throws IOException {
+
+			idAndParentCell.set(key.get(), parent.get());
+
+			/**
+			 * Only send boundary column in one reducer
+			 */
+			idColumn.set(MrProj.getColumngroupNbrsFromId(key, columnWidth,
+					sizeInput)[0]);
+			output.collect(idColumn, idAndParentCell);
+
 		}
 	}
-    
-	public static class ReduceThirdPass extends MapReduceBase
-    implements
-    Reducer<IntWritable, IntIntWritableTuple, IntWritable, IntWritable> {
-        
+
+	public static class ReduceThirdPass extends MapReduceBase implements
+			Reducer<IntWritable, IntIntWritableTuple, IntWritable, IntWritable> {
+
 		IntWritable outputKey = new IntWritable();
 		IntWritable outputValue = new IntWritable();
-        
+
 		// Get all the <id,boolean,parent> of cells in one column group
 		// Return <parent,sizeSingleConnected>
-		public void reduce(
-                           IntWritable columnId,
-                           Iterator<IntIntWritableTuple> idAndAndParentCells,
-                           OutputCollector<IntWritable, IntWritable> output,
-                           Reporter reporter) throws IOException {
+		public void reduce(IntWritable columnId,
+				Iterator<IntIntWritableTuple> idAndParentCells,
+				OutputCollector<IntWritable, IntWritable> output,
+				Reporter reporter) throws IOException {
 			// TODO Plug the code of Sean Correctly
 			UnionFind uf = new UnionFind(idAndParentCells);
-            
+
 			while (idAndParentCells.hasNext()) {
-				IntIntWritableTuple tuple = idAndAndParentCells
-                .next();
+				IntIntWritableTuple tuple = idAndParentCells.next();
 				outputKey.set(tuple.parent);
 				outputValue.set(uf.getNbrSizeInThisColumn(tuple.parent));
 				output.collect(outputKey, outputValue);
 			}
 		}
 	}
-    
+
 	public JobConf createFirstPassConf(int matrixSize, int columnGroupWidth,
-                                       String inputPath, String firstPassOutputPath) {
+			String inputPath, String firstPassOutputPath) {
 		JobConf conf = new JobConf(getConf(), ConnectedComponentsCounter.class);
 		conf.setJobName("connectedComponentCounter_firstPass");
-        
+
 		conf.setOutputKeyClass(IntWritable.class);
 		conf.setOutputValueClass(IntWritable.class);
-        
+
 		conf.setMapperClass(MapFirstPass.class);
 		conf.setCombinerClass(ReduceFirstPass.class);
 		conf.setReducerClass(ReduceFirstPass.class);
-        
+
 		conf.setInputFormat(TextInputFormat.class);
 		conf.setOutputFormat(TextOutputFormat.class);
-        
+
 		if (matrixSize > 0)
 			conf.setInt("connectedcomponentscounter.matrix.size", matrixSize);
-        
+
 		if (columnGroupWidth > 0)
 			conf.setInt("connectedcomponentscounter.matrix.columnWidth",
-                        columnGroupWidth);
-        
+					columnGroupWidth);
+
 		FileInputFormat.setInputPaths(conf, inputPath);
 		FileOutputFormat.setOutputPath(conf, new Path(firstPassOutputPath));
-        
+
 		return conf;
 	}
-    
+
 	public JobConf createSecondPassConf(int matrixSize, int columnGroupWidth,
-                                        String firstPassOutputPath, String secondPassOutputPath) {
+			String firstPassOutputPath, String secondPassOutputPath) {
 		JobConf conf = new JobConf(getConf(), ConnectedComponentsCounter.class);
 		conf.setJobName("connectedComponentCounter_secondPass");
-        
+
 		conf.setOutputKeyClass(IntWritable.class);
 		conf.setOutputValueClass(IntWritable.class);
-        
+
 		conf.setMapperClass(MapSecondPass.class);
 		conf.setCombinerClass(ReduceSecondPass.class);
 		conf.setReducerClass(ReduceSecondPass.class);
-        
+
 		conf.setInputFormat(TextInputFormat.class);
 		conf.setOutputFormat(TextOutputFormat.class);
-        
+
 		if (matrixSize > 0)
 			conf.setInt("connectedcomponentscounter.matrix.size", matrixSize);
-        
+
 		if (columnGroupWidth > 0)
 			conf.setInt("connectedcomponentscounter.matrix.columnWidth",
-                        columnGroupWidth);
-        
+					columnGroupWidth);
+
 		FileInputFormat.setInputPaths(conf, firstPassOutputPath);
 		FileOutputFormat.setOutputPath(conf, new Path(secondPassOutputPath));
-        
+
 		return conf;
 	}
-    
+
 	public JobConf createThirdPassConf(int matrixSize, int columnGroupWidth,
-                                       String firstPassOutputPath, String secondPassOutputPath,
-                                       String outputPath) {
+			String firstPassOutputPath, String secondPassOutputPath,
+			String outputPath) {
 		JobConf conf = new JobConf(getConf(), ConnectedComponentsCounter.class);
 		conf.setJobName("connectedComponentCounter_secondPass");
-        
+
 		conf.setOutputKeyClass(IntWritable.class);
 		conf.setOutputValueClass(IntWritable.class);
-        
+
 		conf.setMapperClass(MapThirdPass.class);
 		conf.setCombinerClass(ReduceThirdPass.class);
 		conf.setReducerClass(ReduceThirdPass.class);
-        
+
 		conf.setInputFormat(TextInputFormat.class);
 		conf.setOutputFormat(TextOutputFormat.class);
-        
+
 		if (matrixSize > 0)
 			conf.setInt("connectedcomponentscounter.matrix.size", matrixSize);
-        
+
 		if (columnGroupWidth > 0)
 			conf.setInt("connectedcomponentscounter.matrix.columnWidth",
-                        columnGroupWidth);
-        
+					columnGroupWidth);
+
 		FileInputFormat.setInputPaths(conf, firstPassOutputPath + ","
-                                      + secondPassOutputPath);
+				+ secondPassOutputPath);
 		FileOutputFormat.setOutputPath(conf, new Path(outputPath));
-        
+
 		return conf;
 	}
-    
+
 	public int run(String[] args) throws Exception {
-        
+
 		int matrixSize = -1, columnGroupWidth = -1;
-        
+
 		List<String> other_args = new ArrayList<String>();
 		for (int i = 0; i < args.length; ++i) {
 			if ("-size".equals(args[i])) {
@@ -359,43 +366,43 @@ public class ConnectedComponentsCounter extends Configured implements Tool {
 				other_args.add(args[i]);
 			}
 		}
-        
+
 		String inputPath = other_args.get(0);
 		String firstPassOutputPath = inputPath + "/firstPass";
 		String secondPassOutputPath = inputPath + "/secondPass";
 		String outputPath = other_args.get(1);
-        
+
 		Job firstPass = new Job(createFirstPassConf(matrixSize,
-                                                    columnGroupWidth, inputPath, firstPassOutputPath));
+				columnGroupWidth, inputPath, firstPassOutputPath));
 		Job secondPass = new Job(createSecondPassConf(matrixSize,
-                                                      columnGroupWidth, firstPassOutputPath, secondPassOutputPath));
+				columnGroupWidth, firstPassOutputPath, secondPassOutputPath));
 		Job thirdPass = new Job(createThirdPassConf(matrixSize,
-                                                    columnGroupWidth, firstPassOutputPath, secondPassOutputPath,
-                                                    outputPath));
-        
+				columnGroupWidth, firstPassOutputPath, secondPassOutputPath,
+				outputPath));
+
 		JobControl jc = new JobControl("Connected components counter");
 		jc.addJob(firstPass);
 		jc.addJob(secondPass);
 		jc.addJob(thirdPass);
-        
+
 		// start the controller in a different thread, no worries as it does
 		// that anyway
 		Thread theController = new Thread(jc);
 		theController.start();
-        
+
 		// poll until everything is done,
 		// in the meantime justs output some status message
 		while (!jc.allFinished()) {
 			System.out.println("Jobs in waiting state: "
-                               + jc.getWaitingJobs().size());
+					+ jc.getWaitingJobs().size());
 			System.out.println("Jobs in ready state: "
-                               + jc.getReadyJobs().size());
+					+ jc.getReadyJobs().size());
 			System.out.println("Jobs in running state: "
-                               + jc.getRunningJobs().size());
+					+ jc.getRunningJobs().size());
 			System.out.println("Jobs in success state: "
-                               + jc.getSuccessfulJobs().size());
+					+ jc.getSuccessfulJobs().size());
 			System.out.println("Jobs in failed state: "
-                               + jc.getFailedJobs().size());
+					+ jc.getFailedJobs().size());
 			System.out.println("\n");
 			// sleep 5 seconds
 			try {
@@ -403,42 +410,42 @@ public class ConnectedComponentsCounter extends Configured implements Tool {
 			} catch (Exception e) {
 			}
 		}
-        
+
 		// you have to check the status of each job submitted
 		if (firstPass.getState() != Job.FAILED
-            && firstPass.getState() != Job.DEPENDENT_FAILED
-            && firstPass.getState() != Job.SUCCESS) {
+				&& firstPass.getState() != Job.DEPENDENT_FAILED
+				&& firstPass.getState() != Job.SUCCESS) {
 			String states = "wordCountJob:  " + firstPass.getState() + "\n";
 			throw new Exception(
-                                "The state of wordCountJob is not in a complete state\n"
-                                + states);
+					"The state of wordCountJob is not in a complete state\n"
+							+ states);
 		}
 		// now the second job
 		if (secondPass.getState() != Job.FAILED
-            && secondPass.getState() != Job.DEPENDENT_FAILED
-            && secondPass.getState() != Job.SUCCESS) {
+				&& secondPass.getState() != Job.DEPENDENT_FAILED
+				&& secondPass.getState() != Job.SUCCESS) {
 			String states = "job2Job:  " + secondPass.getState() + "\n";
 			throw new Exception(
-                                "The state of job2Job is not in a complete state\n"
-                                + states);
+					"The state of job2Job is not in a complete state\n"
+							+ states);
 		}
 		// now the second job
 		if (thirdPass.getState() != Job.FAILED
-            && thirdPass.getState() != Job.DEPENDENT_FAILED
-            && thirdPass.getState() != Job.SUCCESS) {
+				&& thirdPass.getState() != Job.DEPENDENT_FAILED
+				&& thirdPass.getState() != Job.SUCCESS) {
 			String states = "job2Job:  " + thirdPass.getState() + "\n";
 			throw new Exception(
-                                "The state of job2Job is not in a complete state\n"
-                                + states);
+					"The state of job2Job is not in a complete state\n"
+							+ states);
 		}
-        
+
 		return 0;
 	}
-    
+
 	public static void main(String[] args) throws Exception {
 		int res = ToolRunner.run(new Configuration(),
-                                 new ConnectedComponentsCounter(), args);
+				new ConnectedComponentsCounter(), args);
 		System.exit(res);
 	}
-    
+
 }
