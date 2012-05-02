@@ -97,7 +97,7 @@ public class ConnectedComponentsCounter extends Configured implements Tool {
             }
 			
             BitMatrix m = MrProj.getMatrix(sizeInput, url);
-            for(long i=0; i < sizeInput * sizeInput; i++){
+            for(int i=0; i < sizeInput * sizeInput; i++){
             	
             	IntWritable idcell = new IntWritable();
             	
@@ -219,9 +219,9 @@ public class ConnectedComponentsCounter extends Configured implements Tool {
                         OutputCollector<IntWritable, IntIntWritableTuple> output,
                         Reporter reporter) throws IOException {
 			// TODO Plug the code of Chet correctly
-			MyMatrix m = MRProj.getMyMatrix(sizeInput);
+			BitMatrix m = MrProj.getMyMatrix(sizeInput);
             
-			for (long i = 0; i < sizeInput * sizeInput; i++) {
+			for (int i = 0; i < sizeInput * sizeInput; i++) {
 				idAndValueAndParentCell.set(key.l, key.b, parent.get());
 				// Only add the left boundary column (avoid double counting)
 				idColumn.set(m.getColumnNbrFromId(i, columnWidth)[0]);
