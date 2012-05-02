@@ -6,24 +6,27 @@ import java.io.IOException;
 
 import org.apache.hadoop.io.Writable;
 
-public class IntIntWritableTuple implements Writable{
-	Integer i;
+/**
+ * @author Sean
+ */
+public class IntIntWritableTuple implements Writable {
+	Integer l;
 	Integer parent;
 
-	public void set(int i, int parent){
-		this.i = i;
+	public void set(Integer l, Integer parent){
+		this.l = l;
 		this.parent = parent;
 	}
 	
 	@Override
 	public void readFields(DataInput in) throws IOException {
-		i = in.readInt();
+		l = in.readInt();
 		parent = in.readInt();
 	}
 
 	@Override
 	public void write(DataOutput out) throws IOException {
-		out.writeInt(i);
+		out.writeInt(l);
 		out.writeInt(parent);
 	}
 }
