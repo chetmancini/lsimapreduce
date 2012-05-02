@@ -20,13 +20,13 @@ public class IntIntWritableTuple implements Writable {
 	
 	@Override
 	public void readFields(DataInput in) throws IOException {
-		l = in.readLong();
-		parent = in.readLong();
+		l = in.readInt();
+		parent = in.readInt();
 	}
 
 	@Override
 	public void write(DataOutput out) throws IOException {
-		out.writeLong(l);
-		out.writeLong(parent);
+		out.writeInt(l);
+		out.writeInt(parent);
 	}
 }
