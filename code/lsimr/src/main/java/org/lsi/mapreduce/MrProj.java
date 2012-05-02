@@ -298,17 +298,16 @@ public class MrProj{
 			return ret;
 		}
 	}
-	
+
 	/**
-	 * Get the column groups, numbered from 0
+	 * 
 	 * @param id
 	 * @param columnWidth
 	 * @param N
 	 * @return
 	 */
-	@Deprecated
-	public static int[] getColumnGroupNbrsFromLine(long line, int columnWidth, int N){
-		return new int[0];
+	public static boolean isInBoundaryColumn(int index, int columnWidth, int N){
+		return false;
 	}
 
 }
