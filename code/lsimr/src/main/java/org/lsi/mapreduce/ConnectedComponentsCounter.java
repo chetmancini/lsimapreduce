@@ -300,7 +300,6 @@ public class ConnectedComponentsCounter extends Configured implements Tool {
 		conf.setOutputValueClass(IntWritable.class);
 
 		conf.setMapperClass(MapFirstPass.class);
-		conf.setCombinerClass(ReduceFirstPass.class);
 		conf.setReducerClass(ReduceFirstPass.class);
 
 		conf.setInputFormat(TextInputFormat.class);
@@ -324,14 +323,13 @@ public class ConnectedComponentsCounter extends Configured implements Tool {
 		JobConf conf = new JobConf(getConf(), ConnectedComponentsCounter.class);
 		conf.setJobName("connectedComponentCounter_secondPass");
 
-		conf.setMapOutputKeyClass(IntWritable.class); 
+		conf.setMapOutputKeyClass(Text.class); 
 		conf.setMapOutputValueClass(IntIntWritableTuple.class);
 		
-		conf.setOutputKeyClass(Text.class);
+		conf.setOutputKeyClass(IntWritable.class);
 		conf.setOutputValueClass(IntIntWritableTuple.class);
 
 		conf.setMapperClass(MapSecondPass.class);
-//		conf.setCombinerClass(ReduceSecondPass.class);
 		conf.setReducerClass(ReduceSecondPass.class);
 
 		conf.setInputFormat(TextInputFormat.class);
@@ -354,7 +352,7 @@ public class ConnectedComponentsCounter extends Configured implements Tool {
 			String firstPassOutputPath, String secondPassOutputPath,
 			String outputPath) {
 		JobConf conf = new JobConf(getConf(), ConnectedComponentsCounter.class);
-		conf.setJobName("connectedComponentCounter_secondPass");
+		conf.setJobName("connectedComponentCounter_thirdPass");
 
 		conf.setMapOutputKeyClass(IntWritable.class); 
 		conf.setMapOutputValueClass(IntIntWritableTuple.class);
@@ -363,7 +361,6 @@ public class ConnectedComponentsCounter extends Configured implements Tool {
 		conf.setOutputValueClass(IntWritable.class);
 
 		conf.setMapperClass(MapThirdPass.class);
-//		conf.setCombinerClass(ReduceThirdPass.class);
 		conf.setReducerClass(ReduceThirdPass.class);
 
 		conf.setInputFormat(TextInputFormat.class);
@@ -390,10 +387,10 @@ public class ConnectedComponentsCounter extends Configured implements Tool {
 
 		List<String> other_args = new ArrayList<String>();
 		for (int i = 0; i < args.length; ++i) {
-			if ("-size".equals(args[i])) {
+			if ("size".equals(args[i])) {
 				matrixSize = new Integer(args[++i]);
 			}
-			if ("-columnWidth".equals(args[i])) {
+			if ("columnWidth".equals(args[i])) {
 				columnGroupWidth = new Integer(args[++i]);
 			} else {
 				other_args.add(args[i]);
@@ -413,7 +410,6 @@ public class ConnectedComponentsCounter extends Configured implements Tool {
 		Job thirdPass = new Job(createThirdPassConf(matrixSize,
 				columnGroupWidth, firstPassOutputPath, secondPassOutputPath,
 				outputPath));
-		thirdPass.addDependingJob(firstPass);
 		thirdPass.addDependingJob(secondPass);
 
 		JobControl jc = new JobControl("Connected components counter");
