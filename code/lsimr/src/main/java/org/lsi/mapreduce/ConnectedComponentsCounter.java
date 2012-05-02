@@ -251,7 +251,7 @@ public class ConnectedComponentsCounter extends Configured implements Tool {
 			while (idAndParentCells.hasNext()) {
 				IntIntWritableTuple tuple = idAndParentCells.next();
 				outputKey.set(tuple.parent);
-				outputValue.set(uf.getNbrSizeInThisColumn(tuple.parent));
+				outputValue.set(uf.getSizeCCInColumn(tuple.parent));
 				output.collect(outputKey, outputValue);
 			}
 		}

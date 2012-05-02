@@ -215,7 +215,7 @@ public class UnionFind {
      * @param tup
      * @return
      */
-    public int getNbrSizeInThisColumn(int parent){
+    public int getSizeCCInColumn(int parent){
     	return 0;
     }
     
