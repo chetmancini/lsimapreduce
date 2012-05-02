@@ -135,14 +135,6 @@ public class MrProj{
     public static int getI(int index, int N){
         return index % N;
     }
-    
-    /**
-     * Get the i component of an index.
-     */
-    @Deprecated
-    public static int getI(long index, int N){
-        return (int) index % N;
-    }
 
     /**
      * Get j component of an index
@@ -152,11 +144,13 @@ public class MrProj{
     }
     
     /**
-     * Get j component of an index
+     * Get an integerpair (i,j) from an index
+     * @param index
+     * @param N
+     * @return
      */
-    @Deprecated
-    public static int getJ(long index, int N){
-        return (int) index / N;
+    public static IntegerPair getIJ(int index, int N){
+    	return new IntegerPair(MrProj.getI(index, N), MrProj.getJ(index, N));
     }
     
     /**
@@ -307,6 +301,13 @@ public class MrProj{
 	 * @return
 	 */
 	public static boolean isInBoundaryColumn(int index, int columnWidth, int N){
+		IntegerPair indices = MrProj.getIJ(index, N);
+		
+		if ((indices.getJ() % columnWidth) == 0){
+			
+		}
+		
+		//TODO FIX														
 		return false;
 	}
 

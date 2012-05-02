@@ -1,19 +1,10 @@
 package org.lsi.mapreduce;
 
-import java.io.BufferedReader;
-import java.io.DataInput;
-import java.io.DataOutput;
-import java.io.FileReader;
 import java.io.IOException;
 import java.net.URL;
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Set;
-import java.util.StringTokenizer;
-
-import org.lsi.containers.BitMatrix;
 import org.lsi.unionfind.UnionFind;
 
 import org.apache.hadoop.conf.Configuration;
@@ -21,7 +12,6 @@ import org.apache.hadoop.conf.Configured;
 import org.apache.hadoop.filecache.DistributedCache;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.io.IntWritable;
-import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.io.Writable;
 import org.apache.hadoop.mapred.FileInputFormat;
@@ -43,7 +33,7 @@ import org.apache.hadoop.util.ToolRunner;
 public class ConnectedComponentsCounter extends Configured implements Tool {
 
 	public static class MapFirstPass extends MapReduceBase implements
-			Mapper<LongWritable, Text, IntWritable, IntIntWritableTuple> {
+			Mapper<IntWritable, Text, IntWritable, IntIntWritableTuple> {
 
 		private IntIntWritableTuple idAndParentCell = new IntIntWritableTuple();
 		private IntWritable idColumn = new IntWritable();
@@ -64,7 +54,7 @@ public class ConnectedComponentsCounter extends Configured implements Tool {
 
 		// <get byte offset in input line, text of a line>
 		// Return <idcolumn;<idcell,booleancell>>
-		public void map(LongWritable key, Text value,
+		public void map(IntWritable key, Text value,
 				OutputCollector<IntWritable, IntIntWritableTuple> output,
 				Reporter reporter) throws IOException {
 
