@@ -114,10 +114,6 @@ public class UnionFind {
     public Integer getRoot(Integer i){
         return m_id.get(i);
     }
-    
-    public Integer getRoot(Integer i){
-        return m_id.get(i);
-    }
 
     public Integer[] getTestOutput(){
         Integer[] out = new Integer[m*m_g];
