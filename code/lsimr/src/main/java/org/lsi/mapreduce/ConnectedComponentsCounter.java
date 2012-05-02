@@ -94,7 +94,7 @@ public class ConnectedComponentsCounter extends Configured implements Tool {
 					idColumn.set(i);
 					output.collect(idColumn, idAndParentCell);
 				}
-
+		
 				// BitMatrix m = MrProj.getMatrix(sizeInput, url);
 				// for(int i=0; i < sizeInput * sizeInput; i++){
 				//
@@ -134,10 +134,6 @@ public class ConnectedComponentsCounter extends Configured implements Tool {
 
 				cellId.set(cellAndParentIds.i);
 				parentId.set(uf.getRoot(cellAndParentIds.i));
-
-				if (parentId.get() == -1)
-					reporter.setStatus("ERROR: Parent for cell " + cellId.get()
-							+ " has not been computed");
 
 				output.collect(cellId, parentId);
 			}
