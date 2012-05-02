@@ -1,8 +1,8 @@
 package org.lsi.unionfind;
 import java.util.HashMap;
-import org.lsi.containers.TwoTuple;
 import org.lsi.containers.FullGraph;
-import org.lsi.containers.BoundaryGraph;
+import org.lsi.mapreduce.*; 
+import java.util.Iterator;
 /**
  * Disclaimer: this is an untested work in
  * progress.  Pushed only for backup and transfer
@@ -82,14 +82,10 @@ public class UnionFind {
         m_edges = m_edges/2;
     }
 
-    /**
-     * For the second pass, we have mapping from root to a tuple of potentially conflicting
-     * ids on the boundary columns.  For the left and right-most columns, the Tuple values
-     * will be the same.
-     */
-    UnionFind(BoundaryGraph id, Integer m, Integer n, Integer g)
+
+    public UnionFind(Iterator<IntIntWritableTuple> idsCells)
     {
-        //XXX: implement.
+        //XXX: DOOITTTT
     }
 
     /**
@@ -112,7 +108,15 @@ public class UnionFind {
     public HashMap<Integer, Integer> getRoots(){
         return m_id;
     }
+
+    public Integer getRoot(Integer i){
+        return m_id.get(i);
+    }
     
+    public Integer getRoot(Integer i){
+        return m_id.get(i);
+    }
+
     public Integer[] getTestOutput(){
         Integer[] out = new Integer[m*m_g];
         for(Integer i = 0; i < m*m_g; ++i){

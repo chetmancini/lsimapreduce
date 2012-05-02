@@ -1,13 +1,4 @@
-/*************************************************************************
- *  Compilation:  javac ST.java
- *  Execution:    java ST
- *  
- *  Sorted symbol table implementation using a java.util.TreeMap.
- *  Does not allow duplicate keys.
- *
- *  % java ST
- *
- *************************************************************************/
+package unused;
 
 import java.util.Iterator;
 import java.util.SortedMap;

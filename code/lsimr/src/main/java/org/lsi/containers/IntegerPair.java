@@ -1,4 +1,4 @@
-package lsimr.src.main.java.org.lsi.containers;
+package org.lsi.containers;
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
@@ -6,11 +6,18 @@ import java.io.IOException;
 import org.apache.hadoop.io.Writable;
 
 /**
- * @author chet
+ * @author Chet
  */
 public class IntegerPair implements Writable{
 
+	/**
+	 * Can also represent "i"
+	 */
 	public Integer first;
+	
+	/**
+	 * Can also represent "j"
+	 */
 	public Integer second;
 	
 	/**
@@ -50,6 +57,10 @@ public class IntegerPair implements Writable{
 		return this.first;
 	}
 	
+	public int getI(){
+		return this.getFirst();
+	}
+	
 	/**
 	 * Get second
 	 * @return
@@ -58,6 +69,13 @@ public class IntegerPair implements Writable{
 		return this.second;
 	}
 	
+	public int getJ(){
+		return this.getSecond();
+	}
+	
+	/**
+	 * To string
+	 */
 	public String toString(){
 		return first + "," + second;
 	}

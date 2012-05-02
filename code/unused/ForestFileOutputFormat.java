@@ -1,4 +1,4 @@
-package lsimr.src.main.java.org.lsi.containers;
+package org.lsi.containers;
 import java.io.DataOutputStream;
 import java.io.IOException;
 
@@ -17,13 +17,13 @@ import org.apache.hadoop.mapred.Reporter;
 import org.apache.hadoop.util.Progressable;
 
 /**
- * @author chet
+ * @author Chet
  *
  */
 public class ForestFileOutputFormat extends FileOutputFormat<IntWritable, IntegerPair> {
 	
 	/**
-	 * @author chet
+	 * @author Chet
 	 *
 	 * @param <K>
 	 * @param <V>

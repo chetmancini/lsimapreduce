@@ -7,30 +7,26 @@ import java.io.IOException;
 import org.apache.hadoop.io.Writable;
 
 /**
- * @author Chet & Hugo
+ * @author Sean
  */
-public class LongBooleanLongWritableTuple implements Writable {
-	Long l;
-	Boolean b;
-	Long parent;
+public class IntIntWritableTuple implements Writable {
+	Integer l;
+	Integer parent;
 
-	public void set(long l, boolean b, long parent){
+	public void set(Integer l, Integer parent){
 		this.l = l;
-		this.b = b;
 		this.parent = parent;
 	}
 	
 	@Override
 	public void readFields(DataInput in) throws IOException {
-		l = in.readLong();
-		b = in.readBoolean();
-		parent = in.readLong();
+		l = in.readInt();
+		parent = in.readInt();
 	}
 
 	@Override
 	public void write(DataOutput out) throws IOException {
-		out.writeLong(l);
-		out.writeBoolean(b);
-		out.writeLong(parent);
+		out.writeInt(l);
+		out.writeInt(parent);
 	}
 }

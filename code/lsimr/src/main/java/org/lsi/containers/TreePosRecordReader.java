@@ -1,4 +1,4 @@
-package lsimr.src.main.java.org.lsi.containers;
+package org.lsi.containers;
 import java.io.IOException;
 
 
@@ -11,7 +11,7 @@ import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.mapred.FileSplit;
 
 /**
- * @author chet
+ * @author Chet
  * @param Key
  * @param Value
  */

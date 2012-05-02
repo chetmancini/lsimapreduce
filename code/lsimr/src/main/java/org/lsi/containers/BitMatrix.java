@@ -1,8 +1,8 @@
-package lsimr.src.main.java.org.lsi.containers;
+package org.lsi.containers;
 import java.util.BitSet;
 import java.util.ArrayList;
 
-import lsimr.src.main.java.org.lsi.mapreduce.MrProj;
+import org.lsi.mapreduce.MrProj;
 
 public class BitMatrix{
 
@@ -52,6 +52,7 @@ public class BitMatrix{
 	 * @param N
 	 * @return
 	 */
+	@Deprecated
 	public boolean get_index(long index, int N){
 		int i = MrProj.getI((int)index, N);
 		int j = MrProj.getJ((int)index, N);
@@ -100,8 +101,19 @@ public class BitMatrix{
 	 * @param columnWidth
 	 * @return
 	 */
-	public int[] getColumnGroupNbrsFromId(int id, int columnWidth){
-		return MrProj.getColumnGroupNbrsFromId(id, columnWidth, getN());
+	public int[] getColumnGroupNbrsFromLine(int id, int columnWidth){
+		return MrProj.getColumnGroupNbrsFromLine(id, columnWidth, getN());
 	}
 
+	/**
+	 * 
+	 * @param id
+	 * @param columnWidth
+	 * @return
+	 */
+	@Deprecated
+	public int[] getColumnGroupNbrsFromLine(long id, int columnWidth){
+		return MrProj.getColumnGroupNbrsFromLine(id, columnWidth, getN());
+	}
+	
 }

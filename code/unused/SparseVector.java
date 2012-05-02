@@ -1,3 +1,5 @@
+package unused;
+
 /*************************************************************************
  *  Compilation:  javac SparseVector.java
  *  Execution:    java SparseVector
