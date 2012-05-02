@@ -192,7 +192,7 @@ public class MrProj{
     /**
      * Open URL.
      * @param url
-     * @return buffered reader for that url.
+     * @return buffered reader for that URL.
      */
     public static BufferedReader openURL(URL url){
     	try {
@@ -211,6 +211,17 @@ public class MrProj{
      * @return the column group indices
      */
 	public static int[] getColumnGroupNbrsFromId(int id, int columnWidth, int N){
+		return new int[0];
+	}
+	
+	/**
+	 * Get the column groups, numbered from 0
+	 * @param id
+	 * @param columnWidth
+	 * @param N
+	 * @return
+	 */
+	public static int[] getColumnGroupNbrsFromId(long id, int columnWidth, int N){
 		return new int[0];
 	}
 
