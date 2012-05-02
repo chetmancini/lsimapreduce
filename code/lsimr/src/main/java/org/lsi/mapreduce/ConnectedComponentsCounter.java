@@ -399,9 +399,12 @@ public class ConnectedComponentsCounter extends Configured implements Tool {
 				columnGroupWidth, inputPath, firstPassOutputPath));
 		Job secondPass = new Job(createSecondPassConf(matrixSize,
 				columnGroupWidth, firstPassOutputPath, secondPassOutputPath));
+		secondPass.addDependingJob(firstPass);
 		Job thirdPass = new Job(createThirdPassConf(matrixSize,
 				columnGroupWidth, firstPassOutputPath, secondPassOutputPath,
 				outputPath));
+		thirdPass.addDependingJob(firstPass);
+		thirdPass.addDependingJob(secondPass);
 
 		JobControl jc = new JobControl("Connected components counter");
 		jc.addJob(firstPass);
