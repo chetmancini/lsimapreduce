@@ -413,27 +413,27 @@ public class ConnectedComponentsCounter extends Configured implements Tool {
 		if (firstPass.getState() != Job.FAILED
 				&& firstPass.getState() != Job.DEPENDENT_FAILED
 				&& firstPass.getState() != Job.SUCCESS) {
-			String states = "wordCountJob:  " + firstPass.getState() + "\n";
+			String states = "firstPassJob:  " + firstPass.getState() + "\n";
 			throw new Exception(
-					"The state of wordCountJob is not in a complete state\n"
+					"The state of firstPassJob is not in a complete state\n"
 							+ states);
 		}
 		// now the second job
 		if (secondPass.getState() != Job.FAILED
 				&& secondPass.getState() != Job.DEPENDENT_FAILED
 				&& secondPass.getState() != Job.SUCCESS) {
-			String states = "job2Job:  " + secondPass.getState() + "\n";
+			String states = "secondPassJob:  " + secondPass.getState() + "\n";
 			throw new Exception(
-					"The state of job2Job is not in a complete state\n"
+					"The state of secondPassJob is not in a complete state\n"
 							+ states);
 		}
-		// now the second job
+		// now the third job
 		if (thirdPass.getState() != Job.FAILED
 				&& thirdPass.getState() != Job.DEPENDENT_FAILED
 				&& thirdPass.getState() != Job.SUCCESS) {
-			String states = "job2Job:  " + thirdPass.getState() + "\n";
+			String states = "thirdPassJob:  " + thirdPass.getState() + "\n";
 			throw new Exception(
-					"The state of job2Job is not in a complete state\n"
+					"The state of thirdPassJob is not in a complete state\n"
 							+ states);
 		}
 
