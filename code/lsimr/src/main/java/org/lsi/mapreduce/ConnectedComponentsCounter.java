@@ -117,29 +117,28 @@ public class ConnectedComponentsCounter extends Configured implements Tool {
     
 	public static class ReduceFirstPass extends MapReduceBase
     implements
-    Reducer<IntWritable, WritableTuple, WritableTuple, IntWritable> {
+    Reducer<IntWritable, IntIntWritableTuple, IntIntWritableTuple, IntWritable> {
 		// Get all the <id,boolean> of cells for one column
 		// Return <<idcell,boolean>;id parent in this column>
 		public void reduce(IntWritable idcolumn,
-                           Iterator<WritableTuple> idsCells,
-                           OutputCollector<WritableTuple, IntWritable> output,
+                           Iterator<IntIntWritableTuple> idsCells,
+                           OutputCollector<IntWritable, IntIntWritableTuple> output,
                            Reporter reporter) throws IOException {
 			// TODO Plug the code of Sean Correctly
 			UnionFind uf = new UnionFind(idsCells);
             
 			while (idsCells.hasNext()) {
-				WritableTuple tuple = idsCells.next();
-				output.collect(tuple,
-                               new IntWritable(uf.getRoot(tuple.l)));
+				IntWritable tuple = idsCells.next();
+				output.collect(idcolumn, uf.getRoot(tuple.l));
 			}
 		}
 	}
     
 	public static class MapSecondPass extends MapReduceBase
     implements
-    Mapper<WritableTuple, IntWritable, Text, IntIntWritableTuple> {
+    Mapper<IntWritable, IntWritable, Text, IntIntWritableTuple> {
         
-		private WritableTuple idAndValueAndParentCell = new IntIntWritableTuple();
+		private IntIntWritableTuple idAndParentCell = new IntIntWritableTuple();
         
 		private final int defaultSizeInput = 1000;
 		private int sizeInput;
@@ -155,14 +154,14 @@ public class ConnectedComponentsCounter extends Configured implements Tool {
         
 		// Input key is <id,boolean> and value is parentid
 		// Return <someCommonKeyForAll;<idcell,booleancell,idparent>>
-		public void map(IntWritableTuple key, IntWritable parent,
+		public void map(IntWritable key, IntWritable parent,
                         OutputCollector<Text, IntIntWritableTuple> output,
                         Reporter reporter) throws IOException {
 			Text t = new Text("UniqueReducer");
             
 			// TODO Plug correct function of Chet
 			if (MrProj.isInBoundaryColumn(key.l, sizeInput, columnWidth)) {
-				idAndValueAndParentCell.set(key.l, key.b, parent.get());
+				idAndValueAndParentCell.set(key.l, parent.get());
 				output.collect(t, idAndValueAndParentCell);
 			}
 		}
