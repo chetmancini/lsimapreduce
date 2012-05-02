@@ -135,10 +135,6 @@ public class ConnectedComponentsCounter extends Configured implements Tool {
 				cellId.set(cellAndParentIds.i);
 				parentId.set(uf.getRoot(cellAndParentIds.i));
 
-				if (parentId.get() == -1)
-					reporter.setStatus("ERROR: Parent for cell " + cellId.get()
-							+ " has not been computed");
-
 				output.collect(cellId, parentId);
 			}
 		}
