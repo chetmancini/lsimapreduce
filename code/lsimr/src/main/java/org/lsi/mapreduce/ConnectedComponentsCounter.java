@@ -89,7 +89,7 @@ public class ConnectedComponentsCounter extends Configured implements Tool {
 				 * Loop over all possible column groups (could be two of them
 				 * for a boundary column.
 				 */
-				for (Integer i : MrProj.getColumngroupNbrsFromId(id,
+				for (Integer i : MrProj.getColumnGroupNbrsFromId(id,
 						columnWidth, sizeInput)) {
 					idColumn.set(i);
 					output.collect(idColumn, idAndParentCell);
@@ -362,7 +362,7 @@ public class ConnectedComponentsCounter extends Configured implements Tool {
 			return conf;
 		}
 
-		public int run(String[] args) throws Exception {
+		public int run(String[] args){
 
 			int matrixSize = -1, columnGroupWidth = -1;
 

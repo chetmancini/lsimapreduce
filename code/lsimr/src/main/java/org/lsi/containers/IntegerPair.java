@@ -10,7 +10,14 @@ import org.apache.hadoop.io.Writable;
  */
 public class IntegerPair implements Writable{
 
+	/**
+	 * Can also represent "i"
+	 */
 	public Integer first;
+	
+	/**
+	 * Can also represent "j"
+	 */
 	public Integer second;
 	
 	/**
@@ -50,12 +57,20 @@ public class IntegerPair implements Writable{
 		return this.first;
 	}
 	
+	public int getI(){
+		return this.getFirst();
+	}
+	
 	/**
 	 * Get second
 	 * @return
 	 */
 	public int getSecond(){
 		return this.second;
+	}
+	
+	public int getJ(){
+		return this.getSecond();
 	}
 	
 	/**

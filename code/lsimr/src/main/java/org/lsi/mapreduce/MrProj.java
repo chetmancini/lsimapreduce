@@ -11,6 +11,7 @@ import java.net.URL;
 import java.util.List;
 
 import org.lsi.containers.BitMatrix;
+import org.lsi.containers.IntegerPair;
 
 /**
  * MrProjStatic
@@ -253,15 +254,49 @@ public class MrProj{
 		}
     }
     
+    public static IntegerPair getIndices(int line){
+		int futureRowOrColumn = (int) Math.floor(Math.sqrt(line));
+		int closestLowerPerfectSquare = (int) Math.pow(futureRowOrColumn, 2);
+		int offset = line - closestLowerPerfectSquare;
+		int i,j;
+		if ((offset % 2)==0){
+			i = futureRowOrColumn;
+			j = offset / 2;
+		}else{
+			i = (offset-1)/2;
+			j = futureRowOrColumn;
+		}
+		return new IntegerPair(i,j);
+    }
+    
+    
     /**
      * Get the column groups, numbered from 0
+     * 
+     * Example: colwidth=3, N=10
+     * |0 1|2|3 4|5|6 7|8|9|
+     *  -0---     ---2---
+     *      ---1---     -3-
+     *    
+     *    
      * @param id the index id
      * @param columnWidth width of a column group, in columns.
      * @param N the width of the matrix
      * @return the column group indices
      */
-	public static int[] getColumnGroupNbrsFromId(int id, int columnWidth, int N){
-		return new int[0];
+	public static int[] getColumnGroupNbrsFromLine(int line, int columnWidth, int N){
+		IntegerPair indices = MrProj.getIndices(line);
+		int firstgroup = indices.getJ() / columnWidth;
+		if ((indices.getJ() % columnWidth) == (columnWidth - 1)){
+			int[] ret = new int[2];
+			ret[0] = firstgroup;
+			ret[1] = firstgroup+1;
+			return ret;
+		}else{
+			int[] ret = new int[1];
+			ret[0] = firstgroup;
+			return ret;
+		}
 	}
 	
 	/**
@@ -272,7 +307,7 @@ public class MrProj{
 	 * @return
 	 */
 	@Deprecated
-	public static int[] getColumnGroupNbrsFromId(long id, int columnWidth, int N){
+	public static int[] getColumnGroupNbrsFromLine(long line, int columnWidth, int N){
 		return new int[0];
 	}
 
