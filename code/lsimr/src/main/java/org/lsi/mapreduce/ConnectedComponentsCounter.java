@@ -109,6 +109,20 @@ public class ConnectedComponentsCounter extends Configured implements Tool {
 
 		IntWritable cellId = new IntWritable();
 		IntWritable parentId = new IntWritable();
+        
+		private final int defaultSizeInput = 1000;
+		private int sizeInput;
+		private int columnWidth;
+		private URL url;
+
+		public void configure(JobConf job) {
+			sizeInput = job.getInt("connectedcomponentscounter.matrix.size",
+					defaultSizeInput);
+			columnWidth = job.getInt(
+					"connectedcomponentscounter.matrix.columnWidth",
+					(int) Math.sqrt(sizeInput));
+			url = job.getResource("connectedcomponentscounter.matrix.inputurl");
+        }
 
 		// Get all the <id,boolean> of cells for one column
 		// Return <<idcell,boolean>;id parent in this column>
@@ -117,7 +131,7 @@ public class ConnectedComponentsCounter extends Configured implements Tool {
 				OutputCollector<IntWritable, IntWritable> output,
 				Reporter reporter) throws IOException {
 			// TODO Plug the code of Sean Correctly
-			UnionFind uf = new UnionFind(idsCells);
+			UnionFind uf = new UnionFind(idsCells, sizeInput, sizeInput);
 
 			while (idsCells.hasNext()) {
 				IntIntWritableTuple cellAndParentIds = idsCells.next();
@@ -166,6 +180,20 @@ public class ConnectedComponentsCounter extends Configured implements Tool {
 			Reducer<Text, IntIntWritableTuple, IntWritable, IntWritable> {
 		IntWritable cellId = new IntWritable();
 		IntWritable parentId = new IntWritable();
+		
+        private final int defaultSizeInput = 1000;
+		private int sizeInput;
+		private int columnWidth;
+		private URL url;
+
+		public void configure(JobConf job) {
+			sizeInput = job.getInt("connectedcomponentscounter.matrix.size",
+					defaultSizeInput);
+			columnWidth = job.getInt(
+					"connectedcomponentscounter.matrix.columnWidth",
+					(int) Math.sqrt(sizeInput));
+			url = job.getResource("connectedcomponentscounter.matrix.inputurl");
+        }
 
 		// Get all the <id,boolean,parent> of cells in boundary columns
 		// Return <<idcell,boolean>;parentUpdated>
@@ -174,7 +202,7 @@ public class ConnectedComponentsCounter extends Configured implements Tool {
 				OutputCollector<IntWritable, IntWritable> output,
 				Reporter reporter) throws IOException {
 			// TODO Plug the code of Sean Correctly
-			UnionFind uf = new UnionFind(idsCells);
+			UnionFind uf = new UnionFind(idsCells, sizeInput, sizeInput);
 
 			while (idsCells.hasNext()) {
 				IntIntWritableTuple cellAndParentIds = idsCells.next();
@@ -229,6 +257,18 @@ public class ConnectedComponentsCounter extends Configured implements Tool {
 		IntWritable outputKey = new IntWritable();
 		IntWritable outputValue = new IntWritable();
 
+		private final int defaultSizeInput = 1000;
+		private int sizeInput;
+		private int columnWidth;
+
+		public void configure(JobConf job) {
+			sizeInput = job.getInt("connectedcomponentscounter.matrix.size",
+					defaultSizeInput);
+			columnWidth = job.getInt(
+					"connectedcomponentscounter.matrix.columnWidth",
+					(int) Math.sqrt(sizeInput));
+		}
+
 		// Get all the <id,boolean,parent> of cells in one column group
 		// Return <parent,sizeSingleConnected>
 		public void reduce(IntWritable columnId,
@@ -236,7 +276,7 @@ public class ConnectedComponentsCounter extends Configured implements Tool {
 				OutputCollector<IntWritable, IntWritable> output,
 				Reporter reporter) throws IOException {
 			// TODO Plug the code of Sean Correctly
-			UnionFind uf = new UnionFind(idAndParentCells);
+			UnionFind uf = new UnionFind(idAndParentCells, sizeInput, sizeInput);
 
 			while (idAndParentCells.hasNext()) {
 				IntIntWritableTuple tuple = idAndParentCells.next();

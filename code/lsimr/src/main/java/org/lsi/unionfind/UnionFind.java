@@ -87,8 +87,10 @@ public class UnionFind {
     }
 
 
-    public UnionFind(Iterator<IntIntWritableTuple> idsCells)
+    public UnionFind(Iterator<IntIntWritableTuple> idsCells, Integer m, Integer n)
     {
+        this.m = m;
+        this.n = n;
         while(idsCells.hasNext()){
             IntIntWritableTuple c = idsCells.next();
             m_id.put(c.i,c.parent);
