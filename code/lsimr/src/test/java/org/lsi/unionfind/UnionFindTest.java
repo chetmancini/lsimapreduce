@@ -4,9 +4,7 @@ import junit.framework.Test;
 import junit.framework.TestCase;
 import junit.framework.TestSuite;
 import org.lsi.unionfind.UnionFind;
-import org.lsi.containers.TwoTuple;
 import org.lsi.containers.FullGraph;
-import org.lsi.containers.BoundaryGraph;
 import static org.junit.Assert.*;
 import java.util.HashMap;
 /**
