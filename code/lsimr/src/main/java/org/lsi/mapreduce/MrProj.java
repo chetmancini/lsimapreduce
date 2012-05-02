@@ -289,14 +289,14 @@ public class MrProj{
 		int closestLowerPerfectSquare = (int) Math.pow(futureRowOrColumn, 2);
 		int offset = line - closestLowerPerfectSquare;
 		int i,j;
-		if ((offset % 2)==0){
+		if ((offset % 2) == 0){
 			i = futureRowOrColumn;
 			j = offset / 2;
 		}else{
-			i = (offset-1)/2;
+			i = (offset - 1) / 2;
 			j = futureRowOrColumn;
 		}
-		return new IntegerPair(i,j);
+		return new IntegerPair(i, j);
     }
     
     
@@ -372,4 +372,24 @@ public class MrProj{
 		}
 	}
 
+	/**
+	 * Get the column group number by global index
+	 * @param globalIndex
+	 * @return
+	 */
+	public static int[] getColumnGroupNbr(int globalIndex, int columnWidth, int N){
+		int[] ret;
+		boolean inBoundary = MrProj.isInBoundaryColumnGlobal(globalIndex, columnWidth, N);
+		if(inBoundary){
+			ret = new int[2];
+			ret[0] = MrProj.getJ(globalIndex, N) / columnWidth;
+			ret[1] = ret[0] + 1;
+		}else{
+			ret = new int[1];
+			ret[0] = MrProj.getJ(globalIndex, N) / columnWidth;
+		}
+		return ret;
+	}
+	
+	
 }
