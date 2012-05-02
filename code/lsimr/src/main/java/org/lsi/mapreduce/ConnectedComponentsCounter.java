@@ -267,7 +267,7 @@ public class ConnectedComponentsCounter extends Configured implements Tool {
 		conf.setOutputValueClass(IntWritable.class);
 
 		conf.setMapperClass(MapFirstPass.class);
-		conf.setCombinerClass(ReduceFirstPass.class);
+//		conf.setCombinerClass(ReduceFirstPass.class);
 		conf.setReducerClass(ReduceFirstPass.class);
 
 		conf.setInputFormat(TextInputFormat.class);
@@ -295,7 +295,7 @@ public class ConnectedComponentsCounter extends Configured implements Tool {
 		conf.setOutputValueClass(IntWritable.class);
 
 		conf.setMapperClass(MapSecondPass.class);
-		conf.setCombinerClass(ReduceSecondPass.class);
+//		conf.setCombinerClass(ReduceSecondPass.class);
 		conf.setReducerClass(ReduceSecondPass.class);
 
 		conf.setInputFormat(TextInputFormat.class);
@@ -324,7 +324,7 @@ public class ConnectedComponentsCounter extends Configured implements Tool {
 		conf.setOutputValueClass(IntWritable.class);
 
 		conf.setMapperClass(MapThirdPass.class);
-		conf.setCombinerClass(ReduceThirdPass.class);
+//		conf.setCombinerClass(ReduceThirdPass.class);
 		conf.setReducerClass(ReduceThirdPass.class);
 
 		conf.setInputFormat(TextInputFormat.class);
