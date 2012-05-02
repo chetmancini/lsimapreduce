@@ -70,10 +70,10 @@ public class ConnectedComponentsCounter extends Configured implements Tool {
 			 */
 			if (MrProj.getBoolean(f)) {
 				/**
-				 * initialize the root to -1 to indicate we haven't scanned
+				 * initialize the root to id to indicate we haven't scanned
 				 * neighbors yet.
 				 */
-				idAndParentCell.set(id, -1);
+				idAndParentCell.set(id, id);
 
 				/**
 				 * Loop over all possible column groups (could be two of them
