@@ -210,4 +210,15 @@ public class UnionFind {
     {
         return i % m;
     }
+    
+    /**
+     * STUB
+     * TODO: IMPLEMENT
+     * @param tup
+     * @return
+     */
+    public int getNbrSizeInThisColumn(int parent){
+    	return 0;
+    }
+    
 }
