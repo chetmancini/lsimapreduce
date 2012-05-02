@@ -67,14 +67,12 @@ public class UnionFind {
         //the roots (which are scanned first since we go from smallest
         //to highest), will all be of the minimum index, so we use the
         //second pass to make sure all children are filled in consistently.
+
         for(Integer j=0; j<2; ++j){
-            for(Integer i=0; i<m*m_g; ++i)
+            for(Integer i : m_id.keySet())
             {
-                if(m_id.containsKey(i))
-                {
-                    lookLeft(i);
-                    lookDown(i);
-                }
+                lookLeft(i);
+                lookDown(i);
                 
             }
         }
