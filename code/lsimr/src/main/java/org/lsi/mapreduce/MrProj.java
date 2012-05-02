@@ -1,4 +1,4 @@
-package lsimr.src.main.java.org.lsi.mapreduce;
+package org.lsi.mapreduce;
 import java.io.BufferedInputStream;
 import java.io.BufferedReader;
 import java.io.DataInputStream;
@@ -10,7 +10,7 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.List;
 
-import lsimr.src.main.java.org.lsi.containers.BitMatrix;
+import org.lsi.containers.BitMatrix;
 
 /**
  * MrProjStatic

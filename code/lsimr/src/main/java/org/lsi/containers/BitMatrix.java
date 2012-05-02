@@ -1,8 +1,8 @@
-package lsimr.src.main.java.org.lsi.containers;
+package org.lsi.containers;
 import java.util.BitSet;
 import java.util.ArrayList;
 
-import lsimr.src.main.java.org.lsi.mapreduce.MrProj;
+import org.lsi.mapreduce.MrProj;
 
 public class BitMatrix{
 

@@ -1,4 +1,4 @@
-package lsimr.src.main.java.org.lsi.mapreduce;
+package org.lsi.mapreduce;
 
 import java.io.BufferedReader;
 import java.io.DataInput;
@@ -13,7 +13,8 @@ import java.util.List;
 import java.util.Set;
 import java.util.StringTokenizer;
 
-import lsimr.src.main.java.org.lsi.containers.BitMatrix;
+import org.lsi.containers.BitMatrix;
+import org.lsi.unionfind.UnionFind;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.conf.Configured;
@@ -117,7 +118,7 @@ public class ConnectedComponentsCounter extends Configured implements Tool {
 			while (idsCells.hasNext()) {
 				LongBooleanWritableTuple tuple = idsCells.next();
 				output.collect(tuple,
-                               new LongWritable(uf.getMyMostSouthWestParent(tuple.l)));
+                               new LongWritable(uf.getRoot(tuple.l)));
 			}
 		}
 	}
