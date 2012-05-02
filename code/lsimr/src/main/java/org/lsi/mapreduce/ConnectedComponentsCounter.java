@@ -21,10 +21,7 @@ import org.apache.hadoop.conf.Configured;
 import org.apache.hadoop.filecache.DistributedCache;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.io.IntWritable;
-<<<<<<< HEAD
-=======
 import org.apache.hadoop.io.IntWritable;
->>>>>>> ccefcb552a5217ad32e038ca508d7e1c36a9cc6d
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.io.Writable;
 import org.apache.hadoop.mapred.FileInputFormat;
@@ -46,15 +43,9 @@ import org.apache.hadoop.util.ToolRunner;
 public class ConnectedComponentsCounter extends Configured implements Tool {
     
 	public static class MapFirstPass extends MapReduceBase implements
-<<<<<<< HEAD
-    Mapper<IntWritable, Text, IntWritable, IntBooleanWritableTuple> {
-        
-		private IntBooleanWritableTuple idAndValueCell = new IntBooleanWritableTuple();
-=======
     Mapper<IntWritable, Text, IntWritable, IntIntWritableTuple> {
         
 		private IntIntWritableTuple idAndValueCell = new IntIntWritableTuple();
->>>>>>> ccefcb552a5217ad32e038ca508d7e1c36a9cc6d
 		private IntWritable idColumn = new IntWritable();
         
 		private final int defaultSizeInput = 1000;
@@ -74,21 +65,13 @@ public class ConnectedComponentsCounter extends Configured implements Tool {
 		// <get byte offset in input line, text of a line>
 		// Return <idcolumn;<idcell,booleancell>>
 		public void map(IntWritable key, Text value,
-<<<<<<< HEAD
-                        OutputCollector<IntWritable, IntBooleanWritableTuple> output,
-=======
                         OutputCollector<IntWritable, IntIntWritableTuple> output,
->>>>>>> ccefcb552a5217ad32e038ca508d7e1c36a9cc6d
                         Reporter reporter) throws IOException {
             
 			if(key.get()%12!=0) 
 				reporter.setStatus("Error modulo 12 in 1st pass map input is " + key.get()%12);
 			
-<<<<<<< HEAD
-			int id = (int) Math.floor(key.get()/12);
-=======
 			Integer id = (Integer) Math.floor(key.get()/12);
->>>>>>> ccefcb552a5217ad32e038ca508d7e1c36a9cc6d
 			Float f = new Float(value.toString());
 			
             /**
@@ -114,13 +97,9 @@ public class ConnectedComponentsCounter extends Configured implements Tool {
             }
 			
             BitMatrix m = MrProj.getMatrix(sizeInput, url);
-            for(int i=0; i < sizeInput * sizeInput; i++){
+            for(long i=0; i < sizeInput * sizeInput; i++){
             	
-<<<<<<< HEAD
-            	IntBooleanWritableTuple idcell = new IntBooleanWritableTuple();
-=======
             	IntWritable idcell = new IntWritable();
->>>>>>> ccefcb552a5217ad32e038ca508d7e1c36a9cc6d
             	
             	idcell.set(i, m.get_index(i, sizeInput));
             	idColumn.set(m.getColumnGroupNbrsFromId(i, columnWidth)[0]);
@@ -137,50 +116,29 @@ public class ConnectedComponentsCounter extends Configured implements Tool {
     
 	public static class ReduceFirstPass extends MapReduceBase
     implements
-<<<<<<< HEAD
-    Reducer<IntWritable, IntBooleanWritableTuple, IntBooleanWritableTuple, IntWritable> {
-		// Get all the <id,boolean> of cells for one column
-		// Return <<idcell,boolean>;id parent in this column>
-		public void reduce(IntWritable idcolumn,
-                           Iterator<IntBooleanWritableTuple> idsCells,
-                           OutputCollector<IntBooleanWritableTuple, IntWritable> output,
-=======
     Reducer<IntWritable, WritableTuple, WritableTuple, IntWritable> {
 		// Get all the <id,boolean> of cells for one column
 		// Return <<idcell,boolean>;id parent in this column>
 		public void reduce(IntWritable idcolumn,
                            Iterator<WritableTuple> idsCells,
                            OutputCollector<WritableTuple, IntWritable> output,
->>>>>>> ccefcb552a5217ad32e038ca508d7e1c36a9cc6d
                            Reporter reporter) throws IOException {
 			// TODO Plug the code of Sean Correctly
 			UnionFind uf = new UnionFind(idsCells);
             
 			while (idsCells.hasNext()) {
-<<<<<<< HEAD
-				IntBooleanWritableTuple tuple = idsCells.next();
-				output.collect(tuple,
-                               new IntWritable(uf.getRoot(tuple.i)));
-=======
 				WritableTuple tuple = idsCells.next();
 				output.collect(tuple,
                                new IntWritable(uf.getRoot(tuple.l)));
->>>>>>> ccefcb552a5217ad32e038ca508d7e1c36a9cc6d
 			}
 		}
 	}
     
 	public static class MapSecondPass extends MapReduceBase
     implements
-<<<<<<< HEAD
-    Mapper<IntBooleanWritableTuple, IntWritable, Text, IntBooleanIntWritableTuple> {
-        
-		private IntBooleanIntWritableTuple idAndValueAndParentCell = new IntBooleanIntWritableTuple();
-=======
     Mapper<WritableTuple, IntWritable, Text, IntIntWritableTuple> {
         
 		private WritableTuple idAndValueAndParentCell = new IntIntWritableTuple();
->>>>>>> ccefcb552a5217ad32e038ca508d7e1c36a9cc6d
         
 		private final int defaultSizeInput = 1000;
 		private int sizeInput;
@@ -196,19 +154,14 @@ public class ConnectedComponentsCounter extends Configured implements Tool {
         
 		// Input key is <id,boolean> and value is parentid
 		// Return <someCommonKeyForAll;<idcell,booleancell,idparent>>
-<<<<<<< HEAD
-		public void map(IntBooleanWritableTuple key, IntWritable parent,
-                        OutputCollector<Text, IntBooleanIntWritableTuple> output,
-=======
 		public void map(IntWritableTuple key, IntWritable parent,
                         OutputCollector<Text, IntIntWritableTuple> output,
->>>>>>> ccefcb552a5217ad32e038ca508d7e1c36a9cc6d
                         Reporter reporter) throws IOException {
 			Text t = new Text("UniqueReducer");
             
 			// TODO Plug correct function of Chet
-			if (MrProj.isInBoundaryColumn(key.i, sizeInput, columnWidth)) {
-				idAndValueAndParentCell.set(key.i, key.b, parent.get());
+			if (MrProj.isInBoundaryColumn(key.l, sizeInput, columnWidth)) {
+				idAndValueAndParentCell.set(key.l, key.b, parent.get());
 				output.collect(t, idAndValueAndParentCell);
 			}
 		}
@@ -216,61 +169,35 @@ public class ConnectedComponentsCounter extends Configured implements Tool {
     
 	public static class ReduceSecondPass extends MapReduceBase
     implements
-<<<<<<< HEAD
-    Reducer<Text, IntBooleanIntWritableTuple, IntBooleanWritableTuple, IntWritable> {
-		IntBooleanWritableTuple outputKey = new IntBooleanWritableTuple();
-=======
     Reducer<Text, IntIntWritableTuple, WritableTuple, IntWritable> {
 		WritableTuple outputKey = new WritableTuple();
->>>>>>> ccefcb552a5217ad32e038ca508d7e1c36a9cc6d
         
 		// Get all the <id,boolean,parent> of cells in boundary columns
 		// Return <<idcell,boolean>;parentUpdated>
 		public void reduce(
                            Text uselessKey,
-<<<<<<< HEAD
-                           Iterator<IntBooleanIntWritableTuple> idAndBooleanAndParentCells,
-                           OutputCollector<IntBooleanWritableTuple, IntWritable> output,
-=======
                            Iterator<IntIntWritableTuple> idAndAndParentCells,
                            OutputCollector<WritableTuple, IntWritable> output,
->>>>>>> ccefcb552a5217ad32e038ca508d7e1c36a9cc6d
                            Reporter reporter) throws IOException {
 			// TODO Plug the code of Sean Correctly
 			UnionFind uf = new UnionFind(idAndParentCells);
             
-<<<<<<< HEAD
-			while (idAndBooleanAndParentCells.hasNext()) {
-				IntBooleanIntWritableTuple tuple = idAndBooleanAndParentCells
-                .next();
-				outputKey.set(tuple.l, tuple.b);
-				output.collect(outputKey,
-                               new IntWritable(uf.getMyMostSouthWestParent(tuple.l)));
-=======
 			while (idAndParentCells.hasNext()) {
 				IntIntWritableTuple tuple = idAndParentCells
                 .next();
 				outputKey.set(tuple.l, tuple.b);
 				output.collect(outputKey,
                                new IntWritable(uf.getRoot(tuple.l)));
->>>>>>> ccefcb552a5217ad32e038ca508d7e1c36a9cc6d
 			}
 		}
 	}
     
 	public static class MapThirdPass extends MapReduceBase
     implements
-<<<<<<< HEAD
-    Mapper<IntBooleanWritableTuple, IntWritable, IntWritable, IntBooleanIntWritableTuple> {
-        
-		private IntWritable idColumn = new IntWritable();
-		private IntBooleanIntWritableTuple idAndValueAndParentCell = new IntBooleanIntWritableTuple();
-=======
     Mapper<WritableTuple, IntWritable, IntWritable, IntIntWritableTuple> {
         
 		private IntWritable idColumn = new IntWritable();
 		private IntIntWritableTuple idAndValueAndParentCell = new IntIntWritableTuple();
->>>>>>> ccefcb552a5217ad32e038ca508d7e1c36a9cc6d
         
 		private final int defaultSizeInput = 1000;
 		private int sizeInput;
@@ -287,20 +214,14 @@ public class ConnectedComponentsCounter extends Configured implements Tool {
 		// Input key is <id,boolean> and value is parentid
 		// Return <idcolumn;<idcell,booleancell,idparent>>
 		public void map(
-<<<<<<< HEAD
-                        IntBooleanWritableTuple key,
-                        IntWritable parent,
-                        OutputCollector<IntWritable, IntBooleanIntWritableTuple> output,
-=======
                         WritableTuple key,
                         IntWritable parent,
                         OutputCollector<IntWritable, IntIntWritableTuple> output,
->>>>>>> ccefcb552a5217ad32e038ca508d7e1c36a9cc6d
                         Reporter reporter) throws IOException {
 			// TODO Plug the code of Chet correctly
-			BitMatrix m = MrProj.getMyMatrix(sizeInput);
+			MyMatrix m = MRProj.getMyMatrix(sizeInput);
             
-			for (int i = 0; i < sizeInput * sizeInput; i++) {
+			for (long i = 0; i < sizeInput * sizeInput; i++) {
 				idAndValueAndParentCell.set(key.l, key.b, parent.get());
 				// Only add the left boundary column (avoid double counting)
 				idColumn.set(m.getColumnNbrFromId(i, columnWidth)[0]);
@@ -311,11 +232,7 @@ public class ConnectedComponentsCounter extends Configured implements Tool {
     
 	public static class ReduceThirdPass extends MapReduceBase
     implements
-<<<<<<< HEAD
-    Reducer<IntWritable, IntBooleanIntWritableTuple, IntWritable, IntWritable> {
-=======
     Reducer<IntWritable, IntIntWritableTuple, IntWritable, IntWritable> {
->>>>>>> ccefcb552a5217ad32e038ca508d7e1c36a9cc6d
         
 		IntWritable outputKey = new IntWritable();
 		IntWritable outputValue = new IntWritable();
@@ -324,24 +241,15 @@ public class ConnectedComponentsCounter extends Configured implements Tool {
 		// Return <parent,sizeSingleConnected>
 		public void reduce(
                            IntWritable columnId,
-<<<<<<< HEAD
-                           Iterator<IntBooleanIntWritableTuple> idAndBooleanAndParentCells,
-=======
                            Iterator<IntIntWritableTuple> idAndAndParentCells,
->>>>>>> ccefcb552a5217ad32e038ca508d7e1c36a9cc6d
                            OutputCollector<IntWritable, IntWritable> output,
                            Reporter reporter) throws IOException {
 			// TODO Plug the code of Sean Correctly
 			UnionFind uf = new UnionFind(idAndParentCells);
             
-<<<<<<< HEAD
-			while (idAndBooleanAndParentCells.hasNext()) {
-				IntBooleanIntWritableTuple tuple = idAndBooleanAndParentCells.next();
-=======
 			while (idAndParentCells.hasNext()) {
 				IntIntWritableTuple tuple = idAndAndParentCells
                 .next();
->>>>>>> ccefcb552a5217ad32e038ca508d7e1c36a9cc6d
 				outputKey.set(tuple.parent);
 				outputValue.set(uf.getNbrSizeInThisColumn(tuple.parent));
 				output.collect(outputKey, outputValue);
