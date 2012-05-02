@@ -1,4 +1,4 @@
-package lsimr.src.main.java.org.lsi.containers;
+package org.lsi.containers;
 import java.io.IOException;
 
 

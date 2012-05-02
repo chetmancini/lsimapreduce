@@ -1,8 +1,6 @@
 package org.lsi.unionfind;
 import java.util.HashMap;
-import org.lsi.containers.TwoTuple;
 import org.lsi.containers.FullGraph;
-import org.lsi.containers.BoundaryGraph;
 /**
  * Disclaimer: this is an untested work in
  * progress.  Pushed only for backup and transfer
@@ -85,16 +83,6 @@ public class UnionFind {
     }
 
     /**
-     * For the second pass, we have mapping from root to a tuple of potentially conflicting
-     * ids on the boundary columns.  For the left and right-most columns, the Tuple values
-     * will be the same.
-     */
-    UnionFind(BoundaryGraph id, Integer m, Integer n, Integer g)
-    {
-        //XXX: implement.
-    }
-
-    /**
      * Determines if a point is in a boundary column.
      * @param the one based index of the point of interest.
      */
@@ -113,6 +101,10 @@ public class UnionFind {
 
     public HashMap<Integer, Integer> getRoots(){
         return m_id;
+    }
+
+    public Integer getRoot(Integer i){
+        return m_id.get(i);
     }
     
     public Integer[] getTestOutput(){
