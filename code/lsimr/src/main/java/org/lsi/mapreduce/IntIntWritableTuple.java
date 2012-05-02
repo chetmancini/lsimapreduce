@@ -10,8 +10,8 @@ import org.apache.hadoop.io.Writable;
  * @author Sean
  */
 public class IntIntWritableTuple implements Writable {
-	Integer i;
-	Integer parent;
+	public Integer i;
+	public Integer parent;
 
 	public void set(Integer i, Integer parent){
 		this.i = i;

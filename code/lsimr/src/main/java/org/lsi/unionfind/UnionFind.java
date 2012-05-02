@@ -3,6 +3,7 @@ import java.util.HashMap;
 import org.lsi.containers.FullGraph;
 import org.lsi.mapreduce.*; 
 import java.util.Iterator;
+import org.lsi.mapreduce.IntIntWritableTuple;
 /**
  * Disclaimer: this is an untested work in
  * progress.  Pushed only for backup and transfer
@@ -46,8 +47,9 @@ public class UnionFind {
         this.n = id.n;
         this.m_g = id.g;
         this.m_edges = 0;
+    }
 
-
+    private void run(){
         //This looks redundant, but we look both ways even
         //if left is clearly lower, just so that we can also
         //count the vertices as we go.
@@ -85,7 +87,11 @@ public class UnionFind {
 
     public UnionFind(Iterator<IntIntWritableTuple> idsCells)
     {
-        //XXX: DOOITTTT
+        while(idsCells.hasNext()){
+            IntIntWritableTuple c = idsCells.next();
+            m_id.put(c.i,c.parent);
+        }            
+
     }
 
     /**
