@@ -5,12 +5,15 @@ import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.FileReader;
 import java.io.IOException;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 import java.util.StringTokenizer;
+
+import lsimr.src.main.java.org.lsi.containers.BitMatrix;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.conf.Configured;
@@ -48,6 +51,7 @@ public class ConnectedComponentsCounter extends Configured implements Tool {
 		private final int defaultSizeInput = 1000;
 		private int sizeInput;
 		private int columnWidth;
+		private URL url;
         
 		public void configure(JobConf job) {
 			sizeInput = job.getInt("connectedcomponentscounter.matrix.size",
@@ -55,6 +59,7 @@ public class ConnectedComponentsCounter extends Configured implements Tool {
 			columnWidth = job.getInt(
                                      "connectedcomponentscounter.matrix.columnWidth",
                                      (int) Math.sqrt(sizeInput));
+			url = job.getResource("connectedcomponentscounter.matrix.inputurl");
 		}
         
 		// <get byte offset in input line, text of a line>
@@ -64,33 +69,34 @@ public class ConnectedComponentsCounter extends Configured implements Tool {
                         Reporter reporter) throws IOException {
             
 			if(key.get()%12!=0) 
-				reporter.setStatus("Error modulo 12 in 1st pass map input is "+key.get()%12);
+				reporter.setStatus("Error modulo 12 in 1st pass map input is " + key.get()%12);
 			
 			Long id = (long) Math.floor(key.get()/12);
 			Float f = new Float(value.toString());
 			
-			idColumn.set(MrProj.getColumnNbrFromId(id, columnWidth)[0]);
+			idColumn.set(MrProj.getColumnGroupNbrsFromId(id, columnWidth, sizeInput)[0]);
 			idAndValueCell.set(id, MrProj.getBoolean(f));
 			output.collect(idColumn, idAndValueCell);
 			
-			if (MrProj.getColumnNbrFromId(id, columnWidth).length > 1) {
-				idColumn.set(MrProj.getColumnNbrFromId(id, columnWidth)[1]);
+			if (MrProj.getColumnGroupNbrsFromId(id, columnWidth, sizeInput).length > 1) {
+				idColumn.set(MrProj.getColumnGroupNbrsFromId(id, columnWidth, sizeInput)[1]);
 				output.collect(idColumn, idAndValueCell);
 			}
 			
-            //			// TODO Plug the code of Chet correctly
-            //			MyMatrix m = MRProj.getMyMatrix(sizeInput);
-            //            
-            //			for (long i = 0; i < sizeInput * sizeInput; i++) {
-            //				idcell.set(i, m.get(i));
-            //				idColumn.set(m.getColumnNbrFromId(i, columnWidth)[0]);
-            //				output.collect(idColumn, idcell);
-            //				// cell of the boundary column belonging to 2 columns
-            //				if (m.getColumnNbrFromId(i, columnWidth).length > 1) {
-            //					idColumn.set(m.getColumnNbrFromId(i, columnWidth)[1]);
-            //					output.collect(idColumn, idcell);
-            //				}
-            //			}
+			
+            BitMatrix m = MrProj.getMatrix(sizeInput, url);
+            for(long i=0; i < sizeInput * sizeInput; i++){
+            	
+            	idcell.set(i, m.get_index(i, sizeInput));
+            	idColumn.set(m.getColumnGroupNbrsFromId(i, columnWidth)[0]);
+            	output.collect(idColumn, idcell);
+            	
+				if (m.getColumnGroupNbrsFromColumnId(i, columnWidth).length > 1) {
+					idColumn.set(m.getColumnGroupNbrsFromId(i, columnWidth)[1]);
+					output.collect(idColumn, idcell);
+				}
+            }
+            
 		}
 	}
     

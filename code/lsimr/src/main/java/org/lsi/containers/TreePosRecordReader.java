@@ -11,10 +11,6 @@ import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.mapred.FileSplit;
 
 /**
- * 
- */
-
-/**
  * @author chet
  * @param Key
  * @param Value

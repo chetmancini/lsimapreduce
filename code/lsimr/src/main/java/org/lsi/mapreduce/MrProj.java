@@ -6,8 +6,11 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.List;
+
+import lsimr.src.main.java.org.lsi.containers.BitMatrix;
 
 /**
  * MrProjStatic
@@ -89,12 +92,59 @@ public class MrProj{
     public static int getI(int index, int N){
         return index % N;
     }
+    
+    /**
+     * Get the i component of an index.
+     */
+    public static int getI(long index, int N){
+        return (int) index % N;
+    }
 
     /**
      * Get j component of an index
      */
     public static int getJ(int index, int N){
         return (int) index / N;
+    }
+    
+    /**
+     * Get j component of an index
+     */
+    public static int getJ(long index, int N){
+        return (int) index / N;
+    }
+    
+    /**
+     * Get the next filtered input line.
+     * @return
+     */
+    public static boolean getNextFilteredInput(BufferedReader reader) {
+        String line;
+        try {
+            line = reader.readLine();
+            float w = parseLine(line);
+            return ( ((w >= MrProj.wMin) && (w < MrProj.wLimit)) ? true : false );
+        } catch (IOException e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
+    
+    /**
+     * Load in from file using algorithm described.
+     * @param N
+     */
+    public static BitMatrix getMatrix(int N, URL url){
+    	BufferedReader reader = MrProj.openURL(url);
+    	BitMatrix bitmatrix = new BitMatrix(N);
+        for( int j = 0; j < N; j++ ) {
+            for( int i = 0; i < j; i++ ) {
+                bitmatrix.put(i, j, getNextFilteredInput(reader));
+                bitmatrix.put(j, i, getNextFilteredInput(reader));
+            }
+            bitmatrix.put(j, j, getNextFilteredInput(reader));
+        }
+        return bitmatrix;
     }
 
 
@@ -112,7 +162,7 @@ public class MrProj{
      * @param filename
      * @return
      */
-    private BufferedReader openFileTest(String filename){
+    public static BufferedReader openFileTest(String filename){
         try{
             FileInputStream fs = new FileInputStream(filename);
             DataInputStream in = new DataInputStream(fs);
@@ -125,14 +175,43 @@ public class MrProj{
 
     /**
      * Open a web resource
+     * @param url the url to open
      */
-    private BufferedReader openUrl(String url){
-        try{
-            URL toOpen = new URL(url);
-            return new BufferedReader(new InputStreamReader(toOpen.openStream()));
-        }catch(Exception e){
-            return null;
-        }
+    public static BufferedReader openStringUrl(String url){
+    	URL toOpen;
+		try {
+			toOpen = new URL(url);
+			return MrProj.openURL(toOpen);
+		} catch (MalformedURLException e) {
+			e.printStackTrace();
+			return null;
+		}
+    	
     }
+    
+    /**
+     * Open URL.
+     * @param url
+     * @return buffered reader for that url.
+     */
+    public static BufferedReader openURL(URL url){
+    	try {
+			return new BufferedReader(new InputStreamReader(url.openStream()));
+		} catch (IOException e) {
+			e.printStackTrace();
+			return null;
+		}
+    }
+    
+    /**
+     * Get the column groups, numbered from 0
+     * @param id the index id
+     * @param columnWidth width of a column group, in columns.
+     * @param N the width of the matrix
+     * @return the column group indices
+     */
+	public static int[] getColumnGroupNbrsFromId(int id, int columnWidth, int N){
+		return new int[0];
+	}
 
 }

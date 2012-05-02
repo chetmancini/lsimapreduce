@@ -12,10 +12,6 @@ import org.apache.hadoop.mapred.RecordReader;
 import org.apache.hadoop.mapred.Reporter;
 
 /**
- * 
- */
-
-/**
  * @author chet
  */
 public class ForestFileInputFormat extends FileInputFormat<IntWritable, IntegerPair> {

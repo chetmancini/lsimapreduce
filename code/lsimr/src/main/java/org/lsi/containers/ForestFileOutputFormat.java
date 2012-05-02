@@ -17,10 +17,6 @@ import org.apache.hadoop.mapred.Reporter;
 import org.apache.hadoop.util.Progressable;
 
 /**
- * 
- */
-
-/**
  * @author chet
  *
  */
