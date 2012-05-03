@@ -23,12 +23,12 @@ public class UnionFind {
      * each set of connected components has 
      * the same root.
      */
-    private HashMap<ComplexNumber, ComplexNumber> m_id;
+    private HashMap<ComplexNumber, ComplexNumber> m_id = new HashMap<ComplexNumber, ComplexNumber>();
     private Integer m = 0;
     private Integer n = 0;
     private Integer m_g = 0;
     private Integer m_edges = 0;
-    private HashMap<ComplexNumber, Integer> m_sizes;
+    private HashMap<ComplexNumber, Integer> m_sizes = new HashMap<ComplexNumber, Integer>();
 
     /**
      * Data structure to efficiently keep track of

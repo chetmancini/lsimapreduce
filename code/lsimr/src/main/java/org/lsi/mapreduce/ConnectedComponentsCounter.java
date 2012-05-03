@@ -42,7 +42,6 @@ public class ConnectedComponentsCounter extends Configured implements Tool {
 		private final int defaultSizeInput = 1000;
 		private int sizeInput;
 		private int columnWidth;
-		private URL url;
 
 		public void configure(JobConf job) {
 			sizeInput = job.getInt("connectedcomponentscounter.matrix.size",
@@ -50,7 +49,6 @@ public class ConnectedComponentsCounter extends Configured implements Tool {
 			columnWidth = job.getInt(
 					"connectedcomponentscounter.matrix.columnWidth",
 					(int) Math.sqrt(sizeInput));
-			url = job.getResource("connectedcomponentscounter.matrix.inputurl");
 		}
 
 		// <get byte offset in input line, text of a line>
@@ -85,21 +83,6 @@ public class ConnectedComponentsCounter extends Configured implements Tool {
 					idColumn.set(i);
 					output.collect(idColumn, idAndParentCell);
 				}
-		
-				// BitMatrix m = MrProj.getMatrix(sizeInput, url);
-				// for(int i=0; i < sizeInput * sizeInput; i++){
-				//
-				// IntWritable idcell = new IntWritable();
-				//
-				// idcell.set(i, m.get_index(i, sizeInput));
-				// idColumn.set(m.getColumnGroupNbrsFromLine(i, columnWidth)[0]);
-				// output.collect(idColumn, idcell);
-				//
-				// if (m.getColumnGroupNbrsFromId(i, columnWidth).length > 1) {
-				// idColumn.set(m.getColumnGroupNbrsFromLine(i, columnWidth)[1]);
-				// output.collect(idColumn, idcell);
-				// }
-				// }
 
 			}
 		}
