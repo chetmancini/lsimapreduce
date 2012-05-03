@@ -9,9 +9,13 @@ import java.io.InputStreamReader;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.List;
+import java.util.StringTokenizer;
 
+import org.apache.hadoop.io.IntWritable;
+import org.apache.hadoop.io.Text;
 import org.lsi.containers.BitMatrix;
 import org.lsi.containers.IntegerPair;
+import org.lsi.containers.KeyValue;
 
 /**
  * MrProjStatic
@@ -190,7 +194,7 @@ public class MrProj{
      */
     public static boolean getNextFilteredInput(BufferedReader reader) {
         try {
-            return getBoolean(parseLine(reader.readLine()));
+            return getBoolean(parseLineToFloat(reader.readLine()));
         } catch (IOException e) {
             e.printStackTrace();
             return false;
@@ -220,10 +224,32 @@ public class MrProj{
      * @param line the line from the input.
      * @return a float representation of the line.
      */
-    public static float parseLine(String line){
+    public static float parseLineToFloat(String line){
         return Float.parseFloat(line.replace("\n", ""));
     }
-
+    
+    /**
+     * Parse a line for the second mapper.
+     * Format:
+     * [INT][TAB][INT]_[INT]
+     * 
+     * @param line the input line
+     * @return parsed values
+     */
+    public static KeyValue<IntWritable, IntIntWritableTuple> parseLineSecondMapper(Text line){
+    	String input = line.toString();
+    	StringTokenizer toker = new StringTokenizer(line.toString(), "_ \t");
+    	int first = Integer.parseInt(toker.nextToken());
+    	int second = Integer.parseInt(toker.nextToken());
+    	int third = Integer.parseInt(toker.nextToken());
+    	KeyValue<IntWritable, IntIntWritableTuple> ret = 
+    			new KeyValue<IntWritable, IntIntWritableTuple>(
+    					new IntWritable(first), 
+    					new IntIntWritableTuple(second, third));
+    	return ret;
+    }
+    
+    
     /**
      * Convert a float to a tree or not (boolean)
      * @param in input float (from string)
