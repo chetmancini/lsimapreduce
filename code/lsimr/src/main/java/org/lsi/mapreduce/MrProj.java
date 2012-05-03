@@ -387,17 +387,7 @@ public class MrProj{
 	
 	/**
 	 * Is in boundary column with respect to local index.
-	 * 
-	 *  x | x  x | x  |
-	 *  x | x  x | x  |\
-	 *  ...           | N
-	 *  x | x  x | x  |/
-	 *  x | x  x | x  |
-	 *  0   1  2   3  
-	 * -1   0  1   2
-	 * colwidth=3
-	 * 
-	 * 
+
 	 * @param localIndex
 	 * @param columnWidth
 	 * @param N size of one side
