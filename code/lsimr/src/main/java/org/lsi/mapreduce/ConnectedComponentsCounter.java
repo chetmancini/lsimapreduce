@@ -3,6 +3,7 @@ package org.lsi.mapreduce;
 import java.io.IOException;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 
@@ -67,17 +68,11 @@ public class ConnectedComponentsCounter extends Configured implements Tool {
 						+ key.get() % 12);
 
 			Integer line = (int) Math.floor(key.get() / 12);
-//			Float f = new Float(value.toString());
+			Float f = new Float(value.toString());
 			/**
 			 * Only put in the iterator if there is a vertex.
 			 */
-//			if (MrProj.getBoolean(f)) {
-				/**
-				 * initialize the root to id to indicate we haven't scanned
-				 * neighbors yet.
-				 */
-
-
+			if (MrProj.getBoolean(f)) {
 				/**
 				 * Loop over all possible column groups (could be two of them
 				 * for a boundary column.
@@ -90,7 +85,7 @@ public class ConnectedComponentsCounter extends Configured implements Tool {
 					output.collect(idColumn, idAndParentCell);
 				}
 				
-//			}
+			}
 		}
 	}
 
@@ -119,23 +114,17 @@ public class ConnectedComponentsCounter extends Configured implements Tool {
 				Iterator<IntIntWritableTuple> idsCells,
 				OutputCollector<IntWritable, IntIntWritableTuple> output,
 				Reporter reporter) throws IOException {
-			ArrayList<IntIntWritableTuple> list = new ArrayList<IntIntWritableTuple>();
-			while (idsCells.hasNext()) {
-				IntIntWritableTuple temp = idsCells.next();
-				
-				IntIntWritableTuple i = new IntIntWritableTuple();
-				i.set(temp.i, temp.parent);
-				list.add(i);
-			}
+			UnionFind uf = new UnionFind(idcolumn, idsCells, sizeInput, columnWidth);
+			HashMap<ComplexNumber, ComplexNumber> roots = uf.getRootsHashMap();
 			
-			UnionFind uf = new UnionFind(idcolumn, list.iterator(), sizeInput, columnWidth);
+			for(ComplexNumber complexCell : roots.keySet()) {
+				ComplexNumber complexRoot = roots.get(complexCell);
+                root.set(complexCell.index, complexRoot == null ? -42 : complexRoot.index);
 
-			for(IntIntWritableTuple cellAndParentIds : list) {
-				ComplexNumber complex = uf.getRoot(idcolumn.get(), cellAndParentIds.i);
-                root.i = cellAndParentIds.i;
-                root.parent = complex == null ? -42 : complex.index;
-
-				output.collect(idcolumn, root);
+                if(complexCell.groupid != idcolumn.get())
+                	output.collect(new IntWritable(-42), new IntIntWritableTuple(idcolumn.get(),complexCell.groupid));
+                else
+                	output.collect(new IntWritable(complexCell.groupid), root);
 			}
 		}
 	}

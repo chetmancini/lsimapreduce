@@ -22,6 +22,16 @@ public class IntIntWritableTuple implements Writable {
 	 * @param i
 	 * @param parent
 	 */
+	public IntIntWritableTuple(){
+		this.i = -1;
+		this.parent = -1;
+	}
+	
+	/**
+	 * Constructor
+	 * @param i
+	 * @param parent
+	 */
 	public IntIntWritableTuple(Integer i, Integer parent){
 		this.i = i;
 		this.parent = parent;

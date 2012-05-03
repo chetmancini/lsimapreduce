@@ -258,4 +258,8 @@ public class UnionFind {
     	return 0;
     }
     
+    public HashMap<ComplexNumber,ComplexNumber> getRootsHashMap() {
+    	return this.m_id;
+    }
+    
 }

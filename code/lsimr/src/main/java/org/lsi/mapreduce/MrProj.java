@@ -342,10 +342,10 @@ public class MrProj{
      */
 	public static int[] getColumnGroupNbrsFromLine(int line, int columnWidth, int N){
 		IntegerPair indices = MrProj.getIndices(line);
-//		int firstgroup = indices.getJ() / columnWidth;
-//		if ((indices.getJ() % columnWidth) == (columnWidth - 1)){
-		int firstgroup = Math.max(0, indices.getJ() / (columnWidth - 1) - 1);
-		if (indices.getJ() % (columnWidth-1) == 0 && firstgroup != 0 && firstgroup != N-1){
+		// Calling float in quotient is useful to avoid pre-rounding
+		int firstgroup = (int) Math.max(0, Math.floor( (float) indices.getJ() / (columnWidth-1) - 0.000001 ));
+		//int firstgroup = Math.max(0, Math.round(((float) indices.getJ()) / ((float) (columnWidth - 1)) - 1) );
+		if (indices.getJ() % (columnWidth-1) == 0 && indices.getJ() != 0 && indices.getJ() != N-1){
 			int[] ret = new int[2];
 			ret[0] = firstgroup;
 			ret[1] = firstgroup+1;
