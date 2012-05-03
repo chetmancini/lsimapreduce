@@ -29,4 +29,27 @@ public class IntIntWritableTuple implements Writable {
 		out.writeInt(this.i);
 		out.writeInt(this.parent);
 	}
+	
+	@Override
+	public int hashCode() {
+		return this.i.hashCode()
+				+ this.parent.hashCode();
+	}
+
+	@Override
+	public boolean equals(Object o) {
+		if (!(o instanceof IntIntWritableTuple))
+			return false;
+		else {
+			if (this.i.equals(((IntIntWritableTuple) o).i)
+					&& this.parent.equals(((IntIntWritableTuple) o).parent))
+				return true;
+		}
+		return false;
+	}
+	
+	@Override
+	public String toString() {
+		return this.i+"_"+this.parent;
+	}
 }

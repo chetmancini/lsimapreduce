@@ -316,8 +316,10 @@ public class MrProj{
      */
 	public static int[] getColumnGroupNbrsFromLine(int line, int columnWidth, int N){
 		IntegerPair indices = MrProj.getIndices(line);
-		int firstgroup = indices.getJ() / columnWidth;
-		if ((indices.getJ() % columnWidth) == (columnWidth - 1)){
+//		int firstgroup = indices.getJ() / columnWidth;
+//		if ((indices.getJ() % columnWidth) == (columnWidth - 1)){
+		int firstgroup = Math.max(0, indices.getJ() / (columnWidth - 1) - 1);
+		if (indices.getJ() % (columnWidth-1) == 0 && firstgroup != 0 && firstgroup != N-1){
 			int[] ret = new int[2];
 			ret[0] = firstgroup;
 			ret[1] = firstgroup+1;
@@ -327,6 +329,19 @@ public class MrProj{
 			ret[0] = firstgroup;
 			return ret;
 		}
+	}
+	
+	public static int getIdFromLine(int line, int N){
+		IntegerPair indices = MrProj.getIndices(line);
+		return indices.getI()+N*indices.getJ();
+	}
+	
+	public static int getIdInColumnGroupFromId(int id, int columnGroupNbr, int columnWidth, int N){
+		return id - (columnWidth-1) * N * columnGroupNbr;
+	}
+	
+	public static int getIdInColumnGroupFromLine(int line, int columnGroupNbr, int columnWidth, int N){
+		return getIdFromLine(line, N) - (columnWidth-1) * N * columnGroupNbr;
 	}
 
 	/**

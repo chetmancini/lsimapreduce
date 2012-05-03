@@ -5,6 +5,8 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+
+import org.lsi.containers.ComplexNumber;
 import org.lsi.unionfind.UnionFind;
 
 import org.apache.hadoop.conf.Configuration;
@@ -61,41 +63,41 @@ public class ConnectedComponentsCounter extends Configured implements Tool {
 				reporter.setStatus("Error modulo 12 in 1st pass map input is "
 						+ key.get() % 12);
 
-			Integer id = (int) Math.floor(key.get() / 12);
-			Float f = new Float(value.toString());
-
+			Integer line = (int) Math.floor(key.get() / 12);
+//			Float f = new Float(value.toString());
 			/**
 			 * Only put in the iterator if there is a vertex.
 			 */
-			if (MrProj.getBoolean(f)) {
+//			if (MrProj.getBoolean(f)) {
 				/**
 				 * initialize the root to id to indicate we haven't scanned
 				 * neighbors yet.
 				 */
-				idAndParentCell.set(id, id);
+
 
 				/**
 				 * Loop over all possible column groups (could be two of them
 				 * for a boundary column.
 				 */
-				for (Integer i : MrProj.getColumnGroupNbrsFromLine(id,
+				for (Integer i : MrProj.getColumnGroupNbrsFromLine(line,
 						columnWidth, sizeInput)) {
+					int idInColumnGroup = MrProj.getIdInColumnGroupFromLine(line, i, columnWidth, sizeInput);
+					idAndParentCell.set(idInColumnGroup, idInColumnGroup);
 					idColumn.set(i);
 					output.collect(idColumn, idAndParentCell);
 				}
-
-			}
+				
+//			}
 		}
 	}
 
 	public static class ReduceFirstPass extends MapReduceBase implements
 			Reducer<IntWritable, IntIntWritableTuple, IntWritable, IntIntWritableTuple> {
 
-        private IntIntWritableTuple root; 
+        private IntIntWritableTuple root = new IntIntWritableTuple(); 
 		private final int defaultSizeInput = 1000;
 		private int sizeInput;
 		private int columnWidth;
-		private URL url;
 
 		public void configure(JobConf job) {
 			sizeInput = job.getInt("connectedcomponentscounter.matrix.size",
@@ -103,7 +105,6 @@ public class ConnectedComponentsCounter extends Configured implements Tool {
 			columnWidth = job.getInt(
 					"connectedcomponentscounter.matrix.columnWidth",
 					(int) Math.sqrt(sizeInput));
-			url = job.getResource("connectedcomponentscounter.matrix.inputurl");
         }
 
 		// Get all the <id,boolean> of cells for one column
@@ -112,13 +113,21 @@ public class ConnectedComponentsCounter extends Configured implements Tool {
 				Iterator<IntIntWritableTuple> idsCells,
 				OutputCollector<IntWritable, IntIntWritableTuple> output,
 				Reporter reporter) throws IOException {
-			// TODO Plug the code of Sean Correctly
-			UnionFind uf = new UnionFind(idcolumn, idsCells, sizeInput, sizeInput);
-
+			ArrayList<IntIntWritableTuple> list = new ArrayList<IntIntWritableTuple>();
 			while (idsCells.hasNext()) {
-				IntIntWritableTuple cellAndParentIds = idsCells.next();
-                root.i = uf.getRoot(idcolumn.get(), cellAndParentIds.i).index;
-                root.parent = cellAndParentIds.parent;
+				IntIntWritableTuple temp = idsCells.next();
+				
+				IntIntWritableTuple i = new IntIntWritableTuple();
+				i.set(temp.i, temp.parent);
+				list.add(i);
+			}
+			
+			UnionFind uf = new UnionFind(idcolumn, list.iterator(), sizeInput, columnWidth);
+
+			for(IntIntWritableTuple cellAndParentIds : list) {
+				ComplexNumber complex = uf.getRoot(idcolumn.get(), cellAndParentIds.i);
+                root.i = cellAndParentIds.i;
+                root.parent = complex == null ? -42 : complex.index;
 
 				output.collect(idcolumn, root);
 			}
