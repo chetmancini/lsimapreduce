@@ -396,10 +396,10 @@ public class MrProj{
 	public static boolean isInBoundaryColumnLocal(int localIndex, int columnWidth, int N){
 		if(localIndex < N){
 			return true; // is on the left edge
-		}else if((localIndex / N)==columnWidth){
-			return true;
+		}else if((localIndex / N)== (columnWidth-1)){
+			return true; // is on the right edge
 		}else{
-			return false;
+			return false;//somewhere in the middle in no mans land
 		}
 	}
 
