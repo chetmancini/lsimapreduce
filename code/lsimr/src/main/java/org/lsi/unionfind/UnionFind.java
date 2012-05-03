@@ -186,16 +186,6 @@ public class UnionFind {
         else
             //same column group, just look one column left.
             left = new ComplexNumber(i.groupid, i.index-m);
-
-        System.out.println(left + " is left of " + i);
-
-        if(m_id.containsKey(i))
-            System.out.println("Key " + i + " is in the list.");
-        if(m_id.containsKey(left))
-            System.out.println("Key " + left + " is in the list.");
-        else
-            System.out.println("Key " + left + " is not in the list.");
-        
         if(m_id.containsKey(i) && m_id.containsKey(left)){
             ++m_edges; //there is an edge.
             unite(i, left);  //converted to one based.
