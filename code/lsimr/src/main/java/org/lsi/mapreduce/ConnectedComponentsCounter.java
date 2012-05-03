@@ -33,6 +33,9 @@ import org.apache.hadoop.util.ToolRunner;
 
 public class ConnectedComponentsCounter extends Configured implements Tool {
 
+	/**
+	 * MAP FIRST PASS
+	 */
 	public static class MapFirstPass extends MapReduceBase implements
 			Mapper<LongWritable, Text, IntWritable, IntIntWritableTuple> {
 
@@ -88,6 +91,9 @@ public class ConnectedComponentsCounter extends Configured implements Tool {
 		}
 	}
 
+	/**
+	 * REDUCE FIRST PASS
+	 */
 	public static class ReduceFirstPass extends MapReduceBase implements
 			Reducer<IntWritable, IntIntWritableTuple, IntWritable, IntIntWritableTuple> {
 
@@ -125,6 +131,10 @@ public class ConnectedComponentsCounter extends Configured implements Tool {
 		}
 	}
 
+	
+	/**
+	 * MAP SECOND PASS
+	 */
 	public static class MapSecondPass extends MapReduceBase implements
 			Mapper<IntWritable, IntWritable, Text, IntIntWritableTuple> {
 
@@ -157,6 +167,9 @@ public class ConnectedComponentsCounter extends Configured implements Tool {
 		}
 	}
 
+	/**
+	 * REDUCE SECOND PASS
+	 */
 	public static class ReduceSecondPass extends MapReduceBase implements
 			Reducer<Text, IntIntIntWritableTuple, IntWritable, IntWritable> {
 		IntWritable cellId = new IntWritable();
@@ -198,6 +211,9 @@ public class ConnectedComponentsCounter extends Configured implements Tool {
 		}
 	}
 
+	/**
+	 * MAP THIRD PASS
+	 */
 	public static class MapThirdPass extends MapReduceBase implements
 			Mapper<IntWritable, IntWritable, IntWritable, IntIntWritableTuple> {
 
@@ -232,6 +248,9 @@ public class ConnectedComponentsCounter extends Configured implements Tool {
 		}
 	}
 
+	/**
+	 * REDUCE THIRD PASS
+	 */
 	public static class ReduceThirdPass extends MapReduceBase implements
 			Reducer<IntWritable, IntIntWritableTuple, IntWritable, IntWritable> {
 
