@@ -3,8 +3,11 @@ package org.lsi.mapreduce;
 import java.io.IOException;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+
+import org.lsi.containers.ComplexNumber;
 import org.lsi.unionfind.UnionFind;
 
 import org.apache.hadoop.conf.Configuration;
@@ -33,6 +36,9 @@ import org.apache.hadoop.util.ToolRunner;
 
 public class ConnectedComponentsCounter extends Configured implements Tool {
 
+	/**
+	 * MAP FIRST PASS
+	 */
 	public static class MapFirstPass extends MapReduceBase implements
 			Mapper<LongWritable, Text, IntWritable, IntIntWritableTuple> {
 
@@ -42,7 +48,6 @@ public class ConnectedComponentsCounter extends Configured implements Tool {
 		private final int defaultSizeInput = 1000;
 		private int sizeInput;
 		private int columnWidth;
-		private URL url;
 
 		public void configure(JobConf job) {
 			sizeInput = job.getInt("connectedcomponentscounter.matrix.size",
@@ -50,7 +55,6 @@ public class ConnectedComponentsCounter extends Configured implements Tool {
 			columnWidth = job.getInt(
 					"connectedcomponentscounter.matrix.columnWidth",
 					(int) Math.sqrt(sizeInput));
-			url = job.getResource("connectedcomponentscounter.matrix.inputurl");
 		}
 
 		// <get byte offset in input line, text of a line>
@@ -63,56 +67,38 @@ public class ConnectedComponentsCounter extends Configured implements Tool {
 				reporter.setStatus("Error modulo 12 in 1st pass map input is "
 						+ key.get() % 12);
 
-			Integer id = (int) Math.floor(key.get() / 12);
+			Integer line = (int) Math.floor(key.get() / 12);
 			Float f = new Float(value.toString());
-
 			/**
 			 * Only put in the iterator if there is a vertex.
 			 */
 			if (MrProj.getBoolean(f)) {
 				/**
-				 * initialize the root to id to indicate we haven't scanned
-				 * neighbors yet.
-				 */
-				idAndParentCell.set(id, id);
-
-				/**
 				 * Loop over all possible column groups (could be two of them
 				 * for a boundary column.
 				 */
-				for (Integer i : MrProj.getColumnGroupNbrsFromLine(id,
+				for (Integer i : MrProj.getColumnGroupNbrsFromLine(line,
 						columnWidth, sizeInput)) {
+					int idInColumnGroup = MrProj.getIdInColumnGroupFromLine(line, i, columnWidth, sizeInput);
+					idAndParentCell.set(idInColumnGroup, idInColumnGroup);
 					idColumn.set(i);
 					output.collect(idColumn, idAndParentCell);
 				}
-		
-				// BitMatrix m = MrProj.getMatrix(sizeInput, url);
-				// for(int i=0; i < sizeInput * sizeInput; i++){
-				//
-				// IntWritable idcell = new IntWritable();
-				//
-				// idcell.set(i, m.get_index(i, sizeInput));
-				// idColumn.set(m.getColumnGroupNbrsFromLine(i, columnWidth)[0]);
-				// output.collect(idColumn, idcell);
-				//
-				// if (m.getColumnGroupNbrsFromId(i, columnWidth).length > 1) {
-				// idColumn.set(m.getColumnGroupNbrsFromLine(i, columnWidth)[1]);
-				// output.collect(idColumn, idcell);
-				// }
-				// }
-
+				
 			}
 		}
 	}
 
+	/**
+	 * REDUCE FIRST PASS
+	 */
 	public static class ReduceFirstPass extends MapReduceBase implements
 			Reducer<IntWritable, IntIntWritableTuple, IntWritable, IntIntWritableTuple> {
 
-        private IntIntWritableTuple root; 
+        private IntIntWritableTuple root = new IntIntWritableTuple(); 
 		private final int defaultSizeInput = 1000;
 		private int sizeInput;
 		private int columnWidth;
-		private URL url;
 
 		public void configure(JobConf job) {
 			sizeInput = job.getInt("connectedcomponentscounter.matrix.size",
@@ -120,7 +106,6 @@ public class ConnectedComponentsCounter extends Configured implements Tool {
 			columnWidth = job.getInt(
 					"connectedcomponentscounter.matrix.columnWidth",
 					(int) Math.sqrt(sizeInput));
-			url = job.getResource("connectedcomponentscounter.matrix.inputurl");
         }
 
 		// Get all the <id,boolean> of cells for one column
@@ -129,19 +114,25 @@ public class ConnectedComponentsCounter extends Configured implements Tool {
 				Iterator<IntIntWritableTuple> idsCells,
 				OutputCollector<IntWritable, IntIntWritableTuple> output,
 				Reporter reporter) throws IOException {
-			// TODO Plug the code of Sean Correctly
-			UnionFind uf = new UnionFind(idcolumn, idsCells, sizeInput, sizeInput);
+			UnionFind uf = new UnionFind(idcolumn, idsCells, sizeInput, columnWidth);
+			HashMap<ComplexNumber, ComplexNumber> roots = uf.getRootsHashMap();
+			
+			for(ComplexNumber complexCell : roots.keySet()) {
+				ComplexNumber complexRoot = roots.get(complexCell);
+                root.set(complexCell.index, complexRoot == null ? -42 : complexRoot.index);
 
-			while (idsCells.hasNext()) {
-				IntIntWritableTuple cellAndParentIds = idsCells.next();
-                root.i = uf.getRoot(idcolumn.get(), cellAndParentIds.i).index;
-                root.parent = cellAndParentIds.parent;
-
-				output.collect(idcolumn, root);
+                if(complexCell.groupid != idcolumn.get())
+                	output.collect(new IntWritable(-42), new IntIntWritableTuple(idcolumn.get(),complexCell.groupid));
+                else
+                	output.collect(new IntWritable(complexCell.groupid), root);
 			}
 		}
 	}
 
+	
+	/**
+	 * MAP SECOND PASS
+	 */
 	public static class MapSecondPass extends MapReduceBase implements
 			Mapper<IntWritable, IntWritable, Text, IntIntWritableTuple> {
 
@@ -174,6 +165,9 @@ public class ConnectedComponentsCounter extends Configured implements Tool {
 		}
 	}
 
+	/**
+	 * REDUCE SECOND PASS
+	 */
 	public static class ReduceSecondPass extends MapReduceBase implements
 			Reducer<Text, IntIntIntWritableTuple, IntWritable, IntWritable> {
 		IntWritable cellId = new IntWritable();
@@ -215,6 +209,9 @@ public class ConnectedComponentsCounter extends Configured implements Tool {
 		}
 	}
 
+	/**
+	 * MAP THIRD PASS
+	 */
 	public static class MapThirdPass extends MapReduceBase implements
 			Mapper<IntWritable, IntWritable, IntWritable, IntIntWritableTuple> {
 
@@ -249,6 +246,9 @@ public class ConnectedComponentsCounter extends Configured implements Tool {
 		}
 	}
 
+	/**
+	 * REDUCE THIRD PASS
+	 */
 	public static class ReduceThirdPass extends MapReduceBase implements
 			Reducer<IntWritable, IntIntWritableTuple, IntWritable, IntWritable> {
 
@@ -297,7 +297,6 @@ public class ConnectedComponentsCounter extends Configured implements Tool {
 		conf.setOutputValueClass(IntWritable.class);
 
 		conf.setMapperClass(MapFirstPass.class);
-		conf.setCombinerClass(ReduceFirstPass.class);
 		conf.setReducerClass(ReduceFirstPass.class);
 
 		conf.setInputFormat(TextInputFormat.class);
@@ -321,14 +320,13 @@ public class ConnectedComponentsCounter extends Configured implements Tool {
 		JobConf conf = new JobConf(getConf(), ConnectedComponentsCounter.class);
 		conf.setJobName("connectedComponentCounter_secondPass");
 
-		conf.setMapOutputKeyClass(IntWritable.class); 
+		conf.setMapOutputKeyClass(Text.class); 
 		conf.setMapOutputValueClass(IntIntWritableTuple.class);
 		
-		conf.setOutputKeyClass(Text.class);
+		conf.setOutputKeyClass(IntWritable.class);
 		conf.setOutputValueClass(IntIntWritableTuple.class);
 
 		conf.setMapperClass(MapSecondPass.class);
-//		conf.setCombinerClass(ReduceSecondPass.class);
 		conf.setReducerClass(ReduceSecondPass.class);
 
 		conf.setInputFormat(TextInputFormat.class);
@@ -351,7 +349,7 @@ public class ConnectedComponentsCounter extends Configured implements Tool {
 			String firstPassOutputPath, String secondPassOutputPath,
 			String outputPath) {
 		JobConf conf = new JobConf(getConf(), ConnectedComponentsCounter.class);
-		conf.setJobName("connectedComponentCounter_secondPass");
+		conf.setJobName("connectedComponentCounter_thirdPass");
 
 		conf.setMapOutputKeyClass(IntWritable.class); 
 		conf.setMapOutputValueClass(IntIntWritableTuple.class);
@@ -360,7 +358,6 @@ public class ConnectedComponentsCounter extends Configured implements Tool {
 		conf.setOutputValueClass(IntWritable.class);
 
 		conf.setMapperClass(MapThirdPass.class);
-//		conf.setCombinerClass(ReduceThirdPass.class);
 		conf.setReducerClass(ReduceThirdPass.class);
 
 		conf.setInputFormat(TextInputFormat.class);
@@ -387,10 +384,10 @@ public class ConnectedComponentsCounter extends Configured implements Tool {
 
 		List<String> other_args = new ArrayList<String>();
 		for (int i = 0; i < args.length; ++i) {
-			if ("-size".equals(args[i])) {
+			if ("size".equals(args[i])) {
 				matrixSize = new Integer(args[++i]);
 			}
-			if ("-columnWidth".equals(args[i])) {
+			if ("columnWidth".equals(args[i])) {
 				columnGroupWidth = new Integer(args[++i]);
 			} else {
 				other_args.add(args[i]);
@@ -410,7 +407,6 @@ public class ConnectedComponentsCounter extends Configured implements Tool {
 		Job thirdPass = new Job(createThirdPassConf(matrixSize,
 				columnGroupWidth, firstPassOutputPath, secondPassOutputPath,
 				outputPath));
-		thirdPass.addDependingJob(firstPass);
 		thirdPass.addDependingJob(secondPass);
 
 		JobControl jc = new JobControl("Connected components counter");
