@@ -19,6 +19,7 @@ import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.io.Writable;
+import org.apache.hadoop.mapred.Counters;
 import org.apache.hadoop.mapred.FileInputFormat;
 import org.apache.hadoop.mapred.FileOutputFormat;
 import org.apache.hadoop.mapred.JobClient;
@@ -28,6 +29,7 @@ import org.apache.hadoop.mapred.Mapper;
 import org.apache.hadoop.mapred.OutputCollector;
 import org.apache.hadoop.mapred.Reducer;
 import org.apache.hadoop.mapred.Reporter;
+import org.apache.hadoop.mapred.RunningJob;
 import org.apache.hadoop.mapred.TextInputFormat;
 import org.apache.hadoop.mapred.TextOutputFormat;
 import org.apache.hadoop.mapred.jobcontrol.Job;
@@ -37,6 +39,10 @@ import org.apache.hadoop.util.ToolRunner;
 
 public class ConnectedComponentsCounter extends Configured implements Tool {
 
+	static enum STATS {
+		VERTICES, EDGES, COMPONENTS
+	}
+	
 	/**
 	 * MAP FIRST PASS
 	 */
@@ -78,6 +84,8 @@ public class ConnectedComponentsCounter extends Configured implements Tool {
 			 * Only put in the iterator if there is a vertex.
 			 */
 			if (MrProj.getBoolean(f)) {
+				reporter.getCounter(STATS.VERTICES).increment(1);
+				
 				/**
 				 * Loop over all possible column groups (could be two of them
 				 * for a boundary column.
@@ -123,6 +131,8 @@ public class ConnectedComponentsCounter extends Configured implements Tool {
 				OutputCollector<IntWritable, IntIntWritableTuple> output,
 				Reporter reporter) throws IOException {
 			UnionFind uf = new UnionFind(idcolumn, idsCells, sizeInput, columnWidth);
+			
+			reporter.getCounter(STATS.EDGES).increment(uf.getEdges());
 			HashMap<ComplexNumber, ComplexNumber> roots = uf.getRoots();
 			
 			for(ComplexNumber complexCell : roots.keySet()) {
@@ -289,7 +299,7 @@ public class ConnectedComponentsCounter extends Configured implements Tool {
 				OutputCollector<IntWritable, IntWritable> output,
 				Reporter reporter) throws IOException {
 			UnionFind uf = new UnionFind(columnGroupId, idAndParentCells, sizeInput, columnWidth);
-			
+
 			HashMap<ComplexNumber, Integer> sizesForRoot = uf.getSizes();
 			
 			for(ComplexNumber c : sizesForRoot.keySet()) {
@@ -324,7 +334,8 @@ public class ConnectedComponentsCounter extends Configured implements Tool {
 		// Return <globalIdRoot,sum of sizeConnectedComponent>
 		public void reduce(IntWritable key, Iterator<IntWritable> values,
 				OutputCollector<IntWritable, IntWritable> output,
-				Reporter reporter) throws IOException {		
+				Reporter reporter) throws IOException {	
+			reporter.getCounter(STATS.COMPONENTS).increment(1);
 			int sum = 0;
 			while(values.hasNext()){
 				sum += values.next().get();
@@ -501,90 +512,59 @@ public class ConnectedComponentsCounter extends Configured implements Tool {
 		String secondPassOutputPath = inputPath + "/secondPass";
 		String thirdPassOutputPath = inputPath + "/thirdPass";
 		String outputPath = other_args.get(1);
-
-		Job firstPass = new Job(createFirstPassConf(matrixSize,
+		
+		RunningJob firstPassRunning = JobClient.runJob(createFirstPassConf(matrixSize,
 				columnGroupWidth, defaultDensity, inputPath, firstPassOutputPath));
-		Job secondPass = new Job(createSecondPassConf(matrixSize,
-				columnGroupWidth, defaultDensity, firstPassOutputPath, secondPassOutputPath));
-		secondPass.addDependingJob(firstPass);
-		Job thirdPass = new Job(createThirdPassConf(matrixSize,
-				columnGroupWidth, defaultDensity, firstPassOutputPath, secondPassOutputPath,
-				thirdPassOutputPath));
-		thirdPass.addDependingJob(secondPass);
-		Job fourthPass = new Job(createFourthPassConf(matrixSize,
-				columnGroupWidth, defaultDensity, thirdPassOutputPath,
-				outputPath));
-		fourthPass.addDependingJob(thirdPass);
-
-		JobControl jc = new JobControl("Connected components counter");
-		jc.addJob(firstPass);
-		jc.addJob(secondPass);
-		jc.addJob(thirdPass);
-		jc.addJob(fourthPass);
-
-		// start the controller in a different thread, no worries as it does
-		// that anyway
-		Thread theController = new Thread(jc);
-		theController.start();
-
-		// poll until everything is done,
-		// in the meantime justs output some status message
-		while (!jc.allFinished()) {
-			System.out.println("Jobs in waiting state: "
-					+ jc.getWaitingJobs().size());
-			System.out.println("Jobs in ready state: "
-					+ jc.getReadyJobs().size());
-			System.out.println("Jobs in running state: "
-					+ jc.getRunningJobs().size());
-			System.out.println("Jobs in success state: "
-					+ jc.getSuccessfulJobs().size());
-			System.out.println("Jobs in failed state: "
-					+ jc.getFailedJobs().size());
-			System.out.println("\n");
-			// sleep 5 seconds
-			try {
-				Thread.sleep(5000);
-			} catch (Exception e) {
-			}
+		
+		while(!firstPassRunning.isComplete()) {
+			System.out.println("First pass running");
+			Thread.sleep(2000);
+		}
+		
+		if(!firstPassRunning.isSuccessful()) {
+			System.out.println("First pass failed");
+			return -1;
+		}
+				
+		RunningJob secondPassRunning = JobClient.runJob(createSecondPassConf(matrixSize,
+				columnGroupWidth, firstPassOutputPath, secondPassOutputPath));
+		
+		while(!secondPassRunning.isComplete()) {
+			System.out.println("Second pass running");
+			Thread.sleep(2000);
+		}
+		
+		if(!secondPassRunning.isSuccessful()) {
+			System.out.println("Second pass failed");
+			return -1;
+		}
+		
+		RunningJob thirdPassRunning = JobClient.runJob(createThirdPassConf(matrixSize,
+				columnGroupWidth, firstPassOutputPath, secondPassOutputPath, thirdPassOutputPath));
+		
+		while(!thirdPassRunning.isComplete()) {
+			System.out.println("Third pass running");
+			Thread.sleep(2000);
 		}
 
-		// you have to check the status of each job submitted
-		if (firstPass.getState() != Job.FAILED
-				&& firstPass.getState() != Job.DEPENDENT_FAILED
-				&& firstPass.getState() != Job.SUCCESS) {
-			String states = "firstPassJob:  " + firstPass.getState() + "\n";
-			throw new Exception(
-					"The state of firstPassJob is not in a complete state\n"
-							+ states);
+		if(!thirdPassRunning.isSuccessful()) {
+			System.out.println("Third pass failed");
+			return -1;
 		}
-		// now the second job
-		if (secondPass.getState() != Job.FAILED
-				&& secondPass.getState() != Job.DEPENDENT_FAILED
-				&& secondPass.getState() != Job.SUCCESS) {
-			String states = "secondPassJob:  " + secondPass.getState() + "\n";
-			throw new Exception(
-					"The state of secondPassJob is not in a complete state\n"
-							+ states);
-		}
-		// now the third job
-		if (thirdPass.getState() != Job.FAILED
-				&& thirdPass.getState() != Job.DEPENDENT_FAILED
-				&& thirdPass.getState() != Job.SUCCESS) {
-			String states = "thirdPassJob:  " + thirdPass.getState() + "\n";
-			throw new Exception(
-					"The state of thirdPassJob is not in a complete state\n"
-							+ states);
-		}
-		// now the fourth job
-		if (fourthPass.getState() != Job.FAILED
-				&& fourthPass.getState() != Job.DEPENDENT_FAILED
-				&& fourthPass.getState() != Job.SUCCESS) {
-			String states = "fourthPassJob:  " + fourthPass.getState() + "\n";
-			throw new Exception(
-					"The state of fourthPassJob is not in a complete state\n"
-							+ states);
+		
+		RunningJob fourthPassRunning = JobClient.runJob(createFourthPassConf(matrixSize,
+				columnGroupWidth, thirdPassOutputPath, outputPath));
+		
+		while(!fourthPassRunning.isComplete()) {
+			System.out.println("Fourth pass running");
+			Thread.sleep(2000);
 		}
 
+		if(!fourthPassRunning.isSuccessful()) {
+			System.out.println("Fourth pass failed");
+			return -1;
+		}
+		
 		return 0;
 	}
 
