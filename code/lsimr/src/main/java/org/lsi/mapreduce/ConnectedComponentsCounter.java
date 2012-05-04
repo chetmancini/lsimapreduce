@@ -352,11 +352,11 @@ public class ConnectedComponentsCounter extends Configured implements Tool {
 		JobConf conf = new JobConf(getConf(), ConnectedComponentsCounter.class);
 		conf.setJobName("connectedComponentCounter_firstPass");
 
-		conf.setMapOutputKeyClass(IntIntWritableTuple.class); 
+		conf.setMapOutputKeyClass(IntWritable.class); 
 		conf.setMapOutputValueClass(IntIntWritableTuple.class);
 		
-		conf.setOutputKeyClass(IntWritable.class);
-		conf.setOutputValueClass(IntWritable.class);
+		conf.setOutputKeyClass(IntIntWritableTuple.class);
+		conf.setOutputValueClass(IntIntWritableTuple.class);
 
 		conf.setMapperClass(MapFirstPass.class);
 		conf.setReducerClass(ReduceFirstPass.class);
