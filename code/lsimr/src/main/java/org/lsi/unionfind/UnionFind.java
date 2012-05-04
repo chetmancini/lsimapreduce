@@ -79,7 +79,7 @@ public class UnionFind {
         {
             for(ComplexNumber i : keys) 
             {
-                System.out.println(i);
+                //System.out.println(i);
                 lookLeft(i);
                 lookDown(i);
             }
@@ -102,7 +102,6 @@ public class UnionFind {
             m_id.put(k,v);
         }            
         run();
-
     }
 
     public UnionFind(Iterator<IntIntIntWritableTuple> idsCells, Integer m, Integer n)
@@ -126,9 +125,35 @@ public class UnionFind {
         return ( (i/m)%(m_g-1) == 0 );
     }
 
+    public HashMap<ComplexNumber, ComplexNumber> getBoundaryColumns()
+    {
+        HashMap<ComplexNumber, ComplexNumber> bc = new HashMap<ComplexNumber, ComplexNumber>();
+        Iterator it = m_id.entrySet().iterator();
+        while(it.hasNext())
+        {
+            Map.Entry pairs = (Map.Entry)it.next(); 
+            ComplexNumber k = (ComplexNumber)pairs.getKey();
+            ComplexNumber v = (ComplexNumber)pairs.getValue();
+            bc.put(k,v); 
+        }
+        return bc;
+    }
+
     public HashMap<ComplexNumber, ComplexNumber> getRoots()
     {
         return m_id;
+    }
+
+    public void printRoots()
+    {
+        Iterator it = m_id.entrySet().iterator();
+        while(it.hasNext())
+        {
+            Map.Entry pairs = (Map.Entry)it.next(); 
+            ComplexNumber k = (ComplexNumber)pairs.getKey();
+            ComplexNumber v = (ComplexNumber)pairs.getValue();
+            System.out.println("{" + k + "," + v + "}"); 
+        }
     }
 
     public Integer getRoot(Integer index) throws Exception
@@ -170,7 +195,7 @@ public class UnionFind {
         return 0;
     }
 
-    /**
+    /*
      * Return the id of the element below, if there
      * is a tree there, otherwise return own id.
      * @param i The zero based index of the point of interest.
@@ -217,10 +242,10 @@ public class UnionFind {
      */
     private void unite(ComplexNumber p, ComplexNumber q)
     {
-        System.out.println("Uniting " + p + ", " + q);
+        //System.out.println("Uniting " + p + ", " + q);
         ComplexNumber i = root(p);
         ComplexNumber j = root(q);
-        System.out.println("With roots " + i + ", " + j);
+        //System.out.println("With roots " + i + ", " + j);
         if(i.lessThan(j))
             m_id.put(j,i);
         else

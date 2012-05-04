@@ -391,17 +391,7 @@ public class MrProj{
 	
 	/**
 	 * Is in boundary column with respect to local index.
-	 * 
-	 *  x | x  x | x  |
-	 *  x | x  x | x  |\
-	 *  ...           | N
-	 *  x | x  x | x  |/
-	 *  x | x  x | x  |
-	 *  0   1  2   3  
-	 * -1   0  1   2
-	 * colwidth=3
-	 * 
-	 * 
+
 	 * @param localIndex
 	 * @param columnWidth
 	 * @param N size of one side
@@ -410,10 +400,10 @@ public class MrProj{
 	public static boolean isInBoundaryColumnLocal(int localIndex, int columnWidth, int N){
 		if(localIndex < N){
 			return true; // is on the left edge
-		}else if((localIndex / N)==columnWidth){
-			return true;
+		}else if((localIndex / N)== (columnWidth-1)){
+			return true; // is on the right edge
 		}else{
-			return false;
+			return false;//somewhere in the middle in no mans land
 		}
 	}
 

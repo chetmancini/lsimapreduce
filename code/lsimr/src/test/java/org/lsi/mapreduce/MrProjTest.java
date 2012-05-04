@@ -11,16 +11,13 @@ import java.util.HashMap;
 /**
  * Unit test for simple App.
  */
-public class MrProjTest
-    extends TestCase
-{
+public class MrProjTest extends TestCase{
     /**
      * Create the test case
      *
      * @param testName name of the test case
      */
-    public MrProjTest( String testName )
-    {
+    public MrProjTest( String testName ){
         super( testName );
     }
 
