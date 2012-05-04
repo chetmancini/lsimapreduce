@@ -11,14 +11,14 @@ import org.apache.hadoop.io.Writable;
  */
 public class IntIntIntIntWritableTuple implements Writable {
 	public Integer groupidi;
-    public Integer groupidp;
 	public Integer i;
+    public Integer groupidp;
 	public Integer parent;
 
 	public void set(Integer groupidi, Integer i, Integer groupidp, Integer parent) {
 		this.groupidi = groupidi;
-        this.groupidp = groupidp;
 		this.i = i;
+        this.groupidp = groupidp;
 		this.parent = parent;
 	}
 

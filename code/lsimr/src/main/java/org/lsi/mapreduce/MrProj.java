@@ -251,10 +251,11 @@ public class MrProj{
     	int first = Integer.parseInt(toker.nextToken());
     	int second = Integer.parseInt(toker.nextToken());
     	int third = Integer.parseInt(toker.nextToken());
+        int fourth = Integer.parseInt(toker.nextToken());
     	KeyValue<IntWritable, IntIntWritableTuple> ret = 
     			new KeyValue<IntWritable, IntIntWritableTuple>(
     					new IntWritable(first), 
-    					new IntIntWritableTuple(second, third));
+    					new IntIntWritableTuple(second, fourth));
     	return ret;
     }
     
