@@ -4,14 +4,20 @@ public class ComplexNumber implements Comparable <ComplexNumber>{
     public Integer index = 0;
     public Integer groupid = 0;
 
-    public ComplexNumber(Integer groupid, Integer index)
-    {
+    /**
+     * Constructor
+     * @param groupid
+     * @param index
+     */
+    public ComplexNumber(Integer groupid, Integer index){
         this.index = index;
         this.groupid = groupid;
     }
 
-    public int compareTo(ComplexNumber c)
-    {
+    /**
+     * CompareTo
+     */
+    public int compareTo(ComplexNumber c){
         if(this.groupid<c.groupid)
             return -1;
         else if(this.groupid==c.groupid)
@@ -23,6 +29,10 @@ public class ComplexNumber implements Comparable <ComplexNumber>{
         }
         return 1;
     }
+    
+    /**
+     * Equals
+     */
     public boolean equals(Object obj) {
         if (obj == null)
             return false;
