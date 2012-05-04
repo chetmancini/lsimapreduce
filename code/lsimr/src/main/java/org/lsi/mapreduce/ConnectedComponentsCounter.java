@@ -196,9 +196,13 @@ public class ConnectedComponentsCounter extends Configured implements Tool {
 			HashMap<ComplexNumber, ComplexNumber> roots = uf.getRoots();
 
 			for(ComplexNumber complexCell : roots.keySet()) {
-				ComplexNumber complexRoot = roots.get(complexCell);
-                root.set(complexCell.index, complexRoot == null ? -42 : complexRoot.index);
-                output.collect(new IntWritable(complexCell.groupid), root);
+				//Not output right boundary column except if last column is the end of a column group
+				if(complexCell.index<sizeInput || complexCell.groupid == (sizeInput - 1)/(columnWidth - 1) - 1) {
+					ComplexNumber complexRoot = roots.get(complexCell);
+					root.set(complexCell.index, complexRoot == null ? -42
+							: complexRoot.index);
+					output.collect(new IntWritable(complexCell.groupid), root);
+				}
 			}
 		}
 	}
@@ -261,6 +265,40 @@ public class ConnectedComponentsCounter extends Configured implements Tool {
 			}
 		}
 	}
+	
+	/**
+	 * MAP FOURTH PASS
+	 */
+	public static class MapFourthPass extends MapReduceBase implements
+			Mapper<LongWritable, Text, IntWritable, IntWritable> {
+		// Input is <byteoffset,line>
+		// Return <globalIdRoot,sizeConnectedComponent>
+		public void map(LongWritable key, Text value,
+				OutputCollector<IntWritable, IntWritable> output,
+				Reporter reporter) throws IOException {			
+			KeyValue<IntWritable, IntWritable> kv = MrProj.parseLineFourthMapper(value);
+			output.collect( kv.getKey(), kv.getValue());
+		}
+	}
+	
+	/**
+	 * REDUCE FOURTH PASS
+	 */
+	public static class ReduceFourthPass extends MapReduceBase implements
+			Reducer<IntWritable, IntWritable, IntWritable, IntWritable> {
+		// Input is iterator <sizeConnectedComponent> for each globabIdRoot
+		// Return <globalIdRoot,sum of sizeConnectedComponent>
+		public void reduce(IntWritable key, Iterator<IntWritable> values,
+				OutputCollector<IntWritable, IntWritable> output,
+				Reporter reporter) throws IOException {		
+			int sum = 0;
+			while(values.hasNext()){
+				sum += values.next().get();
+			}
+			output.collect(key, new IntWritable(sum));
+		}
+	}
+
 
 	public JobConf createFirstPassConf(int matrixSize, int columnGroupWidth,
 			String inputPath, String firstPassOutputPath) {
@@ -324,7 +362,7 @@ public class ConnectedComponentsCounter extends Configured implements Tool {
 
 	public JobConf createThirdPassConf(int matrixSize, int columnGroupWidth,
 			String firstPassOutputPath, String secondPassOutputPath,
-			String outputPath) {
+			String thirdPassOutputPath) {
 		JobConf conf = new JobConf(getConf(), ConnectedComponentsCounter.class);
 		conf.setJobName("connectedComponentCounter_thirdPass");
 
@@ -349,6 +387,36 @@ public class ConnectedComponentsCounter extends Configured implements Tool {
 
 		FileInputFormat.setInputPaths(conf, firstPassOutputPath + ","
 				+ secondPassOutputPath);
+		FileOutputFormat.setOutputPath(conf, new Path(thirdPassOutputPath));
+
+		return conf;
+	}
+	
+	public JobConf createFourthPassConf(int matrixSize, int columnGroupWidth, String thirdPassOutputPath,
+			String outputPath) {
+		JobConf conf = new JobConf(getConf(), ConnectedComponentsCounter.class);
+		conf.setJobName("connectedComponentCounter_fourthPass");
+
+		conf.setMapOutputKeyClass(IntWritable.class); 
+		conf.setMapOutputValueClass(IntWritable.class);
+		
+		conf.setOutputKeyClass(IntWritable.class);
+		conf.setOutputValueClass(IntWritable.class);
+
+		conf.setMapperClass(MapFourthPass.class);
+		conf.setReducerClass(ReduceFourthPass.class);
+
+		conf.setInputFormat(TextInputFormat.class);
+		conf.setOutputFormat(TextOutputFormat.class);
+
+		if (matrixSize > 0)
+			conf.setInt("connectedcomponentscounter.matrix.size", matrixSize);
+
+		if (columnGroupWidth > 0)
+			conf.setInt("connectedcomponentscounter.matrix.columnWidth",
+					columnGroupWidth);
+
+		FileInputFormat.setInputPaths(conf, thirdPassOutputPath);
 		FileOutputFormat.setOutputPath(conf, new Path(outputPath));
 
 		return conf;
@@ -374,6 +442,7 @@ public class ConnectedComponentsCounter extends Configured implements Tool {
 		String inputPath = other_args.get(0);
 		String firstPassOutputPath = inputPath + "/firstPass";
 		String secondPassOutputPath = inputPath + "/secondPass";
+		String thirdPassOutputPath = inputPath + "/thirdPass";
 		String outputPath = other_args.get(1);
 
 		Job firstPass = new Job(createFirstPassConf(matrixSize,
@@ -383,13 +452,18 @@ public class ConnectedComponentsCounter extends Configured implements Tool {
 		secondPass.addDependingJob(firstPass);
 		Job thirdPass = new Job(createThirdPassConf(matrixSize,
 				columnGroupWidth, firstPassOutputPath, secondPassOutputPath,
-				outputPath));
+				thirdPassOutputPath));
 		thirdPass.addDependingJob(secondPass);
+		Job fourthPass = new Job(createFourthPassConf(matrixSize,
+				columnGroupWidth, thirdPassOutputPath,
+				outputPath));
+		fourthPass.addDependingJob(thirdPass);
 
 		JobControl jc = new JobControl("Connected components counter");
 		jc.addJob(firstPass);
 		jc.addJob(secondPass);
 		jc.addJob(thirdPass);
+		jc.addJob(fourthPass);
 
 		// start the controller in a different thread, no worries as it does
 		// that anyway
@@ -442,6 +516,15 @@ public class ConnectedComponentsCounter extends Configured implements Tool {
 			String states = "thirdPassJob:  " + thirdPass.getState() + "\n";
 			throw new Exception(
 					"The state of thirdPassJob is not in a complete state\n"
+							+ states);
+		}
+		// now the fourth job
+		if (fourthPass.getState() != Job.FAILED
+				&& fourthPass.getState() != Job.DEPENDENT_FAILED
+				&& fourthPass.getState() != Job.SUCCESS) {
+			String states = "fourthPassJob:  " + fourthPass.getState() + "\n";
+			throw new Exception(
+					"The state of fourthPassJob is not in a complete state\n"
 							+ states);
 		}
 

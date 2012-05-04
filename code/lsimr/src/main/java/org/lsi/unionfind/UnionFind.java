@@ -301,5 +301,16 @@ public class UnionFind {
     public HashMap<ComplexNumber,ComplexNumber> getRootsHashMap() {
     	return this.m_id;
     }
-    
+
+    public HashMap<ComplexNumber,Integer> getSizes() {
+        HashMap<ComplexNumber, Integer> sz = new HashMap<ComplexNumber, Integer>();
+        for(ComplexNumber cn : m_id.values())
+        {
+           if(!sz.containsKey(cn))
+               sz.put(cn,1); 
+           else
+               sz.put(cn,sz.get(cn)+1);
+        }
+        return sz;
+    }
 }

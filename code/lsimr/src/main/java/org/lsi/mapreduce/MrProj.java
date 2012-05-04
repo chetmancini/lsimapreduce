@@ -248,6 +248,25 @@ public class MrProj{
     	return ret;
     }
     
+    /**
+     * Parse a line for the second mapper.
+     * Format:
+     * [INT][TAB][INT]
+     * 
+     * @param line the input line
+     * @return parsed values
+     */
+    public static KeyValue<IntWritable, IntWritable> parseLineFourthMapper(Text line){
+    	StringTokenizer toker = new StringTokenizer(line.toString(), "\t");
+    	int first = Integer.parseInt(toker.nextToken());
+    	int second = Integer.parseInt(toker.nextToken());
+    	KeyValue<IntWritable, IntWritable> ret = 
+    			new KeyValue<IntWritable, IntWritable>(
+    					new IntWritable(first), 
+    					new IntWritable(second));
+    	return ret;
+    }
+    
     
     /**
      * Convert a float to a tree or not (boolean)
@@ -371,7 +390,7 @@ public class MrProj{
 	
 	/* Not tested */
 	public static int getGlobalFromIdInColumnGroup(int idInColumnGp, int columnNbr, int columnWidth, int N) {
-		return idInColumnGp + columnNbr * columnWidth * N;
+		return idInColumnGp + columnNbr * (columnWidth-1) * N;
 	}
 
 	
