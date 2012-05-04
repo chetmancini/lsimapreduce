@@ -306,7 +306,7 @@ public class UnionFind {
         HashMap<ComplexNumber, Integer> sz = new HashMap<ComplexNumber, Integer>();
         for(ComplexNumber cn : m_id.values())
         {
-           if(sz.containsKey(cn))
+           if(!sz.containsKey(cn))
                sz.put(cn,1); 
            else
                sz.put(cn,sz.get(cn)+1);
