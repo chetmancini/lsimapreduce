@@ -15,7 +15,7 @@ public class IntIntIntIntWritableTuple implements Writable {
 	public Integer i;
 	public Integer parent;
 
-	public void set(Integer groupid, Integer i, Integer groupidp, Integer parent) {
+	public void set(Integer groupidi, Integer i, Integer groupidp, Integer parent) {
 		this.groupidi = groupidi;
         this.groupidp = groupidp;
 		this.i = i;
