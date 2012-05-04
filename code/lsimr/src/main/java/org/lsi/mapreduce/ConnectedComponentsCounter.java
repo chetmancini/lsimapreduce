@@ -269,21 +269,12 @@ public class ConnectedComponentsCounter extends Configured implements Tool {
 				OutputCollector<IntWritable, IntWritable> output,
 				Reporter reporter) throws IOException {
 			UnionFind uf = new UnionFind(columnGroupId, idAndParentCells, sizeInput, columnWidth);
-//			HashMap<ComplexNumber, ComplexNumber> roots = uf.getRoots();
-//			
-//			for(ComplexNumber complexRoot : roots.values()) {
-//				parentGlobalId.set(MrProj.getGlobalFromIdInColumnGroup(complexRoot.index, complexRoot.groupid, columnWidth, sizeInput));
-//				//TODO get the real size of the component
-//				sizeComponent.set(complexRoot.groupid);
-//				output.collect(parentGlobalId,sizeComponent);
-//			}
 			
 			HashMap<ComplexNumber, Integer> sizesForRoot = uf.getSizes();
 			
 			for(ComplexNumber c : sizesForRoot.keySet()) {
 				parentGlobalId.set(MrProj.getGlobalFromIdInColumnGroup(c.index, c.groupid, columnWidth, sizeInput));
-//				sizeComponent.set(sizesForRoot.get(c));
-				sizeComponent.set(c.groupid);
+				sizeComponent.set(sizesForRoot.get(c));
 				output.collect(parentGlobalId,sizeComponent);
 			}
 		}
