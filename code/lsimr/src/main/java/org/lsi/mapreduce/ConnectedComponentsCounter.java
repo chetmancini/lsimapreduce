@@ -499,12 +499,11 @@ public class ConnectedComponentsCounter extends Configured implements Tool {
 			}
 			if ("columnWidth".equals(args[i])) {
 				columnGroupWidth = new Integer(args[++i]);
-			} else {
-				other_args.add(args[i]);
 			}
 			if ("defaultDensity".equals(args[i])){
 				defaultDensity = new Float(args[++i]);
-			}else{
+			}
+			else{
 				other_args.add(args[i]);
 			}
 		}
@@ -514,6 +513,9 @@ public class ConnectedComponentsCounter extends Configured implements Tool {
 		String secondPassOutputPath = inputPath + "/secondPass";
 		String thirdPassOutputPath = inputPath + "/thirdPass";
 		String outputPath = other_args.get(1);
+		
+		System.out.println("inputPath :"+inputPath);
+		System.out.println("outputPath :"+outputPath);
 		
 		RunningJob firstPassRunning = JobClient.runJob(createFirstPassConf(matrixSize,
 				columnGroupWidth, defaultDensity, inputPath, firstPassOutputPath));
