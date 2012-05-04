@@ -38,8 +38,18 @@ public class MrProj{
     public static float fromNetID = 0.974f;
     public static float desiredDensity = 0.59f;
     public static float wMin = (float) (0.4 * fromNetID);
-    public static float wLimit = wMin + desiredDensity;
+    public static float wLimit = MrProj.wMin + MrProj.desiredDensity;
 
+    
+    /**
+     * Set the density for extra credit.
+     * @param desiredDensity
+     */
+    public static void setVariables(float desiredDensity){
+    	MrProj.desiredDensity = desiredDensity;
+    	MrProj.wLimit = MrProj.wMin + MrProj.desiredDensity;
+    }
+    
     /**
      * Get the URL of the production file.
      * @return

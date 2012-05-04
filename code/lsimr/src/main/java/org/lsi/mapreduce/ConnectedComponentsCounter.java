@@ -56,6 +56,10 @@ public class ConnectedComponentsCounter extends Configured implements Tool {
 			columnWidth = job.getInt(
 					"connectedcomponentscounter.matrix.columnWidth",
 					(int) Math.sqrt(sizeInput));
+			MrProj.setVariables(job.getFloat(
+					"connectedcomponentscounter.matrix.defaultDensity", 
+					0.59f));
+			
 		}
 
 		// <get byte offset in input line, text of a line>
@@ -107,6 +111,9 @@ public class ConnectedComponentsCounter extends Configured implements Tool {
 			columnWidth = job.getInt(
 					"connectedcomponentscounter.matrix.columnWidth",
 					(int) Math.sqrt(sizeInput));
+			MrProj.setVariables(job.getFloat(
+					"connectedcomponentscounter.matrix.defaultDensity", 
+					0.59f));
         }
 
 		// Get all the <id,boolean> of cells for one column
@@ -149,7 +156,11 @@ public class ConnectedComponentsCounter extends Configured implements Tool {
 			columnWidth = job.getInt(
 					"connectedcomponentscounter.matrix.columnWidth",
 					(int) Math.sqrt(sizeInput));
+			MrProj.setVariables(job.getFloat(
+					"connectedcomponentscounter.matrix.defaultDensity", 
+					0.59f));
 		}
+		
 
 		// Input is <byteoffset,line>
 		// Return <someCommonKeyForAll;<idcolumnGp,localidcell,localidparent>>
@@ -184,6 +195,9 @@ public class ConnectedComponentsCounter extends Configured implements Tool {
 			columnWidth = job.getInt(
 					"connectedcomponentscounter.matrix.columnWidth",
 					(int) Math.sqrt(sizeInput));
+			MrProj.setVariables(job.getFloat(
+					"connectedcomponentscounter.matrix.defaultDensity", 
+					0.59f));
         }
 
 		// Get all the <idcolumnGp,localIdCell,localIdParent> of cells in boundary columns
@@ -225,6 +239,9 @@ public class ConnectedComponentsCounter extends Configured implements Tool {
 			columnWidth = job.getInt(
 					"connectedcomponentscounter.matrix.columnWidth",
 					(int) Math.sqrt(sizeInput));
+			MrProj.setVariables(job.getFloat(
+					"connectedcomponentscounter.matrix.defaultDensity", 
+					0.59f));
         }
 
 
@@ -260,6 +277,9 @@ public class ConnectedComponentsCounter extends Configured implements Tool {
 			columnWidth = job.getInt(
 					"connectedcomponentscounter.matrix.columnWidth",
 					(int) Math.sqrt(sizeInput));
+			MrProj.setVariables(job.getFloat(
+					"connectedcomponentscounter.matrix.defaultDensity", 
+					0.59f));
 		}
 
 		// Get all the <localidcell,localidparent> of cells in one column group
@@ -315,7 +335,7 @@ public class ConnectedComponentsCounter extends Configured implements Tool {
 
 
 	public JobConf createFirstPassConf(int matrixSize, int columnGroupWidth,
-			String inputPath, String firstPassOutputPath) {
+			float defaultDensity, String inputPath, String firstPassOutputPath) {
 		JobConf conf = new JobConf(getConf(), ConnectedComponentsCounter.class);
 		conf.setJobName("connectedComponentCounter_firstPass");
 
@@ -337,6 +357,10 @@ public class ConnectedComponentsCounter extends Configured implements Tool {
 		if (columnGroupWidth > 0)
 			conf.setInt("connectedcomponentscounter.matrix.columnWidth",
 					columnGroupWidth);
+		if (defaultDensity != 0.59f){
+			conf.setFloat("connectedcomponentscounter.matrix.defaultDensity", 
+					defaultDensity);
+		}
 
 		FileInputFormat.setInputPaths(conf, inputPath);
 		FileOutputFormat.setOutputPath(conf, new Path(firstPassOutputPath));
@@ -345,7 +369,7 @@ public class ConnectedComponentsCounter extends Configured implements Tool {
 	}
 
 	public JobConf createSecondPassConf(int matrixSize, int columnGroupWidth,
-			String firstPassOutputPath, String secondPassOutputPath) {
+			float defaultDensity, String firstPassOutputPath, String secondPassOutputPath) {
 		JobConf conf = new JobConf(getConf(), ConnectedComponentsCounter.class);
 		conf.setJobName("connectedComponentCounter_secondPass");
 
@@ -367,6 +391,10 @@ public class ConnectedComponentsCounter extends Configured implements Tool {
 		if (columnGroupWidth > 0)
 			conf.setInt("connectedcomponentscounter.matrix.columnWidth",
 					columnGroupWidth);
+		if (defaultDensity != 0.59f){
+			conf.setFloat("connectedcomponentscounter.matrix.defaultDensity", 
+					defaultDensity);
+		}
 
 		FileInputFormat.setInputPaths(conf, firstPassOutputPath);
 		FileOutputFormat.setOutputPath(conf, new Path(secondPassOutputPath));
@@ -375,7 +403,7 @@ public class ConnectedComponentsCounter extends Configured implements Tool {
 	}
 
 	public JobConf createThirdPassConf(int matrixSize, int columnGroupWidth,
-			String firstPassOutputPath, String secondPassOutputPath,
+			float defaultDensity, String firstPassOutputPath, String secondPassOutputPath,
 			String thirdPassOutputPath) {
 		JobConf conf = new JobConf(getConf(), ConnectedComponentsCounter.class);
 		conf.setJobName("connectedComponentCounter_thirdPass");
@@ -398,6 +426,11 @@ public class ConnectedComponentsCounter extends Configured implements Tool {
 		if (columnGroupWidth > 0)
 			conf.setInt("connectedcomponentscounter.matrix.columnWidth",
 					columnGroupWidth);
+		
+		if (defaultDensity != 0.59f){
+			conf.setFloat("connectedcomponentscounter.matrix.defaultDensity", 
+					defaultDensity);
+		}
 
 		FileInputFormat.setInputPaths(conf, firstPassOutputPath + ","
 				+ secondPassOutputPath);
@@ -406,8 +439,8 @@ public class ConnectedComponentsCounter extends Configured implements Tool {
 		return conf;
 	}
 	
-	public JobConf createFourthPassConf(int matrixSize, int columnGroupWidth, String thirdPassOutputPath,
-			String outputPath) {
+	public JobConf createFourthPassConf(int matrixSize, int columnGroupWidth, 
+			float defaultDensity, String thirdPassOutputPath, String outputPath) {
 		JobConf conf = new JobConf(getConf(), ConnectedComponentsCounter.class);
 		conf.setJobName("connectedComponentCounter_fourthPass");
 
@@ -429,6 +462,10 @@ public class ConnectedComponentsCounter extends Configured implements Tool {
 		if (columnGroupWidth > 0)
 			conf.setInt("connectedcomponentscounter.matrix.columnWidth",
 					columnGroupWidth);
+		if (defaultDensity != 0.59f){
+			conf.setFloat("connectedcomponentscounter.matrix.defaultDensity", 
+					defaultDensity);
+		}
 
 		FileInputFormat.setInputPaths(conf, thirdPassOutputPath);
 		FileOutputFormat.setOutputPath(conf, new Path(outputPath));
@@ -440,6 +477,7 @@ public class ConnectedComponentsCounter extends Configured implements Tool {
 	public int run(String[] args) throws Exception {
 
 		int matrixSize = -1, columnGroupWidth = -1;
+		float defaultDensity = 0.59f;
 
 		List<String> other_args = new ArrayList<String>();
 		for (int i = 0; i < args.length; ++i) {
@@ -451,6 +489,11 @@ public class ConnectedComponentsCounter extends Configured implements Tool {
 			} else {
 				other_args.add(args[i]);
 			}
+			if ("defaultDensity".equals(args[i])){
+				defaultDensity = new Float(args[++i]);
+			}else{
+				other_args.add(args[i]);
+			}
 		}
 
 		String inputPath = other_args.get(0);
@@ -460,16 +503,16 @@ public class ConnectedComponentsCounter extends Configured implements Tool {
 		String outputPath = other_args.get(1);
 
 		Job firstPass = new Job(createFirstPassConf(matrixSize,
-				columnGroupWidth, inputPath, firstPassOutputPath));
+				columnGroupWidth, defaultDensity, inputPath, firstPassOutputPath));
 		Job secondPass = new Job(createSecondPassConf(matrixSize,
-				columnGroupWidth, firstPassOutputPath, secondPassOutputPath));
+				columnGroupWidth, defaultDensity, firstPassOutputPath, secondPassOutputPath));
 		secondPass.addDependingJob(firstPass);
 		Job thirdPass = new Job(createThirdPassConf(matrixSize,
-				columnGroupWidth, firstPassOutputPath, secondPassOutputPath,
+				columnGroupWidth, defaultDensity, firstPassOutputPath, secondPassOutputPath,
 				thirdPassOutputPath));
 		thirdPass.addDependingJob(secondPass);
 		Job fourthPass = new Job(createFourthPassConf(matrixSize,
-				columnGroupWidth, thirdPassOutputPath,
+				columnGroupWidth, defaultDensity, thirdPassOutputPath,
 				outputPath));
 		fourthPass.addDependingJob(thirdPass);
 
