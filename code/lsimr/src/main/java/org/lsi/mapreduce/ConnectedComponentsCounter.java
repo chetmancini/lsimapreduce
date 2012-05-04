@@ -106,8 +106,9 @@ public class ConnectedComponentsCounter extends Configured implements Tool {
 	 * REDUCE FIRST PASS
 	 */
 	public static class ReduceFirstPass extends MapReduceBase implements
-			Reducer<IntWritable, IntIntWritableTuple, IntWritable, IntIntWritableTuple> {
-
+			Reducer<IntWritable, IntIntWritableTuple, IntIntWritableTuple, IntIntWritableTuple> {
+		
+        private IntIntWritableTuple cell = new IntIntWritableTuple(); 
         private IntIntWritableTuple root = new IntIntWritableTuple(); 
 		private final int defaultSizeInput = 1000;
 		private int sizeInput;
@@ -125,10 +126,10 @@ public class ConnectedComponentsCounter extends Configured implements Tool {
         }
 
 		// Get all the <localIdCell,localIdParent> of cells for one column
-		// Return <idColumnGp,<localCellId,globalParentId>>
+		// Return <<idColumnGp,localCellId>,<idColumGp,localParentId>>
 		public void reduce(IntWritable idcolumn,
 				Iterator<IntIntWritableTuple> idsCells,
-				OutputCollector<IntWritable, IntIntWritableTuple> output,
+				OutputCollector<IntIntWritableTuple, IntIntWritableTuple> output,
 				Reporter reporter) throws IOException {
 			UnionFind uf = new UnionFind(idcolumn, idsCells, sizeInput, columnWidth);
 			
@@ -137,12 +138,9 @@ public class ConnectedComponentsCounter extends Configured implements Tool {
 			
 			for(ComplexNumber complexCell : roots.keySet()) {
 				ComplexNumber complexRoot = roots.get(complexCell);
-                root.set(complexCell.index, MrProj.getGlobalFromIdInColumnGroup(complexRoot.index, complexRoot.groupid, columnWidth, sizeInput));
-
-                if(complexCell.groupid != idcolumn.get())
-                	output.collect(new IntWritable(-42), new IntIntWritableTuple(idcolumn.get(),complexCell.groupid));
-                else
-                	output.collect(new IntWritable(complexCell.groupid), root);
+				cell.set(complexCell.groupid, complexCell.index);
+                root.set(complexRoot.groupid, complexRoot.index);
+                output.collect(cell, root);
 			}
 		}
 	}
@@ -192,7 +190,8 @@ public class ConnectedComponentsCounter extends Configured implements Tool {
 	 * REDUCE SECOND PASS
 	 */
 	public static class ReduceSecondPass extends MapReduceBase implements
-			Reducer<Text, IntIntIntWritableTuple, IntWritable, IntIntWritableTuple> {
+			Reducer<Text, IntIntIntWritableTuple, IntIntWritableTuple, IntIntWritableTuple> {
+		IntIntWritableTuple cell = new IntIntWritableTuple();
 		IntIntWritableTuple root = new IntIntWritableTuple();
 		
         private final int defaultSizeInput = 1000;
@@ -214,7 +213,7 @@ public class ConnectedComponentsCounter extends Configured implements Tool {
 		// Return <idColumn,<localCellId,globalParentId>>
 		public void reduce(Text uselessKey,
 				Iterator<IntIntIntWritableTuple> columnAndLocalIdCellAndParent,
-				OutputCollector<IntWritable, IntIntWritableTuple> output,
+				OutputCollector<IntIntWritableTuple, IntIntWritableTuple> output,
 				Reporter reporter) throws IOException {
 			UnionFind uf = new UnionFind(columnAndLocalIdCellAndParent, sizeInput, columnWidth);
 			HashMap<ComplexNumber, ComplexNumber> roots = uf.getRoots();
@@ -223,8 +222,9 @@ public class ConnectedComponentsCounter extends Configured implements Tool {
 				//Not output right boundary column except if last column is the end of a column group
 				if(complexCell.index<sizeInput || complexCell.groupid == (int)Math.ceil((float)sizeInput/(columnWidth-1))- 1) {
 					ComplexNumber complexRoot = roots.get(complexCell);
-					root.set(complexCell.index, MrProj.getGlobalFromIdInColumnGroup(complexRoot.index, complexRoot.groupid, columnWidth, sizeInput));
-					output.collect(new IntWritable(complexCell.groupid), root);
+					cell.set(complexCell.groupid, complexCell.index);
+					root.set(complexRoot.groupid, complexRoot.index);
+					output.collect(cell, root);
 				}
 			}
 		}
@@ -234,10 +234,11 @@ public class ConnectedComponentsCounter extends Configured implements Tool {
 	 * MAP THIRD PASS
 	 */
 	public static class MapThirdPass extends MapReduceBase implements
-			Mapper<LongWritable, Text, IntWritable, IntIntWritableTuple> {
-	
-		private IntIntWritableTuple columnGpNbrAndIdCellAndParentInColumn = new IntIntWritableTuple();
+			Mapper<LongWritable, Text, IntWritable, IntIntIntIntWritableTuple> {
 
+		IntWritable idColumn = new IntWritable();
+		IntIntIntIntWritableTuple cellAndRoot = new IntIntIntIntWritableTuple();
+		
         private final int defaultSizeInput = 1000;
 		private int sizeInput;
 		private int columnWidth;
@@ -256,14 +257,16 @@ public class ConnectedComponentsCounter extends Configured implements Tool {
 
 
 		// Input is <byteoffset,line>
-		// Return <idColumngp,<localidcell,globalidparent>>
+		// Return <<idColumngp,localidcell>,<idColumngp,localidparent>>
 		public void map(LongWritable key, Text value,
-				OutputCollector<IntWritable, IntIntWritableTuple> output,
+				OutputCollector<IntWritable, IntIntIntIntWritableTuple> output,
 				Reporter reporter) throws IOException {			
-			KeyValue<IntWritable, IntIntWritableTuple> kv = MrProj.parseLineSecondMapper(value);
-		    if(kv.getValue().i < (columnWidth -1) * sizeInput || kv.getKey().get()==(int)Math.ceil((float)sizeInput/(columnWidth-1)))
-			columnGpNbrAndIdCellAndParentInColumn.set(kv.getValue().i, kv.getValue().parent);
-			output.collect( kv.getKey(), columnGpNbrAndIdCellAndParentInColumn);
+			KeyValue<IntIntWritableTuple, IntIntWritableTuple> kv = MrProj.parseLineThirdMapper(value);
+		    if(kv.getKey().parent < (columnWidth -1) * sizeInput || kv.getKey().i==(int)Math.ceil((float)sizeInput/(columnWidth-1))){
+		    	idColumn.set(kv.getKey().i);
+		    	cellAndRoot.set(kv.getKey().i,kv.getKey().parent,kv.getValue().i,kv.getValue().parent);
+		    	output.collect(idColumn, cellAndRoot);
+		    }
 		}
 	}
 
@@ -271,7 +274,7 @@ public class ConnectedComponentsCounter extends Configured implements Tool {
 	 * REDUCE THIRD PASS
 	 */
 	public static class ReduceThirdPass extends MapReduceBase implements
-			Reducer<IntWritable, IntIntWritableTuple, IntWritable, IntWritable> {
+			Reducer<IntWritable, IntIntIntIntWritableTuple, IntWritable, IntWritable> {
 
 		IntWritable parentGlobalId = new IntWritable();
 		IntWritable sizeComponent = new IntWritable();
@@ -294,10 +297,10 @@ public class ConnectedComponentsCounter extends Configured implements Tool {
 		// Get all the <localidcell,localidparent> of cells in one column group
 		// Return <parent,sizeSingleConnected>
 		public void reduce(IntWritable columnGroupId,
-				Iterator<IntIntWritableTuple> idAndParentCells,
+				Iterator<IntIntIntIntWritableTuple> cellAndRoot,
 				OutputCollector<IntWritable, IntWritable> output,
 				Reporter reporter) throws IOException {
-			UnionFind uf = new UnionFind(columnGroupId, idAndParentCells, sizeInput, columnWidth);
+			UnionFind uf = new UnionFind(cellAndRoot, sizeInput, columnWidth, true);
 
 			HashMap<ComplexNumber, Integer> sizesForRoot = uf.getSizes();
 			
@@ -349,7 +352,7 @@ public class ConnectedComponentsCounter extends Configured implements Tool {
 		JobConf conf = new JobConf(getConf(), ConnectedComponentsCounter.class);
 		conf.setJobName("connectedComponentCounter_firstPass");
 
-		conf.setMapOutputKeyClass(IntWritable.class); 
+		conf.setMapOutputKeyClass(IntIntWritableTuple.class); 
 		conf.setMapOutputValueClass(IntIntWritableTuple.class);
 		
 		conf.setOutputKeyClass(IntWritable.class);
@@ -386,7 +389,7 @@ public class ConnectedComponentsCounter extends Configured implements Tool {
 		conf.setMapOutputKeyClass(Text.class); 
 		conf.setMapOutputValueClass(IntIntIntWritableTuple.class);
 		
-		conf.setOutputKeyClass(IntWritable.class);
+		conf.setOutputKeyClass(IntIntWritableTuple.class);
 		conf.setOutputValueClass(IntIntWritableTuple.class);
 
 		conf.setMapperClass(MapSecondPass.class);
@@ -419,7 +422,7 @@ public class ConnectedComponentsCounter extends Configured implements Tool {
 		conf.setJobName("connectedComponentCounter_thirdPass");
 
 		conf.setMapOutputKeyClass(IntWritable.class); 
-		conf.setMapOutputValueClass(IntIntWritableTuple.class);
+		conf.setMapOutputValueClass(IntIntIntIntWritableTuple.class);
 		
 		conf.setOutputKeyClass(IntWritable.class);
 		conf.setOutputValueClass(IntWritable.class);
