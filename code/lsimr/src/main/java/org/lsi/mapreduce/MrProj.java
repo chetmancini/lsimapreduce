@@ -393,20 +393,5 @@ public class MrProj{
 		}
 	}
 	
-	@Deprecated
-	public static boolean isInBoundaryColumnGlobal(int globalIndex, int columnWidth, int N){
-		return false;
-	}
-
-	/**
-	 * Get the column group number by global index
-	 * @param globalIndex
-	 * @return
-	 */
-	@Deprecated
-	public static int[] getColumnGroupNbr(int globalIndex, int columnWidth, int N){
-		return new int[1];
-	}
-	
 	
 }
