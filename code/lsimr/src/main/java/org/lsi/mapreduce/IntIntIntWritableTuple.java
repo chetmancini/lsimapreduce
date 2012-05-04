@@ -9,50 +9,45 @@ import org.apache.hadoop.io.Writable;
 /**
  * @author Sean
  */
-public class IntIntIntIntWritableTuple implements Writable {
-	public Integer groupidi;
-    public Integer groupidp;
+public class IntIntIntWritableTuple implements Writable {
+	public Integer groupid;
 	public Integer i;
 	public Integer parent;
 
-	public void set(Integer groupid, Integer i, Integer groupidp, Integer parent) {
-		this.groupidi = groupidi;
-        this.groupidp = groupidp;
+	public void set(Integer groupid, Integer i, Integer parent) {
+		this.groupid = groupid;
 		this.i = i;
 		this.parent = parent;
 	}
 
 	@Override
 	public void readFields(DataInput in) throws IOException {
-		this.groupidi = in.readInt();
+		this.groupid = in.readInt();
 		this.i = in.readInt();
-        this.groupidp = in.readInt();
 		this.parent = in.readInt();
 	}
 
 	@Override
 	public void write(DataOutput out) throws IOException {
-		out.writeInt(this.groupidi);
+		out.writeInt(this.groupid);
 		out.writeInt(this.i);
-        out.writeInt(this.groupidp);
 		out.writeInt(this.parent);
 	}
 
 	@Override
 	public int hashCode() {
-		return this.groupidi.hashCode() + this.i.hashCode()
-				+ this.groupidp.hashCode() + this.parent.hashCode();
+		return this.groupid.hashCode() + this.i.hashCode()
+				+ this.parent.hashCode();
 	}
 
 	@Override
 	public boolean equals(Object o) {
-		if (!(o instanceof IntIntIntIntWritableTuple))
+		if (!(o instanceof IntIntIntWritableTuple))
 			return false;
 		else {
-			if (this.groupidi.equals(((IntIntIntIntWritableTuple) o).groupidi)
-					&& this.i.equals(((IntIntIntIntWritableTuple) o).i)
-                    && this.groupidp.equals(((IntIntIntIntWritableTuple) o).groupidp)
-					&& this.parent.equals(((IntIntIntIntWritableTuple) o).parent))
+			if (this.groupid.equals(((IntIntIntWritableTuple) o).groupid)
+					&& this.i.equals(((IntIntIntWritableTuple) o).i)
+					&& this.parent.equals(((IntIntIntWritableTuple) o).parent))
 				return true;
 		}
 		return false;
@@ -60,6 +55,6 @@ public class IntIntIntIntWritableTuple implements Writable {
 	
 	@Override
 	public String toString() {
-		return this.groupidi+"_"+this.i+"_"+this.groupidp + "_" +this.parent;
+		return this.groupid+"_"+this.i+"_"+this.parent;
 	}
 }
