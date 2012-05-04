@@ -196,9 +196,13 @@ public class ConnectedComponentsCounter extends Configured implements Tool {
 			HashMap<ComplexNumber, ComplexNumber> roots = uf.getRoots();
 
 			for(ComplexNumber complexCell : roots.keySet()) {
-				ComplexNumber complexRoot = roots.get(complexCell);
-                root.set(complexCell.index, complexRoot == null ? -42 : complexRoot.index);
-                output.collect(new IntWritable(complexCell.groupid), root);
+				//Not output right boundary column
+				if(complexCell.index<sizeInput) {
+					ComplexNumber complexRoot = roots.get(complexCell);
+					root.set(complexCell.index, complexRoot == null ? -42
+							: complexRoot.index);
+					output.collect(new IntWritable(complexCell.groupid), root);
+				}
 			}
 		}
 	}

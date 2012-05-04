@@ -371,7 +371,7 @@ public class MrProj{
 	
 	/* Not tested */
 	public static int getGlobalFromIdInColumnGroup(int idInColumnGp, int columnNbr, int columnWidth, int N) {
-		return idInColumnGp + columnNbr * columnWidth * N;
+		return idInColumnGp + columnNbr * (columnWidth-1) * N;
 	}
 
 	
