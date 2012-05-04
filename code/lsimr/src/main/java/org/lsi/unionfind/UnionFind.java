@@ -115,6 +115,18 @@ public class UnionFind {
             m_id.put(k,v);
         }
     }
+    
+    public UnionFind(Iterator<IntIntIntIntWritableTuple> idsCells, Integer m, Integer n)
+    {
+        this.m = m;
+        this.n = n;
+        while(idsCells.hasNext()){
+            IntIntIntWritableTuple c = idsCells.next();
+            ComplexNumber k = new ComplexNumber(c.groupidi,c.i);
+            ComplexNumber v = new ComplexNumber(c.groupidp,c.parent); 
+            m_id.put(k,v);
+        }
+    }
 
     /**
      * Determines if a point is in a boundary column.
