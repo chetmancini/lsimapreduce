@@ -24,36 +24,36 @@ Parameters:
 
 ## Pass 1
 ### Map
-  - Input:
+  - Input: <LongWritable, Text>
   - Description:
-  - Output:
+  - Output: <IntWritable, IntIntWritableTuple>
  
 ### Reduce
-  - Input:
+  - Input: <IntWritable, IntIntWritableTuple>
   - Description:
-  - Output:
+  - Output: <IntWritable, IntIntWritableTuple>
 
 ## Pass 2
 ### Map
-  - Input:
+  - Input: <LongWritable, Text>
   - Description:
-  - Output:
+  - Output: <Text, IntIntIntWritableTuple>
 
 ### Reduce
-  - Input:
+  - Input: <Text, IntIntIntWritableTuple>
   - Description:
-  - Output:
+  - Output: <IntWritable, IntIntWritableTuple>
 
 ## Pass 3
 ### Map
-  - Input:
+  - Input: <LongWritable, Text>
   - Description:
-  - Output:
+  - Output: <IntWritable, IntIntWritableTuple>
 
 ### Reduce
-  - Input:
+  - Input: <IntWritable, IntIntWritableTuple>
   - Description:
-  - Output:
+  - Output: <IntWritable, IntWritable>
 
 Output
 ==============================
