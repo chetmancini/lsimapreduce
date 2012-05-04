@@ -10,9 +10,9 @@ This project is to run MapReduce on Amazon Web Services.
 
 Members
 ===============================
-* Hugo Hache			hrh64
-* Chester Mancini		cam479
-* Sean Ogden			spo38
+* Hugo Hache		hrh64
+* Chester Mancini	cam479
+* Sean Ogden		spo38
 
 Overall Structure
 ==============================
@@ -57,13 +57,17 @@ Parameters:
 
 Output
 ==============================
-
+ * number of vertices:
+ * number of edges:
+ * number of distinct connected components:
+ * (weighted) average size of the connected components:
+ * average burn count:
 
 Parameters
 ==============================
-* NetID: cam479 "974"
-* wMin:
-* wLimit:
+* NetID: cam479 ==> "974"
+* wMin: 0.3896
+* wLimit: .9796 
 * Number of Grid Points Processed:
 * Extra Credit Critical Density: 
 
