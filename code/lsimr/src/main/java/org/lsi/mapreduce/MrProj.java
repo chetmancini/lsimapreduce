@@ -237,7 +237,6 @@ public class MrProj{
      * @return parsed values
      */
     public static KeyValue<IntWritable, IntIntWritableTuple> parseLineSecondMapper(Text line){
-    	String input = line.toString();
     	StringTokenizer toker = new StringTokenizer(line.toString(), "_ \t");
     	int first = Integer.parseInt(toker.nextToken());
     	int second = Integer.parseInt(toker.nextToken());
@@ -368,6 +367,11 @@ public class MrProj{
 	
 	public static int getIdInColumnGroupFromLine(int line, int columnGroupNbr, int columnWidth, int N){
 		return getIdFromLine(line, N) - (columnWidth-1) * N * columnGroupNbr;
+	}
+	
+	/* Not tested */
+	public static int getGlobalFromIdInColumnGroup(int idInColumnGp, int columnNbr, int columnWidth) {
+		return idInColumnGp + columnNbr * columnWidth;
 	}
 
 	/**
