@@ -8,6 +8,7 @@ import java.util.Iterator;
 import java.util.List;
 
 import org.lsi.containers.ComplexNumber;
+import org.lsi.containers.KeyValue;
 import org.lsi.unionfind.UnionFind;
 
 import org.apache.hadoop.conf.Configuration;
@@ -115,7 +116,7 @@ public class ConnectedComponentsCounter extends Configured implements Tool {
 				OutputCollector<IntWritable, IntIntWritableTuple> output,
 				Reporter reporter) throws IOException {
 			UnionFind uf = new UnionFind(idcolumn, idsCells, sizeInput, columnWidth);
-			HashMap<ComplexNumber, ComplexNumber> roots = uf.getRootsHashMap();
+			HashMap<ComplexNumber, ComplexNumber> roots = uf.getRoots();
 			
 			for(ComplexNumber complexCell : roots.keySet()) {
 				ComplexNumber complexRoot = roots.get(complexCell);
@@ -134,9 +135,9 @@ public class ConnectedComponentsCounter extends Configured implements Tool {
 	 * MAP SECOND PASS
 	 */
 	public static class MapSecondPass extends MapReduceBase implements
-			Mapper<IntWritable, IntWritable, Text, IntIntWritableTuple> {
+			Mapper<LongWritable, Text, Text, IntIntIntWritableTuple> {
 
-		private IntIntWritableTuple idAndValueAndParentCell = new IntIntWritableTuple();
+		private IntIntIntWritableTuple columnGpNbrAndIdCellAndParentInColumn = new IntIntIntWritableTuple();
 
 		private final int defaultSizeInput = 1000;
 		private int sizeInput;
@@ -150,17 +151,18 @@ public class ConnectedComponentsCounter extends Configured implements Tool {
 					(int) Math.sqrt(sizeInput));
 		}
 
-		// Input key is <id,boolean> and value is parentid
-		// Return <someCommonKeyForAll;<idcell,booleancell,idparent>>
-		public void map(IntWritable cellId, IntWritable parentId,
-				OutputCollector<Text, IntIntWritableTuple> output,
+		// Input is <byteoffset,line>
+		// Return <someCommonKeyForAll;<idcolumnGp,localidcell,localidparent>>
+		public void map(LongWritable key, Text value,
+				OutputCollector<Text, IntIntIntWritableTuple> output,
 				Reporter reporter) throws IOException {
 			Text t = new Text("UniqueReducer");
-
-			// TODO Plug correct function of Chet
-			if (MrProj.isInBoundaryColumnGlobal(cellId.get(), columnWidth, sizeInput)) {
-				idAndValueAndParentCell.set(cellId.get(), parentId.get());
-				output.collect(t, idAndValueAndParentCell);
+			
+			KeyValue<IntWritable, IntIntWritableTuple> kv = MrProj.parseLineSecondMapper(value);
+			
+			if (MrProj.isInBoundaryColumnLocal(kv.getValue().i, columnWidth, sizeInput)) {
+				columnGpNbrAndIdCellAndParentInColumn.set(kv.getKey().get(), kv.getValue().i, kv.getValue().parent);
+				output.collect(t, columnGpNbrAndIdCellAndParentInColumn);
 			}
 		}
 	}
@@ -169,14 +171,12 @@ public class ConnectedComponentsCounter extends Configured implements Tool {
 	 * REDUCE SECOND PASS
 	 */
 	public static class ReduceSecondPass extends MapReduceBase implements
-			Reducer<Text, IntIntIntWritableTuple, IntWritable, IntWritable> {
-		IntWritable cellId = new IntWritable();
-		IntWritable parentId = new IntWritable();
+			Reducer<Text, IntIntIntWritableTuple, IntWritable, IntIntWritableTuple> {
+		IntIntWritableTuple root = new IntIntWritableTuple();
 		
         private final int defaultSizeInput = 1000;
 		private int sizeInput;
 		private int columnWidth;
-		private URL url;
 
 		public void configure(JobConf job) {
 			sizeInput = job.getInt("connectedcomponentscounter.matrix.size",
@@ -184,27 +184,21 @@ public class ConnectedComponentsCounter extends Configured implements Tool {
 			columnWidth = job.getInt(
 					"connectedcomponentscounter.matrix.columnWidth",
 					(int) Math.sqrt(sizeInput));
-			url = job.getResource("connectedcomponentscounter.matrix.inputurl");
         }
 
-		// Get all the <id,boolean,parent> of cells in boundary columns
-		// Return <<idcell,boolean>;parentUpdated>
+		// Get all the <idcolumnGp,localIdCell,localIdParent> of cells in boundary columns
+		// Return <idColumn,<localCellId,localParentId>>
 		public void reduce(Text uselessKey,
-				Iterator<IntIntIntWritableTuple> idsCells,
-				OutputCollector<IntWritable, IntWritable> output,
+				Iterator<IntIntIntWritableTuple> columnAndLocalIdCellAndParent,
+				OutputCollector<IntWritable, IntIntWritableTuple> output,
 				Reporter reporter) throws IOException {
-			// TODO Plug the code of Sean Correctly
-			UnionFind uf = new UnionFind(idsCells, sizeInput, sizeInput);
+			UnionFind uf = new UnionFind(columnAndLocalIdCellAndParent, sizeInput, columnWidth);
+			HashMap<ComplexNumber, ComplexNumber> roots = uf.getRoots();
 
-			while (idsCells.hasNext()) {
-				IntIntIntWritableTuple cellAndParentIds = idsCells.next();
-
-				cellId.set(cellAndParentIds.i);
-				parentId.set(uf.getRoot(cellAndParentIds.groupid, cellAndParentIds.i).index);
-
-				if (parentId.get() == -1)
-					reporter.setStatus("ERROR: Parent for cell " + cellId.get()
-							+ " has not been computed");
+			for(ComplexNumber complexCell : roots.keySet()) {
+				ComplexNumber complexRoot = roots.get(complexCell);
+                root.set(complexCell.index, complexRoot == null ? -42 : complexRoot.index);
+                output.collect(new IntWritable(complexCell.groupid), root);
 			}
 		}
 	}
