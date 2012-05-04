@@ -221,7 +221,7 @@ public class UnionFindTest
 
         FullGraph fg4 = new FullGraph();
         fg4.vertices = bc4;
-        fg4.m=10; fg4.n=10; fg4.g=10;
+        fg4.m=10; fg4.n=4; fg4.g=10;
         
         UnionFind uf4 = new UnionFind(fg4);
         HashMap<ComplexNumber, ComplexNumber> vec3 = uf4.getRoots();

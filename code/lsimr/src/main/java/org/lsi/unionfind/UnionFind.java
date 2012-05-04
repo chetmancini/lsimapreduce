@@ -146,12 +146,14 @@ public class UnionFind {
 
     public void printRoots()
     {
-        Iterator it = m_id.entrySet().iterator();
+        List<ComplexNumber> keys = new ArrayList<ComplexNumber>(m_id.keySet());
+        Collections.sort(keys);
+ 
+        Iterator it = keys.iterator();
         while(it.hasNext())
         {
-            Map.Entry pairs = (Map.Entry)it.next(); 
-            ComplexNumber k = (ComplexNumber)pairs.getKey();
-            ComplexNumber v = (ComplexNumber)pairs.getValue();
+            ComplexNumber k = (ComplexNumber)it.next(); 
+            ComplexNumber v = m_id.get(k);
             System.out.println("{" + k + "," + v + "}"); 
         }
     }
@@ -211,6 +213,17 @@ public class UnionFind {
         else
             //same column group, just look one column left.
             left = new ComplexNumber(i.groupid, i.index-m);
+
+        System.out.println("Key " +left + "is left of " + i);
+        if(!m_id.containsKey(left))
+            System.out.println(left + " is not in the map");
+        else
+            System.out.println(left + " is in the map");
+        if(!m_id.containsKey(i))
+            System.out.println(i + " is not in the map");
+        else
+            System.out.println(i + " is in the map");
+
         if(m_id.containsKey(i) && m_id.containsKey(left)){
             ++m_edges; //there is an edge.
             unite(i, left);  //converted to one based.
@@ -260,8 +273,10 @@ public class UnionFind {
      */ 
     private ComplexNumber root(ComplexNumber i)
     {
-        while(m_id.containsKey(i) && i != m_id.get(i)){
-            while(m_id.containsKey(i) && m_id.get(i) != m_id.get(m_id.get(i)))
+        while(m_id.containsKey(i) && !i.equals(m_id.get(i))){
+            while(m_id.containsKey(i) &&
+                  m_id.containsKey(m_id.get(i)) &&
+                  !m_id.get(i).equals(m_id.get(m_id.get(i))))
                 m_id.put(i,m_id.get(m_id.get(i)));
             i = m_id.get(i);
         }
