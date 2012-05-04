@@ -117,8 +117,8 @@ public class ConnectedComponentsCounter extends Configured implements Tool {
 					(int) Math.sqrt(sizeInput));
         }
 
-		// Get all the <id,boolean> of cells for one column
-		// Return <<idcell,boolean>;id parent in this column>
+		// Get all the <localIdCell,localIdParent> of cells for one column
+		// Return <idColumnGp,<localCellId,globalParentId>>
 		public void reduce(IntWritable idcolumn,
 				Iterator<IntIntWritableTuple> idsCells,
 				OutputCollector<IntWritable, IntIntWritableTuple> output,
@@ -130,7 +130,7 @@ public class ConnectedComponentsCounter extends Configured implements Tool {
 			
 			for(ComplexNumber complexCell : roots.keySet()) {
 				ComplexNumber complexRoot = roots.get(complexCell);
-                root.set(complexCell.index, complexRoot == null ? -42 : complexRoot.index);
+                root.set(complexCell.index, MrProj.getGlobalFromIdInColumnGroup(complexRoot.index, complexRoot.groupid, columnWidth, sizeInput));
 
                 if(complexCell.groupid != idcolumn.get())
                 	output.collect(new IntWritable(-42), new IntIntWritableTuple(idcolumn.get(),complexCell.groupid));
@@ -197,7 +197,7 @@ public class ConnectedComponentsCounter extends Configured implements Tool {
         }
 
 		// Get all the <idcolumnGp,localIdCell,localIdParent> of cells in boundary columns
-		// Return <idColumn,<localCellId,localParentId>>
+		// Return <idColumn,<localCellId,globalParentId>>
 		public void reduce(Text uselessKey,
 				Iterator<IntIntIntWritableTuple> columnAndLocalIdCellAndParent,
 				OutputCollector<IntWritable, IntIntWritableTuple> output,
@@ -209,8 +209,7 @@ public class ConnectedComponentsCounter extends Configured implements Tool {
 				//Not output right boundary column except if last column is the end of a column group
 				if(complexCell.index<sizeInput || complexCell.groupid == (int)Math.ceil((float)sizeInput/(columnWidth-1))- 1) {
 					ComplexNumber complexRoot = roots.get(complexCell);
-					root.set(complexCell.index, complexRoot == null ? -42
-							: complexRoot.index);
+					root.set(complexCell.index, MrProj.getGlobalFromIdInColumnGroup(complexRoot.index, complexRoot.groupid, columnWidth, sizeInput));
 					output.collect(new IntWritable(complexCell.groupid), root);
 				}
 			}
@@ -240,7 +239,7 @@ public class ConnectedComponentsCounter extends Configured implements Tool {
 
 
 		// Input is <byteoffset,line>
-		// Return <idColumngp,<localidcell,localidparent>>
+		// Return <idColumngp,<localidcell,globalidparent>>
 		public void map(LongWritable key, Text value,
 				OutputCollector<IntWritable, IntIntWritableTuple> output,
 				Reporter reporter) throws IOException {			

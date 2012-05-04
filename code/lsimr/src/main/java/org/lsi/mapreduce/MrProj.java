@@ -249,6 +249,27 @@ public class MrProj{
     }
     
     /**
+     * Parse a line for the third mapper.
+     * Format:
+     * [INT]_[INT][TAB][INT]_[INT]
+     * 
+     * @param line the input line
+     * @return parsed values
+     */
+    public static KeyValue<IntIntWritableTuple, IntIntWritableTuple> parseLineThirdMapper(Text line){
+    	StringTokenizer toker = new StringTokenizer(line.toString(), "_ \t");
+    	int first = Integer.parseInt(toker.nextToken());
+    	int second = Integer.parseInt(toker.nextToken());
+    	int third = Integer.parseInt(toker.nextToken());
+    	int fourth = Integer.parseInt(toker.nextToken());
+    	KeyValue<IntIntWritableTuple, IntIntWritableTuple> ret = 
+    			new KeyValue<IntIntWritableTuple, IntIntWritableTuple>(
+    					new IntIntWritableTuple(first,second), 
+    					new IntIntWritableTuple(third, fourth));
+    	return ret;
+    }
+    
+    /**
      * Parse a line for the second mapper.
      * Format:
      * [INT][TAB][INT]
