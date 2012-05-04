@@ -115,6 +115,7 @@ public class UnionFind {
             ComplexNumber v = new ComplexNumber(c.groupid,c.parent); 
             m_id.put(k,v);
         }
+        run();
     }
     
     public UnionFind(Iterator<IntIntIntIntWritableTuple> idsCells, Integer m, Integer n, boolean useless)
