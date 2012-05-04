@@ -374,20 +374,6 @@ public class MrProj{
 		return idInColumnGp + columnNbr * columnWidth * N;
 	}
 
-	/**
-	 * Is in boundary column with respect to global index.
-	 * @param globalindex the global index
-	 * @param columnWidth
-	 * @param N size of one size
-	 * @return whether or not the item at the index is in a boundary column
-	 */
-	public static boolean isInBoundaryColumnGlobal(int globalIndex, int columnWidth, int N){
-		if (((MrProj.getJ(globalIndex, N)+1) % columnWidth) == 0){
-			return true;
-		}else{
-			return false;
-		}
-	}
 	
 	/**
 	 * Is in boundary column with respect to local index.
@@ -406,24 +392,20 @@ public class MrProj{
 			return false;//somewhere in the middle in no mans land
 		}
 	}
+	
+	@Deprecated
+	public static boolean isInBoundaryColumnGlobal(int globalIndex, int columnWidth, int N){
+		return false;
+	}
 
 	/**
 	 * Get the column group number by global index
 	 * @param globalIndex
 	 * @return
 	 */
+	@Deprecated
 	public static int[] getColumnGroupNbr(int globalIndex, int columnWidth, int N){
-		int[] ret;
-		boolean inBoundary = MrProj.isInBoundaryColumnGlobal(globalIndex, columnWidth, N);
-		if(inBoundary){
-			ret = new int[2];
-			ret[0] = MrProj.getJ(globalIndex, N) / columnWidth;
-			ret[1] = ret[0] + 1;
-		}else{
-			ret = new int[1];
-			ret[0] = MrProj.getJ(globalIndex, N) / columnWidth;
-		}
-		return ret;
+		return new int[1];
 	}
 	
 	
