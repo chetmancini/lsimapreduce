@@ -527,7 +527,7 @@ public class ConnectedComponentsCounter extends Configured implements Tool {
 		}
 				
 		RunningJob secondPassRunning = JobClient.runJob(createSecondPassConf(matrixSize,
-				columnGroupWidth, firstPassOutputPath, secondPassOutputPath));
+				columnGroupWidth, defaultDensity, firstPassOutputPath, secondPassOutputPath));
 		
 		while(!secondPassRunning.isComplete()) {
 			System.out.println("Second pass running");
@@ -540,7 +540,7 @@ public class ConnectedComponentsCounter extends Configured implements Tool {
 		}
 		
 		RunningJob thirdPassRunning = JobClient.runJob(createThirdPassConf(matrixSize,
-				columnGroupWidth, firstPassOutputPath, secondPassOutputPath, thirdPassOutputPath));
+				columnGroupWidth, defaultDensity, firstPassOutputPath, secondPassOutputPath, thirdPassOutputPath));
 		
 		while(!thirdPassRunning.isComplete()) {
 			System.out.println("Third pass running");
@@ -553,7 +553,7 @@ public class ConnectedComponentsCounter extends Configured implements Tool {
 		}
 		
 		RunningJob fourthPassRunning = JobClient.runJob(createFourthPassConf(matrixSize,
-				columnGroupWidth, thirdPassOutputPath, outputPath));
+				columnGroupWidth, defaultDensity, thirdPassOutputPath, outputPath));
 		
 		while(!fourthPassRunning.isComplete()) {
 			System.out.println("Fourth pass running");
