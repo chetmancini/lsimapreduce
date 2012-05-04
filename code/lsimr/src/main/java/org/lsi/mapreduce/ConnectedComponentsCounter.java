@@ -212,8 +212,22 @@ public class ConnectedComponentsCounter extends Configured implements Tool {
 	 */
 	public static class MapThirdPass extends MapReduceBase implements
 			Mapper<LongWritable, Text, IntWritable, IntIntWritableTuple> {
-
+	
 		private IntIntWritableTuple columnGpNbrAndIdCellAndParentInColumn = new IntIntWritableTuple();
+
+        private final int defaultSizeInput = 1000;
+		private int sizeInput;
+		private int columnWidth;
+
+		public void configure(JobConf job) {
+			sizeInput = job.getInt("connectedcomponentscounter.matrix.size",
+					defaultSizeInput);
+			columnWidth = job.getInt(
+					"connectedcomponentscounter.matrix.columnWidth",
+					(int) Math.sqrt(sizeInput));
+        }
+
+
 
 		// Input is <byteoffset,line>
 		// Return <idColumngp,<localidcell,localidparent>>
@@ -221,7 +235,7 @@ public class ConnectedComponentsCounter extends Configured implements Tool {
 				OutputCollector<IntWritable, IntIntWritableTuple> output,
 				Reporter reporter) throws IOException {			
 			KeyValue<IntWritable, IntIntWritableTuple> kv = MrProj.parseLineSecondMapper(value);
-			
+		    if(kv.getValue().i < (columnWidth -1) * sizeInput || kv.getKey().get()==(int)Math.ceil((float)sizeInput/(columnWidth-1)))
 			columnGpNbrAndIdCellAndParentInColumn.set(kv.getValue().i, kv.getValue().parent);
 			output.collect( kv.getKey(), columnGpNbrAndIdCellAndParentInColumn);
 		}
