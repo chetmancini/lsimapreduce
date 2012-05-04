@@ -17,20 +17,43 @@ Members
 Overall Structure
 ==============================
 
+Parameters:
+  * size
+  * columnWidth
+  * defaultDensity
+
 ## Pass 1
 ### Map
-
+  - Input:
+  - Description:
+  - Output:
+ 
 ### Reduce
+  - Input:
+  - Description:
+  - Output:
 
 ## Pass 2
 ### Map
+  - Input:
+  - Description:
+  - Output:
 
 ### Reduce
+  - Input:
+  - Description:
+  - Output:
 
 ## Pass 3
 ### Map
+  - Input:
+  - Description:
+  - Output:
 
 ### Reduce
+  - Input:
+  - Description:
+  - Output:
 
 Output
 ==============================
