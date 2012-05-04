@@ -207,36 +207,19 @@ public class ConnectedComponentsCounter extends Configured implements Tool {
 	 * MAP THIRD PASS
 	 */
 	public static class MapThirdPass extends MapReduceBase implements
-			Mapper<IntWritable, IntWritable, IntWritable, IntIntWritableTuple> {
+			Mapper<LongWritable, Text, IntWritable, IntIntWritableTuple> {
 
-		private IntWritable idColumn = new IntWritable();
-		private IntIntWritableTuple idAndParentCell = new IntIntWritableTuple();
+		private IntIntWritableTuple columnGpNbrAndIdCellAndParentInColumn = new IntIntWritableTuple();
 
-		private final int defaultSizeInput = 1000;
-		private int sizeInput;
-		private int columnWidth;
-
-		public void configure(JobConf job) {
-			sizeInput = job.getInt("connectedcomponentscounter.matrix.size",
-					defaultSizeInput);
-			columnWidth = job.getInt(
-					"connectedcomponentscounter.matrix.columnWidth",
-					(int) Math.sqrt(sizeInput));
-		}
-
-		// Input key is idCell and value is idParent
-		// Return <idcolumn;<idcell,idParent>>
-		public void map(IntWritable key, IntWritable parent,
+		// Input is <byteoffset,line>
+		// Return <idColumngp,<localidcell,localidparent>>
+		public void map(LongWritable key, Text value,
 				OutputCollector<IntWritable, IntIntWritableTuple> output,
-				Reporter reporter) throws IOException {
-
-			idAndParentCell.set(key.get(), parent.get());
-
-			/**
-			 * Only send boundary column in one reducer
-			 */
-			idColumn.set(MrProj.getColumnGroupNbrsFromLine(key.get(), columnWidth, sizeInput)[0]);
-			output.collect(idColumn, idAndParentCell);
+				Reporter reporter) throws IOException {			
+			KeyValue<IntWritable, IntIntWritableTuple> kv = MrProj.parseLineSecondMapper(value);
+			
+			columnGpNbrAndIdCellAndParentInColumn.set(kv.getValue().i, kv.getValue().parent);
+			output.collect( kv.getKey(), columnGpNbrAndIdCellAndParentInColumn);
 		}
 	}
 
@@ -246,8 +229,8 @@ public class ConnectedComponentsCounter extends Configured implements Tool {
 	public static class ReduceThirdPass extends MapReduceBase implements
 			Reducer<IntWritable, IntIntWritableTuple, IntWritable, IntWritable> {
 
-		IntWritable outputKey = new IntWritable();
-		IntWritable outputValue = new IntWritable();
+		IntWritable parentGlobalId = new IntWritable();
+		IntWritable sizeComponent = new IntWritable();
 
 		private final int defaultSizeInput = 1000;
 		private int sizeInput;
@@ -261,20 +244,20 @@ public class ConnectedComponentsCounter extends Configured implements Tool {
 					(int) Math.sqrt(sizeInput));
 		}
 
-		// Get all the <id,boolean,parent> of cells in one column group
+		// Get all the <localidcell,localidparent> of cells in one column group
 		// Return <parent,sizeSingleConnected>
-		public void reduce(IntWritable columnId,
+		public void reduce(IntWritable columnGroupId,
 				Iterator<IntIntWritableTuple> idAndParentCells,
 				OutputCollector<IntWritable, IntWritable> output,
 				Reporter reporter) throws IOException {
-			// TODO Plug the code of Sean Correctly
-			UnionFind uf = new UnionFind(columnId, idAndParentCells, sizeInput, sizeInput);
-
-			while (idAndParentCells.hasNext()) {
-				IntIntWritableTuple tuple = idAndParentCells.next();
-				outputKey.set(tuple.parent);
-				outputValue.set(uf.getSizeCCInColumn(tuple.parent));
-				output.collect(outputKey, outputValue);
+			UnionFind uf = new UnionFind(columnGroupId, idAndParentCells, sizeInput, columnWidth);
+			HashMap<ComplexNumber, ComplexNumber> roots = uf.getRoots();
+			
+			for(ComplexNumber complexRoot : roots.values()) {
+				parentGlobalId.set(MrProj.getGlobalFromIdInColumnGroup(complexRoot.index, complexRoot.groupid, columnWidth, sizeInput));
+				//TODO get the real size of the component
+				sizeComponent.set(complexRoot.groupid);
+				output.collect(parentGlobalId,sizeComponent);
 			}
 		}
 	}
@@ -315,7 +298,7 @@ public class ConnectedComponentsCounter extends Configured implements Tool {
 		conf.setJobName("connectedComponentCounter_secondPass");
 
 		conf.setMapOutputKeyClass(Text.class); 
-		conf.setMapOutputValueClass(IntIntWritableTuple.class);
+		conf.setMapOutputValueClass(IntIntIntWritableTuple.class);
 		
 		conf.setOutputKeyClass(IntWritable.class);
 		conf.setOutputValueClass(IntIntWritableTuple.class);
