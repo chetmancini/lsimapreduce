@@ -5,6 +5,7 @@ import org.lsi.containers.ComplexNumber;
 import org.lsi.containers.FullGraph;
 import org.lsi.mapreduce.*; 
 import org.lsi.mapreduce.IntIntWritableTuple;
+import org.lsi.mapreduce.IntIntIntIntWritableTuple;
 /**
  * Disclaimer: this is an untested work in
  * progress.  Pushed only for backup and transfer
@@ -116,12 +117,12 @@ public class UnionFind {
         }
     }
     
-    public UnionFind(Iterator<IntIntIntIntWritableTuple> idsCells, Integer m, Integer n)
+    public UnionFind(Iterator<IntIntIntIntWritableTuple> idsCells, Integer m, Integer n, boolean useless)
     {
         this.m = m;
         this.n = n;
         while(idsCells.hasNext()){
-            IntIntIntWritableTuple c = idsCells.next();
+            IntIntIntIntWritableTuple c = idsCells.next();
             ComplexNumber k = new ComplexNumber(c.groupidi,c.i);
             ComplexNumber v = new ComplexNumber(c.groupidp,c.parent); 
             m_id.put(k,v);
