@@ -221,7 +221,7 @@ public class ConnectedComponentsCounter extends Configured implements Tool {
 
 			for(ComplexNumber complexCell : roots.keySet()) {
 				//Not output right boundary column except if last column is the end of a column group
-				if(complexCell.index<sizeInput || complexCell.groupid == (int)Math.ceil((float)sizeInput/(columnWidth-1))- 1) {
+				if(complexCell.index<sizeInput || complexCell.groupid == (int)Math.ceil(((float)sizeInput-1)/(columnWidth-1))- 1) {
 					ComplexNumber complexRoot = roots.get(complexCell);
 					cell.set(complexCell.groupid, complexCell.index);
 					root.set(complexRoot.groupid, complexRoot.index);
@@ -263,7 +263,7 @@ public class ConnectedComponentsCounter extends Configured implements Tool {
 				OutputCollector<IntWritable, IntIntIntIntWritableTuple> output,
 				Reporter reporter) throws IOException {			
 			KeyValue<IntIntWritableTuple, IntIntWritableTuple> kv = MrProj.parseLineThirdMapper(value);
-		    if(kv.getKey().parent < (columnWidth -1) * sizeInput || kv.getKey().i==(int)Math.ceil((float)sizeInput/(columnWidth-1)-1)){
+		    if(kv.getKey().parent < (columnWidth -1) * sizeInput || kv.getKey().i==(int)Math.ceil(((float)sizeInput-1)/(columnWidth-1)-1)){
 		    	idColumn.set(kv.getKey().i);
 		    	cellAndRoot.set(kv.getKey().i,kv.getKey().parent,kv.getValue().i,kv.getValue().parent);
 		    	output.collect(idColumn, cellAndRoot);
