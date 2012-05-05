@@ -306,7 +306,7 @@ public class ConnectedComponentsCounter extends Configured implements Tool {
                 IntIntIntIntWritableTuple cr = cellAndRoot.next();
                 ComplexNumber cn = new ComplexNumber(cr.groupidi, cr.i);
                 ComplexNumber cp = new ComplexNumber(cr.groupidp, cr.parent);
-                if(!vec.containsKey(cn) || vec.get(cn).lessThan(cp))
+                if(!vec.containsKey(cn) || !vec.get(cn).lessThan(cp))
                     vec.put(cn,cp);
             }
             FullGraph fg = new FullGraph();
