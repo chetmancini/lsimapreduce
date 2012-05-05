@@ -273,10 +273,18 @@ public class UnionFind {
         ComplexNumber i = root(p);
         ComplexNumber j = root(q);
         //System.out.println("With roots " + i + ", " + j);
-        if(i.lessThan(j))
-            m_id.put(j,i);
-        else
-            m_id.put(i,j);
+        if(i.lessThan(j)){
+            if(m_id.containsKey(j))
+                m_id.put(j,i);
+            else
+                m_id.put(q,i);
+        }
+        else{
+            if(m_id.containsKey(i))
+                m_id.put(i,j);
+            else
+                m_id.put(p,j);
+        }
     }
 
     /**

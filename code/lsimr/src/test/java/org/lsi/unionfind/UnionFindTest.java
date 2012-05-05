@@ -350,26 +350,25 @@ public class UnionFindTest
         for(Integer i = 0; i < 30; ++i){
             if(vec.containsKey(new ComplexNumber(0,i)))
                 fg13.vertices.put(new ComplexNumber(0,i),new ComplexNumber(0,i));
-            if(vec3.containsKey(new ComplexNumber(0,i)))
-                fg13.vertices.put(new ComplexNumber(0,i),vec3.get(new ComplexNumber(0,i)));
-            
         }
             
         FullGraph fg23 = new FullGraph();
         for(Integer i = 30; i < 60; ++i){
-            if(vec.containsKey(new ComplexNumber(0,i)))
+            if(vec3.containsKey(new ComplexNumber(0,i)))
+                fg23.vertices.put(new ComplexNumber(1,i-30),vec3.get(new ComplexNumber(0,i)));
+            else if(vec.containsKey(new ComplexNumber(0,i)))
                 fg23.vertices.put(new ComplexNumber(1,i-30),new ComplexNumber(1,i-30));
-            if(vec3.containsKey(new ComplexNumber(1,i)))
-                fg23.vertices.put(new ComplexNumber(1,i),vec3.get(new ComplexNumber(1,i)));
         }
 
         FullGraph fg33 = new FullGraph();
         for(Integer i = 60; i < 100; ++i){
-            if(vec.containsKey(new ComplexNumber(0,i)))
+            if(vec3.containsKey(new ComplexNumber(1,i-30)))
+                fg33.vertices.put(new ComplexNumber(2,i-60),vec3.get(new ComplexNumber(1,i-30)));
+            else if(vec.containsKey(new ComplexNumber(0,i)))
                 fg33.vertices.put(new ComplexNumber(2,i-60),new ComplexNumber(2,i-60));
-            if(vec3.containsKey(new ComplexNumber(2,i)))
-                fg33.vertices.put(new ComplexNumber(2,i),vec3.get(new ComplexNumber(2,i)));
         }
+
+        System.out.println(fg33.vertices);
 
         fg13.m=10; fg13.n=3; fg13.g=10;
         fg23.m=10; fg23.n=3; fg23.g=10;
@@ -393,6 +392,24 @@ public class UnionFindTest
          * 1  11 21 31 41 51 61 71 81  91 
          *
          */
+
+        uf13.printRoots();
+        uf23.printRoots();
+        uf33.printRoots();
+        
+	    HashMap<ComplexNumber, Integer> sizesForRoot1 = uf13.getSizes();
+	    HashMap<ComplexNumber, Integer> sizesForRoot2 = uf23.getSizes();
+	    HashMap<ComplexNumber, Integer> sizesForRoot3 = uf33.getSizes();
+        System.out.println(sizesForRoot1);
+        System.out.println(sizesForRoot2);
+        System.out.println(sizesForRoot3);
+			
+        //for(ComplexNumber c : sizesForRoot.keySet()) {
+        //    parentGlobalId.set(MrProj.getGlobalFromIdInColumnGroup(c.index, c.groupid, 4, 100));
+        //    sizeComponent.set(sizesForRoot.get(c));
+        //    output.collect(parentGlobalId,sizeComponent);
+        //}
+        
         assertArrayEquals(expected,expected);
     } 
 //    public void testEdgesOne()
