@@ -281,7 +281,7 @@ public class MrProj{
     }
     
     /**
-     * Parse a line for the second mapper.
+     * Parse a line for the fourth mapper.
      * Format:
      * [INT][TAB][INT]
      * 

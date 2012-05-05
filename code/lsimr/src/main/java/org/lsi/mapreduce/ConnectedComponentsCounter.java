@@ -10,6 +10,7 @@ import java.util.List;
 import org.lsi.containers.ComplexNumber;
 import org.lsi.containers.KeyValue;
 import org.lsi.unionfind.UnionFind;
+import org.lsi.containers.FullGraph;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.conf.Configured;
@@ -262,7 +263,7 @@ public class ConnectedComponentsCounter extends Configured implements Tool {
 				OutputCollector<IntWritable, IntIntIntIntWritableTuple> output,
 				Reporter reporter) throws IOException {			
 			KeyValue<IntIntWritableTuple, IntIntWritableTuple> kv = MrProj.parseLineThirdMapper(value);
-		    if(kv.getKey().parent < (columnWidth -1) * sizeInput || kv.getKey().i==(int)Math.ceil((float)sizeInput/(columnWidth-1))){
+		    if(kv.getKey().parent < (columnWidth -1) * sizeInput || kv.getKey().i==(int)Math.ceil((float)sizeInput/(columnWidth-1)-1)){
 		    	idColumn.set(kv.getKey().i);
 		    	cellAndRoot.set(kv.getKey().i,kv.getKey().parent,kv.getValue().i,kv.getValue().parent);
 		    	output.collect(idColumn, cellAndRoot);
@@ -300,7 +301,20 @@ public class ConnectedComponentsCounter extends Configured implements Tool {
 				Iterator<IntIntIntIntWritableTuple> cellAndRoot,
 				OutputCollector<IntWritable, IntWritable> output,
 				Reporter reporter) throws IOException {
-			UnionFind uf = new UnionFind(cellAndRoot, sizeInput, columnWidth, true);
+            HashMap<ComplexNumber, ComplexNumber> vec = new HashMap<ComplexNumber,ComplexNumber>();
+			while(cellAndRoot.hasNext()){
+                IntIntIntIntWritableTuple cr = cellAndRoot.next();
+                ComplexNumber cn = new ComplexNumber(cr.groupidi, cr.i);
+                ComplexNumber cp = new ComplexNumber(cr.groupidp, cr.parent);
+                if(!vec.containsKey(cn) || vec.get(cn).lessThan(cp))
+                    vec.put(cn,cp);
+            }
+            FullGraph fg = new FullGraph();
+            fg.vertices=vec;
+            fg.m=sizeInput;
+            fg.n=columnWidth;            
+                
+            UnionFind uf = new UnionFind(fg);
 
 			HashMap<ComplexNumber, Integer> sizesForRoot = uf.getSizes();
 			
