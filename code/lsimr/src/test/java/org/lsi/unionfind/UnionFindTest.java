@@ -3,10 +3,16 @@ package org.lsi.unionfind;
 import junit.framework.Test;
 import junit.framework.TestCase;
 import junit.framework.TestSuite;
+
+import org.apache.hadoop.io.IntWritable;
+import org.lsi.mapreduce.IntIntIntIntWritableTuple;
+import org.lsi.mapreduce.IntIntWritableTuple;
 import org.lsi.unionfind.UnionFind;
 import org.lsi.containers.FullGraph;
 import org.lsi.containers.ComplexNumber;
 import static org.junit.Assert.*;
+
+import java.util.ArrayList;
 import java.util.HashMap;
 /**
  * Unit test for simple App.
@@ -501,4 +507,68 @@ public class UnionFindTest
 //         */
 //        assertEquals(8, (int)uf.getEdges());
 //    }
+    
+    public void testEdges(){
+    	ArrayList<IntIntWritableTuple> list0 = new ArrayList<IntIntWritableTuple>();
+    	ArrayList<IntIntWritableTuple> list1 = new ArrayList<IntIntWritableTuple>();
+
+    	for(int i = 0; i<2; i++) {
+    		IntIntWritableTuple cellAndParent0 = new IntIntWritableTuple();
+    		cellAndParent0.set(10*i+0, 10*i+0);
+    		IntIntWritableTuple cellAndParent1 = new IntIntWritableTuple();
+    		cellAndParent1.set(10*i+1, 10*i+1);
+    		IntIntWritableTuple cellAndParent2 = new IntIntWritableTuple();
+    		cellAndParent2.set(10*i+2, 10*i+2);
+    		IntIntWritableTuple cellAndParent3 = new IntIntWritableTuple();
+    		cellAndParent3.set(10*i+3, 10*i+3);
+    		IntIntWritableTuple cellAndParent4 = new IntIntWritableTuple();
+    		cellAndParent4.set(10*i+4, 10*i+4);
+    		
+    		list0.add(cellAndParent0);
+    		list0.add(cellAndParent1);
+    		list0.add(cellAndParent2);
+    		list0.add(cellAndParent3);
+    		list0.add(cellAndParent4);
+    	}
+    	
+    	for(int i = 0; i<2; i++) {
+    		IntIntWritableTuple cellAndParent0 = new IntIntWritableTuple();
+    		cellAndParent0.set(10*i+10, 10*i+10);
+    		IntIntWritableTuple cellAndParent1 = new IntIntWritableTuple();
+    		cellAndParent1.set(10*i+11, 10*i+11);
+    		IntIntWritableTuple cellAndParent2 = new IntIntWritableTuple();
+    		cellAndParent2.set(10*i+12, 10*i+12);
+    		IntIntWritableTuple cellAndParent3 = new IntIntWritableTuple();
+    		cellAndParent3.set(10*i+13, 10*i+13);
+    		IntIntWritableTuple cellAndParent4 = new IntIntWritableTuple();
+    		cellAndParent4.set(10*i+14, 10*i+14);
+    		
+    		list1.add(cellAndParent0);
+    		list1.add(cellAndParent1);
+    		list1.add(cellAndParent2);
+    		list1.add(cellAndParent3);
+    		list1.add(cellAndParent4);
+    	}
+    	
+    	/****
+    	 * 1 0 1 0 1
+    	 * 1 0 1 0 1
+    	 * 1 0 1 0 1
+    	 * 1 0 1 0 1
+    	 * 1 0 1 0 1
+    	 * 
+    	 * With 2 column gps of dim 3
+    	 */
+    	
+    	System.out.println("\n\n\n\n\n");
+    	
+    	UnionFind uf0 = new UnionFind(new IntWritable(0),list0.iterator(),5,3);
+    	System.out.println("\n\n\n\n\n");
+    	UnionFind uf1 = new UnionFind(new IntWritable(1),list1.iterator(),5,3);
+    	
+    	System.out.println("uf0 is "+uf0.getEdges());
+    	System.out.println("uf1 is "+uf1.getEdges());
+    	
+    	assertEquals(8, uf0.getEdges()+uf1.getEdges());
+    }
 }

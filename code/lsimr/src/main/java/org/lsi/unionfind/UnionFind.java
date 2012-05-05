@@ -152,8 +152,6 @@ import org.apache.hadoop.io.IntWritable;
 import org.lsi.containers.ComplexNumber;
 import org.lsi.containers.FullGraph;
 import org.lsi.mapreduce.*; 
-import org.lsi.mapreduce.IntIntWritableTuple;
-import org.lsi.mapreduce.IntIntIntIntWritableTuple;
 /**
  * Disclaimer: this is an untested work in
  * progress.  Pushed only for backup and transfer
@@ -404,7 +402,8 @@ public class UnionFind {
         //if spot above me is a tree, and i'm not in the
         //top row.
         if(m_id.containsKey(i) && m_id.containsKey(down) && row(i) != 0){
-            ++m_edges; //there is an edge.
+        	if(i.index < (m*(n-1)) || i.groupid == (int)Math.ceil(((float)m-1)/(n-1))- 1)
+        		++m_edges; //there is an edge.
             unite(i, down);
         }
     }

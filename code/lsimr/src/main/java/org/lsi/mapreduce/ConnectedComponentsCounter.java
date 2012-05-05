@@ -15,6 +15,7 @@ import org.lsi.containers.FullGraph;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.conf.Configured;
 import org.apache.hadoop.filecache.DistributedCache;
+import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.io.LongWritable;
@@ -41,7 +42,7 @@ import org.apache.hadoop.util.ToolRunner;
 public class ConnectedComponentsCounter extends Configured implements Tool {
 
 	static enum STATS {
-		VERTICES, EDGES, COMPONENTS
+		VERTICES, EDGES, COMPONENTS, TEMP_AVG_CC_SIZE, TEMP_WEIGHTED_AVG_CC_SIZE
 	}
 	
 	/**
@@ -84,7 +85,7 @@ public class ConnectedComponentsCounter extends Configured implements Tool {
 			/**
 			 * Only put in the iterator if there is a vertex.
 			 */
-			if (MrProj.getBoolean(f)) {
+			if (MrProj.getBoolean(f) && line < sizeInput*sizeInput) {
 				reporter.getCounter(STATS.VERTICES).increment(1);
 				
 				/**
@@ -357,6 +358,8 @@ public class ConnectedComponentsCounter extends Configured implements Tool {
 				sum += values.next().get();
 			}
 			output.collect(key, new IntWritable(sum));
+			reporter.getCounter(STATS.TEMP_WEIGHTED_AVG_CC_SIZE).increment(sum*sum);
+			reporter.getCounter(STATS.TEMP_AVG_CC_SIZE).increment(sum);
 		}
 	}
 
@@ -523,21 +526,20 @@ public class ConnectedComponentsCounter extends Configured implements Tool {
 		}
 
 		String inputPath = other_args.get(0);
-		String firstPassOutputPath = inputPath + "/firstPass";
-		String secondPassOutputPath = inputPath + "/secondPass";
-		String thirdPassOutputPath = inputPath + "/thirdPass";
 		String outputPath = other_args.get(1);
+		String firstPassOutputPath = outputPath + "/firstPass";
+		String secondPassOutputPath = outputPath + "/secondPass";
+		String thirdPassOutputPath = outputPath + "/thirdPass";
+		String fourthPassOutputPath = outputPath + "/fourthPass";
 		
-		System.out.println("inputPath :"+inputPath);
-		System.out.println("outputPath :"+outputPath);
+		//Clean the output directory
+		Configuration config = new Configuration();
+		FileSystem hdfs = FileSystem.get(config);
+		Path path = new Path(outputPath);
+		hdfs.delete(path, true);
 		
 		RunningJob firstPassRunning = JobClient.runJob(createFirstPassConf(matrixSize,
 				columnGroupWidth, defaultDensity, inputPath, firstPassOutputPath));
-		
-		while(!firstPassRunning.isComplete()) {
-			System.out.println("First pass running");
-			Thread.sleep(2000);
-		}
 		
 		if(!firstPassRunning.isSuccessful()) {
 			System.out.println("First pass failed");
@@ -547,11 +549,6 @@ public class ConnectedComponentsCounter extends Configured implements Tool {
 		RunningJob secondPassRunning = JobClient.runJob(createSecondPassConf(matrixSize,
 				columnGroupWidth, defaultDensity, firstPassOutputPath, secondPassOutputPath));
 		
-		while(!secondPassRunning.isComplete()) {
-			System.out.println("Second pass running");
-			Thread.sleep(2000);
-		}
-		
 		if(!secondPassRunning.isSuccessful()) {
 			System.out.println("Second pass failed");
 			return -1;
@@ -560,29 +557,31 @@ public class ConnectedComponentsCounter extends Configured implements Tool {
 		RunningJob thirdPassRunning = JobClient.runJob(createThirdPassConf(matrixSize,
 				columnGroupWidth, defaultDensity, firstPassOutputPath, secondPassOutputPath, thirdPassOutputPath));
 		
-		while(!thirdPassRunning.isComplete()) {
-			System.out.println("Third pass running");
-			Thread.sleep(2000);
-		}
-
 		if(!thirdPassRunning.isSuccessful()) {
 			System.out.println("Third pass failed");
 			return -1;
 		}
 		
 		RunningJob fourthPassRunning = JobClient.runJob(createFourthPassConf(matrixSize,
-				columnGroupWidth, defaultDensity, thirdPassOutputPath, outputPath));
-		
-		while(!fourthPassRunning.isComplete()) {
-			System.out.println("Fourth pass running");
-			Thread.sleep(2000);
-		}
-
+				columnGroupWidth, defaultDensity, thirdPassOutputPath, fourthPassOutputPath));
+	
 		if(!fourthPassRunning.isSuccessful()) {
 			System.out.println("Fourth pass failed");
 			return -1;
 		}
 		
+		System.out.println("\n\nThe statistics are:");
+		System.out.println("  -  Number of vertices: " + firstPassRunning.getCounters().getCounter(STATS.VERTICES));
+		System.out.println("  -  Number of edges: " + firstPassRunning.getCounters().getCounter(STATS.EDGES));
+		// Sum on CCs of : weight / nbrCCs
+		System.out.println("  -  Number of connected components: " + fourthPassRunning.getCounters().getCounter(STATS.COMPONENTS));
+		System.out.println("  -  Average connected component size: " + ((float) fourthPassRunning.getCounters().getCounter(STATS.TEMP_AVG_CC_SIZE))/fourthPassRunning.getCounters().getCounter(STATS.COMPONENTS));
+		// Sum on CCs of : weight / totalWeight * weight
+		System.out.println("  -  Weighted average connected component size: " + ((float) fourthPassRunning.getCounters().getCounter(STATS.TEMP_WEIGHTED_AVG_CC_SIZE))/fourthPassRunning.getCounters().getCounter(STATS.TEMP_AVG_CC_SIZE));
+		// Nbr Edges / Nbr Cells * Weighted Avg
+		System.out.println("  -  Average burn count: " + ((float) firstPassRunning.getCounters().getCounter(STATS.VERTICES))/(matrixSize*matrixSize) *
+				((float) fourthPassRunning.getCounters().getCounter(STATS.TEMP_WEIGHTED_AVG_CC_SIZE))/fourthPassRunning.getCounters().getCounter(STATS.TEMP_AVG_CC_SIZE));
+
 		return 0;
 	}
 
