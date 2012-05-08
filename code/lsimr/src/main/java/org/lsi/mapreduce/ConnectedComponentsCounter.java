@@ -533,10 +533,10 @@ public class ConnectedComponentsCounter extends Configured implements Tool {
 		String fourthPassOutputPath = outputPath + "/fourthPass";
 		
 		//Clean the output directory
-		Configuration config = new Configuration();
-		FileSystem hdfs = FileSystem.get(config);
-		Path path = new Path(outputPath);
-		hdfs.delete(path, true);
+//		Configuration config = new Configuration();
+//		FileSystem hdfs = FileSystem.get(config);
+//		Path path = new Path(outputPath);
+//		hdfs.delete(path, true);
 		
 		RunningJob firstPassRunning = JobClient.runJob(createFirstPassConf(matrixSize,
 				columnGroupWidth, defaultDensity, inputPath, firstPassOutputPath));

@@ -374,15 +374,15 @@ public class UnionFind {
             //same column group, just look one column left.
             left = new ComplexNumber(i.groupid, i.index-m);
 
-        System.out.println("Key " +left + "is left of " + i);
-        if(!m_id.containsKey(left))
-            System.out.println(left + " is not in the map");
-        else
-            System.out.println(left + " is in the map");
-        if(!m_id.containsKey(i))
-            System.out.println(i + " is not in the map");
-        else
-            System.out.println(i + " is in the map");
+//        System.out.println("Key " +left + "is left of " + i);
+//        if(!m_id.containsKey(left))
+//            System.out.println(left + " is not in the map");
+//        else
+//            System.out.println(left + " is in the map");
+//        if(!m_id.containsKey(i))
+//            System.out.println(i + " is not in the map");
+//        else
+//            System.out.println(i + " is in the map");
 
         if(m_id.containsKey(i) && m_id.containsKey(left)){
             ++m_edges; //there is an edge.
