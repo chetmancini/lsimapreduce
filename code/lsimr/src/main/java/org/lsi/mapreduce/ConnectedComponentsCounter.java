@@ -115,7 +115,8 @@ public class ConnectedComponentsCounter extends Configured implements Tool {
 		private final int defaultSizeInput = 1000;
 		private int sizeInput;
 		private int columnWidth;
-
+		private boolean diag; 
+		
 		public void configure(JobConf job) {
 			sizeInput = job.getInt("connectedcomponentscounter.matrix.size",
 					defaultSizeInput);
@@ -125,6 +126,8 @@ public class ConnectedComponentsCounter extends Configured implements Tool {
 			MrProj.setVariables(job.getFloat(
 					"connectedcomponentscounter.matrix.defaultDensity", 
 					0.59f));
+			diag = job.getBoolean("connectedcomponentscounter.unionfind.diag",
+					false);
         }
 
 		// Get all the <localIdCell,localIdParent> of cells for one column
@@ -133,7 +136,7 @@ public class ConnectedComponentsCounter extends Configured implements Tool {
 				Iterator<IntIntWritableTuple> idsCells,
 				OutputCollector<IntIntWritableTuple, IntIntWritableTuple> output,
 				Reporter reporter) throws IOException {
-			UnionFind uf = new UnionFind(idcolumn, idsCells, sizeInput, columnWidth);
+			UnionFind uf = new UnionFind(idcolumn, idsCells, sizeInput, columnWidth, diag);
 			
 			reporter.getCounter(STATS.EDGES).increment(uf.getEdges());
 			HashMap<ComplexNumber, ComplexNumber> roots = uf.getRoots();
@@ -199,7 +202,8 @@ public class ConnectedComponentsCounter extends Configured implements Tool {
         private final int defaultSizeInput = 1000;
 		private int sizeInput;
 		private int columnWidth;
-
+		private boolean diag; 
+		
 		public void configure(JobConf job) {
 			sizeInput = job.getInt("connectedcomponentscounter.matrix.size",
 					defaultSizeInput);
@@ -209,6 +213,8 @@ public class ConnectedComponentsCounter extends Configured implements Tool {
 			MrProj.setVariables(job.getFloat(
 					"connectedcomponentscounter.matrix.defaultDensity", 
 					0.59f));
+			diag = job.getBoolean("connectedcomponentscounter.unionfind.diag",
+					false);
         }
 
 		// Get all the <idcolumnGp,localIdCell,localIdParent> of cells in boundary columns
@@ -217,7 +223,7 @@ public class ConnectedComponentsCounter extends Configured implements Tool {
 				Iterator<IntIntIntWritableTuple> columnAndLocalIdCellAndParent,
 				OutputCollector<IntIntWritableTuple, IntIntWritableTuple> output,
 				Reporter reporter) throws IOException {
-			UnionFind uf = new UnionFind(columnAndLocalIdCellAndParent, sizeInput, columnWidth);
+			UnionFind uf = new UnionFind(columnAndLocalIdCellAndParent, sizeInput, columnWidth, diag);
 			HashMap<ComplexNumber, ComplexNumber> roots = uf.getRoots();
 
 			for(ComplexNumber complexCell : roots.keySet()) {
@@ -244,7 +250,7 @@ public class ConnectedComponentsCounter extends Configured implements Tool {
         private final int defaultSizeInput = 1000;
 		private int sizeInput;
 		private int columnWidth;
-
+		
 		public void configure(JobConf job) {
 			sizeInput = job.getInt("connectedcomponentscounter.matrix.size",
 					defaultSizeInput);
@@ -255,8 +261,6 @@ public class ConnectedComponentsCounter extends Configured implements Tool {
 					"connectedcomponentscounter.matrix.defaultDensity", 
 					0.59f));
         }
-
-
 
 		// Input is <byteoffset,line>
 		// Return <<idColumngp,localidcell>,<idColumngp,localidparent>>
@@ -284,7 +288,8 @@ public class ConnectedComponentsCounter extends Configured implements Tool {
 		private final int defaultSizeInput = 1000;
 		private int sizeInput;
 		private int columnWidth;
-
+		private boolean diag;
+		
 		public void configure(JobConf job) {
 			sizeInput = job.getInt("connectedcomponentscounter.matrix.size",
 					defaultSizeInput);
@@ -294,7 +299,9 @@ public class ConnectedComponentsCounter extends Configured implements Tool {
 			MrProj.setVariables(job.getFloat(
 					"connectedcomponentscounter.matrix.defaultDensity", 
 					0.59f));
-		}
+			diag = job.getBoolean("connectedcomponentscounter.unionfind.diag",
+					false);
+        }
 
 		// Get all the <localidcell,localidparent> of cells in one column group
 		// Return <parent,sizeSingleConnected>
@@ -315,7 +322,7 @@ public class ConnectedComponentsCounter extends Configured implements Tool {
             fg.m=sizeInput;
             fg.n=columnWidth;            
                 
-            UnionFind uf = new UnionFind(fg);
+            UnionFind uf = new UnionFind(fg, diag);
 
 			HashMap<ComplexNumber, Integer> sizesForRoot = uf.getSizes();
 			
@@ -365,7 +372,7 @@ public class ConnectedComponentsCounter extends Configured implements Tool {
 
 
 	public JobConf createFirstPassConf(int matrixSize, int columnGroupWidth,
-			float defaultDensity, String inputPath, String firstPassOutputPath) {
+			float defaultDensity, boolean diag, String inputPath, String firstPassOutputPath) {
 		JobConf conf = new JobConf(getConf(), ConnectedComponentsCounter.class);
 		conf.setJobName("connectedComponentCounter_firstPass");
 
@@ -383,6 +390,8 @@ public class ConnectedComponentsCounter extends Configured implements Tool {
 
 		if (matrixSize > 0)
 			conf.setInt("connectedcomponentscounter.matrix.size", matrixSize);
+		
+		conf.setBoolean("connectedcomponentscounter.unionfind.diag", diag);
 
 		if (columnGroupWidth > 0)
 			conf.setInt("connectedcomponentscounter.matrix.columnWidth",
@@ -399,7 +408,7 @@ public class ConnectedComponentsCounter extends Configured implements Tool {
 	}
 
 	public JobConf createSecondPassConf(int matrixSize, int columnGroupWidth,
-			float defaultDensity, String firstPassOutputPath, String secondPassOutputPath) {
+			float defaultDensity, boolean diag, String firstPassOutputPath, String secondPassOutputPath) {
 		JobConf conf = new JobConf(getConf(), ConnectedComponentsCounter.class);
 		conf.setJobName("connectedComponentCounter_secondPass");
 
@@ -417,6 +426,8 @@ public class ConnectedComponentsCounter extends Configured implements Tool {
 
 		if (matrixSize > 0)
 			conf.setInt("connectedcomponentscounter.matrix.size", matrixSize);
+		
+		conf.setBoolean("connectedcomponentscounter.unionfind.diag", diag);
 
 		if (columnGroupWidth > 0)
 			conf.setInt("connectedcomponentscounter.matrix.columnWidth",
@@ -433,7 +444,7 @@ public class ConnectedComponentsCounter extends Configured implements Tool {
 	}
 
 	public JobConf createThirdPassConf(int matrixSize, int columnGroupWidth,
-			float defaultDensity, String firstPassOutputPath, String secondPassOutputPath,
+			float defaultDensity, boolean diag, String firstPassOutputPath, String secondPassOutputPath,
 			String thirdPassOutputPath) {
 		JobConf conf = new JobConf(getConf(), ConnectedComponentsCounter.class);
 		conf.setJobName("connectedComponentCounter_thirdPass");
@@ -452,6 +463,8 @@ public class ConnectedComponentsCounter extends Configured implements Tool {
 
 		if (matrixSize > 0)
 			conf.setInt("connectedcomponentscounter.matrix.size", matrixSize);
+		
+		conf.setBoolean("connectedcomponentscounter.unionfind.diag", diag);
 
 		if (columnGroupWidth > 0)
 			conf.setInt("connectedcomponentscounter.matrix.columnWidth",
@@ -488,7 +501,7 @@ public class ConnectedComponentsCounter extends Configured implements Tool {
 
 		if (matrixSize > 0)
 			conf.setInt("connectedcomponentscounter.matrix.size", matrixSize);
-
+		
 		if (columnGroupWidth > 0)
 			conf.setInt("connectedcomponentscounter.matrix.columnWidth",
 					columnGroupWidth);
@@ -507,6 +520,7 @@ public class ConnectedComponentsCounter extends Configured implements Tool {
 	public int run(String[] args) throws Exception {
 
 		int matrixSize = -1, columnGroupWidth = -1;
+		boolean diag = false;
 		float defaultDensity = 0.59f;
 
 		List<String> other_args = new ArrayList<String>();
@@ -519,6 +533,9 @@ public class ConnectedComponentsCounter extends Configured implements Tool {
 			}
 			if ("defaultDensity".equals(args[i])){
 				defaultDensity = new Float(args[++i]);
+			}
+			if("diag".equals(args[i])) {
+				diag = true;
 			}
 			else{
 				other_args.add(args[i]);
@@ -539,7 +556,7 @@ public class ConnectedComponentsCounter extends Configured implements Tool {
 //		hdfs.delete(path, true);
 		
 		RunningJob firstPassRunning = JobClient.runJob(createFirstPassConf(matrixSize,
-				columnGroupWidth, defaultDensity, inputPath, firstPassOutputPath));
+				columnGroupWidth, defaultDensity, diag, inputPath, firstPassOutputPath));
 		
 		if(!firstPassRunning.isSuccessful()) {
 			System.out.println("First pass failed");
@@ -547,7 +564,7 @@ public class ConnectedComponentsCounter extends Configured implements Tool {
 		}
 				
 		RunningJob secondPassRunning = JobClient.runJob(createSecondPassConf(matrixSize,
-				columnGroupWidth, defaultDensity, firstPassOutputPath, secondPassOutputPath));
+				columnGroupWidth, defaultDensity, diag, firstPassOutputPath, secondPassOutputPath));
 		
 		if(!secondPassRunning.isSuccessful()) {
 			System.out.println("Second pass failed");
@@ -555,7 +572,7 @@ public class ConnectedComponentsCounter extends Configured implements Tool {
 		}
 		
 		RunningJob thirdPassRunning = JobClient.runJob(createThirdPassConf(matrixSize,
-				columnGroupWidth, defaultDensity, firstPassOutputPath, secondPassOutputPath, thirdPassOutputPath));
+				columnGroupWidth, defaultDensity, diag, firstPassOutputPath, secondPassOutputPath, thirdPassOutputPath));
 		
 		if(!thirdPassRunning.isSuccessful()) {
 			System.out.println("Third pass failed");
@@ -573,8 +590,8 @@ public class ConnectedComponentsCounter extends Configured implements Tool {
 		System.out.println("\n\nThe statistics are:");
 		System.out.println("  -  Number of vertices: " + firstPassRunning.getCounters().getCounter(STATS.VERTICES));
 		System.out.println("  -  Number of edges: " + firstPassRunning.getCounters().getCounter(STATS.EDGES));
-		// Sum on CCs of : weight / nbrCCs
 		System.out.println("  -  Number of connected components: " + fourthPassRunning.getCounters().getCounter(STATS.COMPONENTS));
+		// Sum on CCs of : weight / nbrCCs
 		System.out.println("  -  Average connected component size: " + ((float) fourthPassRunning.getCounters().getCounter(STATS.TEMP_AVG_CC_SIZE))/fourthPassRunning.getCounters().getCounter(STATS.COMPONENTS));
 		// Sum on CCs of : weight / totalWeight * weight
 		System.out.println("  -  Weighted average connected component size: " + ((float) fourthPassRunning.getCounters().getCounter(STATS.TEMP_WEIGHTED_AVG_CC_SIZE))/fourthPassRunning.getCounters().getCounter(STATS.TEMP_AVG_CC_SIZE));

@@ -562,13 +562,23 @@ public class UnionFindTest
     	
     	System.out.println("\n\n\n\n\n");
     	
-    	UnionFind uf0 = new UnionFind(new IntWritable(0),list0.iterator(),5,3);
+    	UnionFind uf0 = new UnionFind(new IntWritable(0),list0.iterator(),5,3,false);
     	System.out.println("\n\n\n\n\n");
-    	UnionFind uf1 = new UnionFind(new IntWritable(1),list1.iterator(),5,3);
+    	UnionFind uf1 = new UnionFind(new IntWritable(1),list1.iterator(),5,3,false);
     	
     	System.out.println("uf0 is "+uf0.getEdges());
     	System.out.println("uf1 is "+uf1.getEdges());
     	
-    	assertEquals(8, uf0.getEdges()+uf1.getEdges());
+    	assertEquals(12, uf0.getEdges()+uf1.getEdges());
+    	
+
+    	uf0 = new UnionFind(new IntWritable(0),list0.iterator(),5,3,true);
+    	System.out.println("\n\n\n\n\n");
+    	uf1 = new UnionFind(new IntWritable(1),list1.iterator(),5,3,true);
+    	
+    	System.out.println("uf0 is "+uf0.getEdges());
+    	System.out.println("uf1 is "+uf1.getEdges());
+    	
+    	assertEquals(12, uf0.getEdges()+uf1.getEdges());
     }
 }

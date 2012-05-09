@@ -175,6 +175,7 @@ public class UnionFind {
     private Integer n = 0;
     private Integer m_g = 0;
     private Integer m_edges = 0;
+    private boolean m_diag = false;
     private HashMap<ComplexNumber, Integer> m_sizes = new HashMap<ComplexNumber, Integer>();
 
     /**
@@ -195,6 +196,18 @@ public class UnionFind {
         this.n = id.n;
         this.m_g = id.g;
         this.m_edges = 0;
+
+        run();
+    }
+    
+    public UnionFind(FullGraph id, boolean diag)
+    {
+        this.m_id = id.vertices;
+        this.m = id.m;
+        this.n = id.n;
+        this.m_g = id.g;
+        this.m_edges = 0;
+        this.m_diag = diag;
 
         run();
     }
@@ -229,6 +242,10 @@ public class UnionFind {
                 //System.out.println(i);
                 lookLeft(i);
                 lookDown(i);
+                if(m_diag) {
+                	lookLeftDown(i);
+                	lookLeftUp(i);
+                }
             }
         }
 
@@ -238,10 +255,11 @@ public class UnionFind {
     }
 
 
-    public UnionFind(IntWritable groupid, Iterator<IntIntWritableTuple> idsCells, Integer m, Integer n)
+    public UnionFind(IntWritable groupid, Iterator<IntIntWritableTuple> idsCells, Integer m, Integer n, boolean diag)
     {
         this.m = m;
         this.n = n;
+        this.m_diag = diag;
         while(idsCells.hasNext()){
             IntIntWritableTuple c = idsCells.next();
             ComplexNumber k = new ComplexNumber(groupid.get(), c.i);
@@ -251,10 +269,11 @@ public class UnionFind {
         run();
     }
 
-    public UnionFind(Iterator<IntIntIntWritableTuple> idsCells, Integer m, Integer n)
+    public UnionFind(Iterator<IntIntIntWritableTuple> idsCells, Integer m, Integer n, boolean diag)
     {
         this.m = m;
         this.n = n;
+        this.m_diag = diag;
         while(idsCells.hasNext()){
             IntIntIntWritableTuple c = idsCells.next();
             ComplexNumber k = new ComplexNumber(c.groupid,c.i);
@@ -264,10 +283,11 @@ public class UnionFind {
         run();
     }
     
-    public UnionFind(Iterator<IntIntIntIntWritableTuple> idsCells, Integer m, Integer n, boolean useless)
+    public UnionFind(Iterator<IntIntIntIntWritableTuple> idsCells, Integer m, Integer n, boolean diag, boolean useless)
     {
         this.m = m;
         this.n = n;
+        this.m_diag = diag;
         while(idsCells.hasNext()){
             IntIntIntIntWritableTuple c = idsCells.next();
             ComplexNumber k = new ComplexNumber(c.groupidi,c.i);
@@ -389,7 +409,6 @@ public class UnionFind {
             unite(i, left);  //converted to one based.
         }
     }
-
     
     /**
      * Return the id of the element below, if there
@@ -408,6 +427,49 @@ public class UnionFind {
         }
     }
 
+    private void lookLeftDown(ComplexNumber i)
+    {
+    	//if spot above me is a tree, and i'm not in the
+        //top row.
+        ComplexNumber left;
+        if(i.index < m)
+            //column group to the left, right boundary column
+            left = new ComplexNumber(i.groupid-1, m*n - m + i.index);
+        else
+            //same column group, just look one column left.
+            left = new ComplexNumber(i.groupid, i.index-m);
+        
+        ComplexNumber leftDown = new ComplexNumber(left.groupid, left.index-1);
+        
+        //if spot above me is a tree, and i'm not in the
+        //top row.
+        if(m_id.containsKey(i) && m_id.containsKey(leftDown) && row(i) != 0){
+        	++m_edges; //there is an edge.
+            unite(i, leftDown);
+        }
+    }
+    
+    private void lookLeftUp(ComplexNumber i)
+    {
+    	//if spot above me is a tree, and i'm not in the
+        //top row.
+        ComplexNumber left;
+        if(i.index < m)
+            //column group to the left, right boundary column
+            left = new ComplexNumber(i.groupid-1, m*n - m + i.index);
+        else
+            //same column group, just look one column left.
+            left = new ComplexNumber(i.groupid, i.index-m);
+        
+        ComplexNumber leftUp = new ComplexNumber(left.groupid, left.index+1);
+        
+        //if spot above me is a tree, and i'm not in the
+        //top row.
+        if(m_id.containsKey(i) && m_id.containsKey(leftUp) && row(i) != m-1){
+        	++m_edges; //there is an edge.
+            unite(i, leftUp);
+        }
+    }
 
     /**
      * Unite p and q
