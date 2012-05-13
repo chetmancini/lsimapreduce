@@ -1,27 +1,17 @@
 package org.lsi.mapreduce;
 
 import java.io.IOException;
-import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 
-import org.lsi.containers.ComplexNumber;
-import org.lsi.containers.KeyValue;
-import org.lsi.unionfind.UnionFind;
-import org.lsi.containers.FullGraph;
-
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.conf.Configured;
-import org.apache.hadoop.filecache.DistributedCache;
-import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.Text;
-import org.apache.hadoop.io.Writable;
-import org.apache.hadoop.mapred.Counters;
 import org.apache.hadoop.mapred.FileInputFormat;
 import org.apache.hadoop.mapred.FileOutputFormat;
 import org.apache.hadoop.mapred.JobClient;
@@ -34,10 +24,12 @@ import org.apache.hadoop.mapred.Reporter;
 import org.apache.hadoop.mapred.RunningJob;
 import org.apache.hadoop.mapred.TextInputFormat;
 import org.apache.hadoop.mapred.TextOutputFormat;
-import org.apache.hadoop.mapred.jobcontrol.Job;
-import org.apache.hadoop.mapred.jobcontrol.JobControl;
 import org.apache.hadoop.util.Tool;
 import org.apache.hadoop.util.ToolRunner;
+import org.lsi.containers.ComplexNumber;
+import org.lsi.containers.FullGraph;
+import org.lsi.containers.KeyValue;
+import org.lsi.unionfind.UnionFind;
 
 public class ConnectedComponentsCounter extends Configured implements Tool {
 
@@ -71,7 +63,7 @@ public class ConnectedComponentsCounter extends Configured implements Tool {
 		}
 
 		// <get byte offset in input line, text of a line>
-		// Return <idcolumn;<idcell,booleancell>>
+		// Return <idcolumn;<localidcell,localidcell>>
 		public void map(LongWritable key, Text value,
 				OutputCollector<IntWritable, IntIntWritableTuple> output,
 				Reporter reporter) throws IOException {
@@ -175,8 +167,8 @@ public class ConnectedComponentsCounter extends Configured implements Tool {
 		}
 		
 
-		// Input is <byteoffset,line>
-		// Return <someCommonKeyForAll;<idcolumnGp,localidcell,localidparent>>
+		// Input is <byteoffset,line> where line is <<idColumnGp,localCellId>,<idColumGp,localParentId>>
+		// Return <someCommonKeyForAll;<idcolumnGp,localidcell,localidparent>> when localidcell is in boundary column
 		public void map(LongWritable key, Text value,
 				OutputCollector<Text, IntIntIntWritableTuple> output,
 				Reporter reporter) throws IOException {
@@ -218,7 +210,7 @@ public class ConnectedComponentsCounter extends Configured implements Tool {
         }
 
 		// Get all the <idcolumnGp,localIdCell,localIdParent> of cells in boundary columns
-		// Return <idColumn,<localCellId,globalParentId>>
+		// Return <<idColumnGp,localCellId>,<idColumGp,localParentId>>
 		public void reduce(Text uselessKey,
 				Iterator<IntIntIntWritableTuple> columnAndLocalIdCellAndParent,
 				OutputCollector<IntIntWritableTuple, IntIntWritableTuple> output,
@@ -262,7 +254,7 @@ public class ConnectedComponentsCounter extends Configured implements Tool {
 					0.59f));
         }
 
-		// Input is <byteoffset,line>
+		// Input is <byteoffset,line> where line is <<idColumnGp,localCellId>,<idColumGp,localParentId>>
 		// Return <<idColumngp,localidcell>,<idColumngp,localidparent>>
 		public void map(LongWritable key, Text value,
 				OutputCollector<IntWritable, IntIntIntIntWritableTuple> output,
@@ -303,8 +295,8 @@ public class ConnectedComponentsCounter extends Configured implements Tool {
 					false);
         }
 
-		// Get all the <localidcell,localidparent> of cells in one column group
-		// Return <parent,sizeSingleConnected>
+		// Get all the <<idColumnGp,localCellId>,<idColumGp,localParentId>> of cells in one column group
+		// Return <parentGlobalIdofSingleCC,sizeOfSingleCCInColumn>
 		public void reduce(IntWritable columnGroupId,
 				Iterator<IntIntIntIntWritableTuple> cellAndRoot,
 				OutputCollector<IntWritable, IntWritable> output,
@@ -339,8 +331,8 @@ public class ConnectedComponentsCounter extends Configured implements Tool {
 	 */
 	public static class MapFourthPass extends MapReduceBase implements
 			Mapper<LongWritable, Text, IntWritable, IntWritable> {
-		// Input is <byteoffset,line>
-		// Return <globalIdRoot,sizeConnectedComponent>
+		// Input is <byteoffset,line> where line is <parentGlobalIdofSingleCC,sizeOfSingleCCInColumn>
+		// Return <parentGlobalIdofSingleCC,sizeOfSingleCC>
 		public void map(LongWritable key, Text value,
 				OutputCollector<IntWritable, IntWritable> output,
 				Reporter reporter) throws IOException {			
@@ -355,7 +347,7 @@ public class ConnectedComponentsCounter extends Configured implements Tool {
 	public static class ReduceFourthPass extends MapReduceBase implements
 			Reducer<IntWritable, IntWritable, IntWritable, IntWritable> {
 		// Input is iterator <sizeConnectedComponent> for each globabIdRoot
-		// Return <globalIdRoot,sum of sizeConnectedComponent>
+		// Return <globalIdRoot,globalSizeConnectedComponent>
 		public void reduce(IntWritable key, Iterator<IntWritable> values,
 				OutputCollector<IntWritable, IntWritable> output,
 				Reporter reporter) throws IOException {	
