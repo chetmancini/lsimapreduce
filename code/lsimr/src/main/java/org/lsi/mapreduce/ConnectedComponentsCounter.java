@@ -587,7 +587,7 @@ public class ConnectedComponentsCounter extends Configured implements Tool {
 		System.out.println("  -  Average connected component size: " + ((float) fourthPassRunning.getCounters().getCounter(STATS.TEMP_AVG_CC_SIZE))/fourthPassRunning.getCounters().getCounter(STATS.COMPONENTS));
 		// Sum on CCs of : weight / totalWeight * weight
 		System.out.println("  -  Weighted average connected component size: " + ((float) fourthPassRunning.getCounters().getCounter(STATS.TEMP_WEIGHTED_AVG_CC_SIZE))/fourthPassRunning.getCounters().getCounter(STATS.TEMP_AVG_CC_SIZE));
-		// Nbr Edges / Nbr Cells * Weighted Avg
+		// Nbr Vertices / Nbr Cells * Weighted Avg
 		System.out.println("  -  Average burn count: " + ((float) firstPassRunning.getCounters().getCounter(STATS.VERTICES))/(matrixSize*matrixSize) *
 				((float) fourthPassRunning.getCounters().getCounter(STATS.TEMP_WEIGHTED_AVG_CC_SIZE))/fourthPassRunning.getCounters().getCounter(STATS.TEMP_AVG_CC_SIZE));
 
