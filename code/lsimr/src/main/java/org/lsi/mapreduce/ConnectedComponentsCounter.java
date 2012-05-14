@@ -352,11 +352,11 @@ public class ConnectedComponentsCounter extends Configured implements Tool {
 				OutputCollector<IntWritable, IntWritable> output,
 				Reporter reporter) throws IOException {	
 			reporter.getCounter(STATS.COMPONENTS).increment(1);
-			int sum = 0;
+			long sum = 0;
 			while(values.hasNext()){
 				sum += values.next().get();
 			}
-			output.collect(key, new IntWritable(sum));
+			output.collect(key, new IntWritable((int) sum));
 			reporter.getCounter(STATS.TEMP_WEIGHTED_AVG_CC_SIZE).increment(sum*sum);
 			reporter.getCounter(STATS.TEMP_AVG_CC_SIZE).increment(sum);
 		}
@@ -584,12 +584,12 @@ public class ConnectedComponentsCounter extends Configured implements Tool {
 		System.out.println("  -  Number of edges: " + firstPassRunning.getCounters().getCounter(STATS.EDGES));
 		System.out.println("  -  Number of connected components: " + fourthPassRunning.getCounters().getCounter(STATS.COMPONENTS));
 		// Sum on CCs of : weight / nbrCCs
-		System.out.println("  -  Average connected component size: " + ((float) fourthPassRunning.getCounters().getCounter(STATS.TEMP_AVG_CC_SIZE))/fourthPassRunning.getCounters().getCounter(STATS.COMPONENTS));
+		System.out.println("  -  Average connected component size: " + ((double) fourthPassRunning.getCounters().getCounter(STATS.TEMP_AVG_CC_SIZE))/fourthPassRunning.getCounters().getCounter(STATS.COMPONENTS));
 		// Sum on CCs of : weight / totalWeight * weight
-		System.out.println("  -  Weighted average connected component size: " + ((float) fourthPassRunning.getCounters().getCounter(STATS.TEMP_WEIGHTED_AVG_CC_SIZE))/fourthPassRunning.getCounters().getCounter(STATS.TEMP_AVG_CC_SIZE));
+		System.out.println("  -  Weighted average connected component size: " + ((double) fourthPassRunning.getCounters().getCounter(STATS.TEMP_WEIGHTED_AVG_CC_SIZE))/fourthPassRunning.getCounters().getCounter(STATS.TEMP_AVG_CC_SIZE));
 		// Nbr Vertices / Nbr Cells * Weighted Avg
-		System.out.println("  -  Average burn count: " + ((float) firstPassRunning.getCounters().getCounter(STATS.VERTICES))/(matrixSize*matrixSize) *
-				((float) fourthPassRunning.getCounters().getCounter(STATS.TEMP_WEIGHTED_AVG_CC_SIZE))/fourthPassRunning.getCounters().getCounter(STATS.TEMP_AVG_CC_SIZE));
+		System.out.println("  -  Average burn count: " + ((double) firstPassRunning.getCounters().getCounter(STATS.VERTICES))/(matrixSize*matrixSize) *
+				((double) fourthPassRunning.getCounters().getCounter(STATS.TEMP_WEIGHTED_AVG_CC_SIZE))/fourthPassRunning.getCounters().getCounter(STATS.TEMP_AVG_CC_SIZE));
 
 		return 0;
 	}
